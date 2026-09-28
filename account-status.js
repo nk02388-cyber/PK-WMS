@@ -8,6 +8,40 @@
   const functionUrl = `${SUPABASE_URL}/functions/v1/pk-user-access`;
   let profile = null, refreshId = 0;
   window.getWmsUsername = () => profile?.username || '';
+  const menuButtons = [...document.querySelectorAll('#tabs .tab-btn[data-tab]')];
+  const menuChoices = menuButtons.map(button => ({
+    key: button.dataset.tab,
+    label: button.querySelector('span:not(.tab-badge)')?.textContent.trim() || button.dataset.tab,
+  }));
+  const allowedMenus = () => profile?.role === 'admin' ? menuChoices.map(item => item.key)
+    : Array.isArray(profile?.menu_access) ? profile.menu_access : [];
+  window.getWmsCanAccess = key => allowedMenus().includes(key);
+
+  function menuFieldset(selected = ['stock']) {
+    const fields = document.createElement('fieldset');
+    fields.className = 'account-permissions';
+    const legend = document.createElement('legend'); legend.textContent = 'เมนูที่เข้าได้';
+    const grid = document.createElement('div');
+    for (const item of menuChoices) {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox'; checkbox.name = 'menu_access'; checkbox.value = item.key;
+      checkbox.checked = selected.includes(item.key);
+      label.append(checkbox, document.createTextNode(item.label)); grid.append(label);
+    }
+    fields.append(legend, grid);
+    return fields;
+  }
+  function applyMenuAccess() {
+    const allowed = new Set(allowedMenus());
+    for (const button of menuButtons) button.hidden = !allowed.has(button.dataset.tab);
+    const active = menuButtons.find(button => button.classList.contains('active'));
+    if (active && !active.hidden) return;
+    const first = menuButtons.find(button => !button.hidden);
+    if (first) first.click();
+    else for (const pane of document.querySelectorAll('.tab-pane')) pane.hidden = true;
+  }
+  $('accountCreateMenus').parentElement.replaceWith(menuFieldset());
 
   function showError(text) { error.textContent = text || ''; error.hidden = !text; }
   function showScreen(visible) {
@@ -38,7 +72,7 @@
       const { data: { user }, error: userError } = await client.auth.getUser();
       if (id !== refreshId) return;
       if (userError || !user) { profile = null; showScreen(true); return; }
-      const { data, error: profileError } = await client.from('app_users').select('username,role,active').eq('id', user.id).single();
+      const { data, error: profileError } = await client.from('app_users').select('username,role,active,menu_access').eq('id', user.id).single();
       if (id !== refreshId) return;
       if (profileError || !data?.active || !['admin', 'user'].includes(data.role)) {
         await client.auth.signOut({ scope: 'local' });
@@ -49,6 +83,7 @@
       status.textContent = `${data.username} · ${data.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้'}`;
       button.classList.add('is-logged-in');
       adminPanel.hidden = data.role !== 'admin';
+      applyMenuAccess();
       showError(''); showScreen(false);
     } catch (_) { if (id === refreshId) { showScreen(true); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
   }
@@ -71,7 +106,30 @@
           try { await adminCall('delete', { id: user.id }); await loadUsers(); message.textContent = `ลบ ${user.username} แล้ว`; }
           catch (err) { remove.disabled = false; message.textContent = err.message; }
         });
-        row.append(info, remove); userList.append(row);
+        const permissions = menuFieldset(user.menu_access || []);
+        permissions.hidden = true;
+        const actions = document.createElement('div'); actions.className = 'account-actions';
+        const manage = document.createElement('button'); manage.type = 'button'; manage.textContent = 'สิทธิ์เมนู';
+        manage.setAttribute('aria-expanded', 'false');
+        manage.addEventListener('click', () => {
+          permissions.hidden = !permissions.hidden;
+          manage.setAttribute('aria-expanded', String(!permissions.hidden));
+        });
+        const save = document.createElement('button'); save.type = 'button';
+        save.className = 'account-save-access'; save.textContent = 'บันทึกสิทธิ์';
+        save.addEventListener('click', async () => {
+          save.disabled = true;
+          try {
+            const menu_access = [...permissions.querySelectorAll('input:checked')].map(input => input.value);
+            await adminCall('set_menu_access', { id: user.id, menu_access });
+            message.textContent = `บันทึกสิทธิ์ของ ${user.username} แล้ว`;
+            permissions.hidden = true; manage.setAttribute('aria-expanded', 'false');
+          } catch (err) { message.textContent = err.message; }
+          finally { save.disabled = false; }
+        });
+        permissions.append(save);
+        actions.append(manage, remove);
+        row.append(info, actions, permissions); userList.append(row);
       }
       message.textContent = users.some(item => item.role === 'user' && !item.username.startsWith('legacy-disabled-')) ? '' : 'ยังไม่มีผู้ใช้ย่อย';
     } catch (err) { message.textContent = err.message; }
@@ -94,7 +152,8 @@
     event.preventDefault();
     const submit = createForm.querySelector('button[type=submit]'); submit.disabled = true;
     try {
-      const values = Object.fromEntries(new FormData(createForm));
+      const formData = new FormData(createForm);
+      const values = { username: formData.get('username'), pin: formData.get('pin'), menu_access: formData.getAll('menu_access') };
       await adminCall('create', values);
       createForm.reset(); await loadUsers(); message.textContent = `เพิ่ม ${values.username} แล้ว`;
     } catch (err) { message.textContent = err.message; }
@@ -118,5 +177,6 @@
     panel.hidden = true; button.setAttribute('aria-expanded', 'false'); button.focus();
   });
   client?.auth.onAuthStateChange(() => setTimeout(refresh, 0));
+  setInterval(() => { if (!document.hidden && profile) refresh(); }, 60_000);
   refresh();
 })();

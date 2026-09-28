@@ -40,6 +40,10 @@ async function backend(path, key, init = {}) {
 
 const validUsername = (name) => typeof name === 'string' && /^[a-z][a-z0-9._-]{2,31}$/i.test(name);
 const validPin = (pin) => typeof pin === 'string' && /^[0-9]{6}$/.test(pin);
+const menus = new Set(['stock','incoming','floorplan','product-history','reorder','bompk','bom-plan','reconcile','cycle-counts','scrap','print-labels','daily-receive','daily-issue','receipt-plan','audit']);
+const validMenus = (value) => Array.isArray(value) && value.length > 0 && value.length <= menus.size
+  && value.every(menu => typeof menu === 'string' && menus.has(menu))
+  && new Set(value).size === value.length;
 
 async function pinPassword(username, pin) {
   const encoder = new TextEncoder();
@@ -102,7 +106,7 @@ Deno.serve(async (request) => {
 
 
   if (action === 'list') {
-    const result = await backend('/rest/v1/app_users?select=id,username,role,created_at&active=eq.true&order=created_at.asc', serviceKey);
+    const result = await backend('/rest/v1/app_users?select=id,username,role,menu_access,created_at&active=eq.true&order=created_at.asc', serviceKey);
     return response(origin, result.ok ? 200 : 503, result.ok ? { users: await result.json() } : { error: 'โหลดรายชื่อไม่สำเร็จ' });
   }
 
@@ -112,9 +116,11 @@ Deno.serve(async (request) => {
     // Supabase Auth needs an email identifier internally; staff sign in by username.
     const email = `${username}@pin.bcl-wms.local`;
     const pin = input.pin;
-    if (!validUsername(username) || username === 'admin'
-      || !validPin(pin))
+    const menuAccess = input.menu_access === undefined ? ['stock'] : input.menu_access;
+    if (!validUsername(username) || username === 'admin' || !validPin(pin))
       return response(origin, 400, { error: 'กรุณาระบุชื่อผู้ใช้และ PIN ตัวเลข 6 หลัก' });
+    if (!validMenus(menuAccess))
+      return response(origin, 400, { error: 'กรุณาเลือกอย่างน้อย 1 เมนู' });
     const exists = await backend(`/rest/v1/app_users?select=id&or=(username.eq.${encodeURIComponent(username)},email.eq.${encodeURIComponent(email)})&limit=1`, serviceKey);
     if (!exists.ok) return response(origin, 503, { error: 'ตรวจสอบผู้ใช้ไม่สำเร็จ' });
     if ((await exists.json()).length) return response(origin, 409, { error: 'ชื่อผู้ใช้นี้มีอยู่แล้ว' });
@@ -128,13 +134,29 @@ Deno.serve(async (request) => {
     if (!id) return response(origin, 503, { error: 'สร้างบัญชีไม่ครบ กรุณาตรวจสอบใน Supabase' });
     const profile = await backend('/rest/v1/app_users', serviceKey, {
       method: 'POST', headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({ id, username, email, role: 'user' }),
+      body: JSON.stringify({ id, username, email, role: 'user', menu_access: menuAccess }),
     });
     if (!profile.ok) {
       await backend(`/auth/v1/admin/users/${encodeURIComponent(id)}`, serviceKey, { method: 'DELETE' });
       return response(origin, 503, { error: 'สร้างโปรไฟล์ไม่สำเร็จและย้อนบัญชีแล้ว' });
     }
     return response(origin, 201, { id, username, role: 'user' });
+  }
+
+  if (action === 'set_menu_access') {
+    const id = typeof input.id === 'string' ? input.id : '';
+    if (!/^[0-9a-f-]{36}$/i.test(id) || !validMenus(input.menu_access))
+      return response(origin, 400, { error: 'รายการสิทธิ์ไม่ถูกต้อง' });
+    const targetResponse = await backend(`/rest/v1/app_users?select=role,active&id=eq.${encodeURIComponent(id)}&limit=1`, serviceKey);
+    const target = targetResponse.ok ? (await targetResponse.json())[0] : null;
+    if (!target?.active || target.role !== 'user')
+      return response(origin, 400, { error: 'กำหนดสิทธิ์ได้เฉพาะผู้ใช้ย่อยที่ใช้งานอยู่' });
+    const updated = await backend(`/rest/v1/app_users?id=eq.${encodeURIComponent(id)}`, serviceKey, {
+      method: 'PATCH', headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ menu_access: input.menu_access }),
+    });
+    return response(origin, updated.ok ? 200 : 503, updated.ok
+      ? { id, menu_access: input.menu_access } : { error: 'บันทึกสิทธิ์ไม่สำเร็จ' });
   }
 
 

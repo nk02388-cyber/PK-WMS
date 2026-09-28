@@ -1958,7 +1958,7 @@ header.top .header-logo { border-radius: 14px; }
 }
 </style>
 <link rel="stylesheet" href="dashboard-shell.css?v=20260926-9">
-<link rel="stylesheet" href="account-login.css?v=20260926-1">
+<link rel="stylesheet" href="account-login.css?v=20260928-1">
 <link rel="stylesheet" href="product-history.css?v=20260925-3">
 <link rel="stylesheet" href="top-withdrawals.css?v=20260925-1">
 <link rel="stylesheet" href="notifications.css?v=20260926-1">
@@ -2011,6 +2011,7 @@ header.top .header-logo { border-radius: 14px; }
             <form id="accountCreateForm">
               <label>ชื่อผู้ใช้<input name="username" required minlength="3" maxlength="32" pattern="[A-Za-z][A-Za-z0-9._-]{2,31}" autocomplete="off"></label>
               <label>PIN 6 หลัก<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" title="กรอกตัวเลข 6 หลัก" required autocomplete="new-password"></label>
+              <fieldset class="account-permissions"><legend>เมนูที่เข้าได้</legend><div id="accountCreateMenus"></div></fieldset>
               <button type="submit">เพิ่มผู้ใช้</button>
             </form>
             <p id="accountManageMessage" role="status"></p>
@@ -3075,6 +3076,7 @@ document.getElementById('reportDate').textContent = String(STOCK.report_date || 
 // ---------- Tabs ----------
 const tabButtons = document.querySelectorAll('.tab-btn');
 function activateTab(b, moveFocus = false) {
+  if (b.hidden || (window.getWmsCanAccess && !window.getWmsCanAccess(b.dataset.tab))) return;
   tabButtons.forEach(x => {
     const selected = x === b;
     x.classList.toggle('active', selected);
@@ -3095,7 +3097,8 @@ tabButtons.forEach(b => b.addEventListener('click', () => activateTab(b)));
 document.getElementById('tabs').addEventListener('keydown', (e) => {
   if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
   e.preventDefault();
-  const buttons = [...tabButtons];
+  const buttons = [...tabButtons].filter(button => !button.hidden);
+  if (!buttons.length) return;
   const current = buttons.indexOf(document.activeElement);
   let next = current < 0 ? buttons.findIndex(x => x.classList.contains('active')) : current;
   if (e.key === 'ArrowRight') next = (next + 1) % buttons.length;
@@ -9849,7 +9852,7 @@ window.addEventListener('pageshow', () => {
 <script src="notifications.js?v=20260926-1"></script>
 <script src="receipt-plan.js?v=20260926-1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20260926-5"></script>
+<script src="account-status.js?v=20260928-1"></script>
 <script src="cycle-counts-core.js?v=20260926-1"></script>
 <script src="cycle-counts.js?v=20260926-1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>

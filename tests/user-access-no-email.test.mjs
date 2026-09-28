@@ -21,6 +21,7 @@ vm.runInNewContext(source, {
     const body = init.body ? JSON.parse(init.body) : null;
     calls.push({ path, url, method: init.method || 'GET', body });
     if (path === '/auth/v1/user') return json({ id: '11111111-1111-4111-8111-111111111111' });
+    if (path === '/rest/v1/app_users' && url.includes('select=role,active') && url.includes('id=eq.22222222')) return json([{ role: 'user', active: true }]);
     if (path === '/rest/v1/app_users' && url.includes('select=role,active')) return json([{ role: 'admin', active: true }]);
     if (path === '/rest/v1/app_users' && url.includes('select=email,active')) return json([loginProfile]);
     if (path === '/rest/v1/app_users' && url.includes('select=id')) return json(duplicate ? [{ id: 'already-exists' }] : []);
@@ -28,6 +29,7 @@ vm.runInNewContext(source, {
     if (path === '/auth/v1/token') return body.password === createdPassword
       ? json({ access_token: 'access', refresh_token: 'refresh' }) : json({}, 401);
     if (path === '/rest/v1/app_users' && init.method === 'POST') return json({}, 201);
+    if (path === '/rest/v1/app_users' && init.method === 'PATCH') return json({});
     throw new Error(`Unexpected request: ${init.method || 'GET'} ${url}`);
   },
 });
@@ -43,8 +45,17 @@ assert.equal(created.status, 201);
 assert.deepEqual(JSON.parse(await created.text()), { id: '22222222-2222-4222-8222-222222222222', username: 'worker.01', role: 'user' });
 assert.equal(calls.find(call => call.path === '/auth/v1/admin/users')?.body.email, 'worker.01@pin.bcl-wms.local');
 assert.equal(calls.find(call => call.path === '/rest/v1/app_users' && call.method === 'POST')?.body.email, 'worker.01@pin.bcl-wms.local');
+assert.deepEqual(calls.find(call => call.path === '/rest/v1/app_users' && call.method === 'POST')?.body.menu_access, ['stock']);
 assert.match(createdPassword, /^Bcl![0-9a-f]{64}9$/);
 assert.ok(!createdPassword.includes('000123'));
+
+const id = '22222222-2222-4222-8222-222222222222';
+const permissions = await handler(request('set_menu_access', { id, menu_access: ['incoming','floorplan'] }));
+assert.equal(permissions.status, 200);
+assert.deepEqual(calls.filter(call => call.path === '/rest/v1/app_users' && call.method === 'PATCH').at(-1)?.body.menu_access, ['incoming','floorplan']);
+assert.equal((await handler(request('set_menu_access', { id, menu_access: ['unknown'] }))).status, 400);
+assert.equal((await handler(request('set_menu_access', { id, menu_access: ['stock','stock'] }))).status, 400);
+assert.equal((await handler(request('set_menu_access', { id, menu_access: [] }))).status, 400);
 
 const login = await handler(request('login', { username: 'Worker.01', password: '000123' }));
 assert.equal(login.status, 200);
