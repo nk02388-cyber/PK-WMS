@@ -5,9 +5,12 @@
   .viz-root {
     --brand-blue: #0f62fe;
     --brand-blue-hover: #0050e6;
-    --nav-ink: #161616;
+    --nav-ink: #17365d;
     --nav-active: #0f62fe;
     --nav-text: #f4f4f4;
+    --nav-hover: #2b537f;
+    --nav-badge: #355a83;
+    --nav-divider: #416589;
     --surface-1: #f4f4f4;
     --page-plane: #ffffff;
     --text-primary: #161616;
@@ -34,9 +37,12 @@
   :root[data-theme="dark"] .viz-root {
     --brand-blue: #0f62fe;
     --brand-blue-hover: #0050e6;
-    --nav-ink: #0d0d0d;
+    --nav-ink: #102b4a;
     --nav-active: #0f62fe;
     --nav-text: #f4f4f4;
+    --nav-hover: #254c73;
+    --nav-badge: #315578;
+    --nav-divider: #416181;
     --surface-1: #262626;
     --page-plane: #161616;
     --text-primary: #f4f4f4;
@@ -85,9 +91,9 @@
     font-weight: 500;
     letter-spacing: .01em;
   }
-  .viz-root .tab-btn:hover:not(.active) { color: #fff; background: #353535; border-color: transparent; }
+  .viz-root .tab-btn:hover:not(.active) { color: #fff; background: var(--nav-hover); border-color: transparent; }
   .viz-root .tab-btn.active { color: #fff; background: var(--nav-active); border-color: #a6c8ff; }
-  .viz-root .tab-btn .tab-badge { color: #f4f4f4; background: #393939; }
+  .viz-root .tab-btn .tab-badge { color: #f4f4f4; background: var(--nav-badge); }
   .viz-root .tab-btn.active .tab-badge { color: #161616; background: #fff; }
   .viz-root .tab-btn .tab-badge.critical { color: #a21921; background: #fff1f1; }
   .viz-root .kota-chip {
@@ -294,7 +300,7 @@
       grid-row: 2;
       justify-self: start;
     }
-    .viz-root .dashboard-nav-brand { border-bottom: 1px solid #393939; }
+    .viz-root .dashboard-nav-brand { border-bottom: 1px solid var(--nav-divider); }
     .viz-root header.top { min-height: var(--dashboard-shell-header-h); padding: 0 16px 0 28px; border-top: 0; border-right: 0; border-left: 0; }
     .viz-root .dashboard-layout > .dashboard-content { padding: 0 clamp(20px, 2.4vw, 40px) 44px; }
   }
