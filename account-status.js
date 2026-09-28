@@ -7,7 +7,7 @@
   const userList = $('accountUserList'), message = $('accountManageMessage');
   const functionUrl = `${SUPABASE_URL}/functions/v1/pk-user-access`;
   const departmentKey = 'bcl-wms-selected-department';
-  const departmentNames = { rm: 'คลังวัตถุดิบ', fg: 'คลังสำเร็จรูป' };
+  const departmentNames = { fg: 'คลังสำเร็จรูป' };
   let profile = null, refreshId = 0;
   window.getWmsUsername = () => profile?.username || '';
   const menuButtons = [...document.querySelectorAll('#tabs .tab-btn[data-tab]')];
@@ -59,8 +59,9 @@
     if (stage === 'auth-pending') $('authUsername').focus();
   }
   function showDepartment() {
-    const selected = savedDepartment();
-    $('departmentChooser').hidden = selected === 'rm' || selected === 'fg';
+    let selected = savedDepartment();
+    if (selected === 'rm') { saveDepartment(null); selected = null; }
+    $('departmentChooser').hidden = selected === 'fg';
     $('departmentUnavailable').hidden = !departmentNames[selected];
     if (departmentNames[selected]) {
       const changed = !document.body.classList.contains('department-unavailable');
@@ -199,7 +200,7 @@
     saveDepartment(null); showDepartment();
   });
   $('departmentBack').addEventListener('click', () => { saveDepartment(null); showDepartment(); });
-  document.querySelectorAll('.department-option').forEach(option => option.addEventListener('click', () => {
+  document.querySelectorAll('button.department-option').forEach(option => option.addEventListener('click', () => {
     saveDepartment(option.dataset.department); showDepartment();
   }));
   button.addEventListener('click', () => {

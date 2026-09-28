@@ -11,10 +11,11 @@ body:not(.department-choosing):not(.department-unavailable) .department-screen {
 .department-card p { margin: 0; color: #56637a; line-height: 1.5; }
 .department-card .department-eyebrow { color: #1262f4; font-size: 12px; font-weight: 800; letter-spacing: .08em; }
 .department-options { display: grid; gap: 9px; margin-top: 6px; }
-.department-option { box-sizing: border-box; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 1px solid #d7dce5; border-radius: 8px; background: #fff; color: #17243a; font: inherit; text-align: left; cursor: pointer; }
+.department-option { box-sizing: border-box; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 1px solid #d7dce5; border-radius: 8px; background: #fff; color: #17243a; font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
 .department-option:hover, .department-option:focus-visible { border-color: #1262f4; background: #f0f5ff; outline: none; }
 .department-option strong, .department-option small { display: block; overflow-wrap: anywhere; }
 .department-option small { margin-top: 2px; color: #56637a; font-size: 12px; }
+.department-card .department-note { font-size: 12px; }
 .department-number { color: #1262f4; font-size: 13px; font-weight: 800; }
 .department-arrow { color: #1262f4; font-size: 22px; }
 .department-back { min-height: 42px; border: 0; border-radius: 5px; background: #1262f4; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
