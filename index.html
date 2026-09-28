@@ -1958,7 +1958,7 @@ header.top .header-logo { border-radius: 14px; }
 }
 </style>
 <link rel="stylesheet" href="dashboard-shell.css?v=20260926-9">
-<link rel="stylesheet" href="account-login.css?v=20260928-1">
+<link rel="stylesheet" href="account-login.css?v=20260928-2">
 <link rel="stylesheet" href="product-history.css?v=20260925-3">
 <link rel="stylesheet" href="top-withdrawals.css?v=20260925-1">
 <link rel="stylesheet" href="notifications.css?v=20260926-1">
@@ -1980,6 +1980,27 @@ header.top .header-logo { border-radius: 14px; }
     <button id="authSubmit" type="submit">เข้าสู่ระบบ</button>
     <span id="authLoading" role="status">กำลังตรวจสอบบัญชี…</span>
   </form>
+</main>
+<main class="department-screen" id="departmentScreen" aria-labelledby="departmentTitle">
+  <section class="department-card" id="departmentChooser">
+    <img src="assets/bcl-logo-monochrome.png?v=2" alt="" width="52" height="52">
+    <p class="department-eyebrow">BCL WMS</p>
+    <h1 id="departmentTitle">เลือกแผนกที่ต้องการเข้าใช้งาน</h1>
+    <p class="department-intro" id="departmentWelcome"></p>
+    <div class="department-options" aria-label="แผนก">
+      <button type="button" class="department-option" data-department="pk"><span class="department-number">01</span><span><strong>คลังบรรจุภัณฑ์</strong><small>PK WMS · เปิดพื้นที่ทำงาน</small></span><span class="department-arrow" aria-hidden="true">→</span></button>
+      <button type="button" class="department-option" data-department="rm"><span class="department-number">02</span><span><strong>คลังวัตถุดิบ</strong><small>ยังไม่เชื่อมพื้นที่ทำงาน</small></span><span class="department-arrow" aria-hidden="true">→</span></button>
+      <button type="button" class="department-option" data-department="fg"><span class="department-number">03</span><span><strong>คลังสำเร็จรูป</strong><small>ยังไม่เชื่อมพื้นที่ทำงาน</small></span><span class="department-arrow" aria-hidden="true">→</span></button>
+    </div>
+    <button type="button" class="department-signout" id="departmentSignout">ออกจากระบบ</button>
+  </section>
+  <section class="department-card department-unavailable" id="departmentUnavailable" hidden aria-live="polite">
+    <p class="department-eyebrow">BCL WMS</p>
+    <h1 id="departmentUnavailableTitle" tabindex="-1"></h1>
+    <p>ยังไม่มีพื้นที่ทำงานของแผนกนี้ในระบบ กรุณาเลือกแผนกอื่น</p>
+    <button type="button" class="department-back" id="departmentBack">← เลือกแผนกอื่น</button>
+    <button type="button" class="department-signout" id="departmentUnavailableSignout">ออกจากระบบ</button>
+  </section>
 </main>
 <a class="skip-link" href="#mainDashboard">ข้ามไปยังเนื้อหาหลัก</a>
 <div class="wrap" id="mainDashboard" tabindex="-1">
@@ -2017,6 +2038,7 @@ header.top .header-logo { border-radius: 14px; }
             <p id="accountManageMessage" role="status"></p>
             <div id="accountUserList" aria-label="รายชื่อผู้ใช้ย่อย"></div>
           </div>
+          <button type="button" id="accountChangeDepartment">เปลี่ยนแผนก</button>
           <button type="button" id="accountLogout">ออกจากระบบ</button>
         </div>
       </div>
@@ -9852,7 +9874,7 @@ window.addEventListener('pageshow', () => {
 <script src="notifications.js?v=20260926-1"></script>
 <script src="receipt-plan.js?v=20260926-1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20260928-1"></script>
+<script src="account-status.js?v=20260928-2"></script>
 <script src="cycle-counts-core.js?v=20260926-1"></script>
 <script src="cycle-counts.js?v=20260926-1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>

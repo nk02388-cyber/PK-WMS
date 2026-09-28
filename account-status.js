@@ -6,6 +6,8 @@
   const adminPanel = $('accountAdmin'), createForm = $('accountCreateForm');
   const userList = $('accountUserList'), message = $('accountManageMessage');
   const functionUrl = `${SUPABASE_URL}/functions/v1/pk-user-access`;
+  const departmentKey = 'bcl-wms-selected-department';
+  const departmentNames = { rm: 'คลังวัตถุดิบ', fg: 'คลังสำเร็จรูป' };
   let profile = null, refreshId = 0;
   window.getWmsUsername = () => profile?.username || '';
   const menuButtons = [...document.querySelectorAll('#tabs .tab-btn[data-tab]')];
@@ -44,11 +46,35 @@
   $('accountCreateMenus').parentElement.replaceWith(menuFieldset());
 
   function showError(text) { error.textContent = text || ''; error.hidden = !text; }
-  function showScreen(visible) {
-    document.body.classList.toggle('auth-ready', !visible);
-    document.body.classList.toggle('auth-pending', visible);
+  function savedDepartment() {
+    try { return sessionStorage.getItem(departmentKey); } catch (_) { return null; }
+  }
+  function saveDepartment(value) {
+    try { value ? sessionStorage.setItem(departmentKey, value) : sessionStorage.removeItem(departmentKey); } catch (_) {}
+  }
+  function showStage(stage) {
+    document.body.classList.remove('auth-ready', 'auth-pending', 'department-choosing', 'department-unavailable');
+    document.body.classList.add(stage);
     $('authLoading').hidden = true;
-    if (visible) $('authUsername').focus();
+    if (stage === 'auth-pending') $('authUsername').focus();
+  }
+  function showDepartment() {
+    const selected = savedDepartment();
+    $('departmentChooser').hidden = selected === 'rm' || selected === 'fg';
+    $('departmentUnavailable').hidden = !departmentNames[selected];
+    if (departmentNames[selected]) {
+      const changed = !document.body.classList.contains('department-unavailable');
+      $('departmentUnavailableTitle').textContent = departmentNames[selected];
+      showStage('department-unavailable');
+      if (changed) $('departmentUnavailableTitle').focus();
+    } else if (selected === 'pk') {
+      showStage('auth-ready');
+    } else {
+      const changed = !document.body.classList.contains('department-choosing');
+      $('departmentWelcome').textContent = `เข้าสู่ระบบในชื่อ ${profile.username} · เลือกแผนกเพื่อดำเนินการต่อ`;
+      showStage('department-choosing');
+      if (changed) document.querySelector('.department-option').focus();
+    }
   }
   async function call(action, data = {}, token = '') {
     const response = await fetch(functionUrl, {
@@ -71,12 +97,12 @@
     try {
       const { data: { user }, error: userError } = await client.auth.getUser();
       if (id !== refreshId) return;
-      if (userError || !user) { profile = null; showScreen(true); return; }
+      if (userError || !user) { profile = null; saveDepartment(null); showStage('auth-pending'); return; }
       const { data, error: profileError } = await client.from('app_users').select('username,role,active,menu_access').eq('id', user.id).single();
       if (id !== refreshId) return;
       if (profileError || !data?.active || !['admin', 'user'].includes(data.role)) {
         await client.auth.signOut({ scope: 'local' });
-        profile = null; showScreen(true); showError('บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน'); return;
+        profile = null; saveDepartment(null); showStage('auth-pending'); showError('บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน'); return;
       }
       profile = data;
       window.dispatchEvent(new Event('wms:account-changed'));
@@ -84,8 +110,8 @@
       button.classList.add('is-logged-in');
       adminPanel.hidden = data.role !== 'admin';
       applyMenuAccess();
-      showError(''); showScreen(false);
-    } catch (_) { if (id === refreshId) { showScreen(true); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
+      showError(''); showDepartment();
+    } catch (_) { if (id === refreshId) { showStage('auth-pending'); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
   }
   async function loadUsers() {
     if (profile?.role !== 'admin') return;
@@ -144,6 +170,7 @@
       const { error: sessionError } = await client.auth.setSession(tokens);
       if (sessionError) throw sessionError;
       $('authPassword').value = '';
+      saveDepartment(null);
       location.reload();
     } catch (err) { showError(err.message || 'เข้าสู่ระบบไม่สำเร็จ'); }
     finally { submit.disabled = false; }
@@ -159,10 +186,22 @@
     } catch (err) { message.textContent = err.message; }
     finally { submit.disabled = false; }
   });
-  $('accountLogout').addEventListener('click', async () => {
+  async function signOut() {
     panel.hidden = true; button.setAttribute('aria-expanded', 'false');
+    saveDepartment(null);
     await client.auth.signOut({ scope: 'local' }); profile = null; location.reload();
+  }
+  $('accountLogout').addEventListener('click', signOut);
+  $('departmentSignout').addEventListener('click', signOut);
+  $('departmentUnavailableSignout').addEventListener('click', signOut);
+  $('accountChangeDepartment').addEventListener('click', () => {
+    panel.hidden = true; button.setAttribute('aria-expanded', 'false');
+    saveDepartment(null); showDepartment();
   });
+  $('departmentBack').addEventListener('click', () => { saveDepartment(null); showDepartment(); });
+  document.querySelectorAll('.department-option').forEach(option => option.addEventListener('click', () => {
+    saveDepartment(option.dataset.department); showDepartment();
+  }));
   button.addEventListener('click', () => {
     const opening = panel.hidden; panel.hidden = !opening;
     button.setAttribute('aria-expanded', String(opening));
