@@ -7,7 +7,6 @@
   const userList = $('accountUserList'), message = $('accountManageMessage');
   const functionUrl = `${SUPABASE_URL}/functions/v1/pk-user-access`;
   const departmentKey = 'bcl-wms-selected-department';
-  const departmentNames = { fg: 'คลังสำเร็จรูป' };
   let profile = null, refreshId = 0;
   window.getWmsUsername = () => profile?.username || '';
   const menuButtons = [...document.querySelectorAll('#tabs .tab-btn[data-tab]')];
@@ -53,22 +52,15 @@
     try { value ? sessionStorage.setItem(departmentKey, value) : sessionStorage.removeItem(departmentKey); } catch (_) {}
   }
   function showStage(stage) {
-    document.body.classList.remove('auth-ready', 'auth-pending', 'department-choosing', 'department-unavailable');
+    document.body.classList.remove('auth-ready', 'auth-pending', 'department-choosing');
     document.body.classList.add(stage);
     $('authLoading').hidden = true;
     if (stage === 'auth-pending') $('authUsername').focus();
   }
   function showDepartment() {
     let selected = savedDepartment();
-    if (selected === 'rm') { saveDepartment(null); selected = null; }
-    $('departmentChooser').hidden = selected === 'fg';
-    $('departmentUnavailable').hidden = !departmentNames[selected];
-    if (departmentNames[selected]) {
-      const changed = !document.body.classList.contains('department-unavailable');
-      $('departmentUnavailableTitle').textContent = departmentNames[selected];
-      showStage('department-unavailable');
-      if (changed) $('departmentUnavailableTitle').focus();
-    } else if (selected === 'pk') {
+    if (selected === 'rm' || selected === 'fg') { saveDepartment(null); selected = null; }
+    if (selected === 'pk') {
       showStage('auth-ready');
     } else {
       const changed = !document.body.classList.contains('department-choosing');
@@ -194,12 +186,10 @@
   }
   $('accountLogout').addEventListener('click', signOut);
   $('departmentSignout').addEventListener('click', signOut);
-  $('departmentUnavailableSignout').addEventListener('click', signOut);
   $('accountChangeDepartment').addEventListener('click', () => {
     panel.hidden = true; button.setAttribute('aria-expanded', 'false');
     saveDepartment(null); showDepartment();
   });
-  $('departmentBack').addEventListener('click', () => { saveDepartment(null); showDepartment(); });
   document.querySelectorAll('button.department-option').forEach(option => option.addEventListener('click', () => {
     saveDepartment(option.dataset.department); showDepartment();
   }));

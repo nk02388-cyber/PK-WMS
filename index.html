@@ -1958,7 +1958,7 @@ header.top .header-logo { border-radius: 14px; }
 }
 </style>
 <link rel="stylesheet" href="dashboard-shell.css?v=20260926-9">
-<link rel="stylesheet" href="account-login.css?v=20260928-3">
+<link rel="stylesheet" href="account-login.css?v=20260928-4">
 <link rel="stylesheet" href="product-history.css?v=20260925-3">
 <link rel="stylesheet" href="top-withdrawals.css?v=20260925-1">
 <link rel="stylesheet" href="notifications.css?v=20260926-1">
@@ -1990,17 +1990,10 @@ header.top .header-logo { border-radius: 14px; }
     <div class="department-options" aria-label="แผนก">
       <button type="button" class="department-option" data-department="pk"><span class="department-number">01</span><span><strong>คลังบรรจุภัณฑ์</strong><small>PK WMS · เปิดพื้นที่ทำงาน</small></span><span class="department-arrow" aria-hidden="true">→</span></button>
       <a class="department-option" href="https://bcl-wms.vercel.app/rm-wms/"><span class="department-number">02</span><span><strong>คลังวัตถุดิบ</strong><small>RM WMS · เปิดเว็บคลังวัตถุดิบ</small></span><span class="department-arrow" aria-hidden="true">→</span></a>
-      <button type="button" class="department-option" data-department="fg"><span class="department-number">03</span><span><strong>คลังสำเร็จรูป</strong><small>รออัปโหลดโปรเจกต์ FG WMS</small></span><span class="department-arrow" aria-hidden="true">→</span></button>
+      <a class="department-option" href="https://fg-wms.vercel.app/"><span class="department-number">03</span><span><strong>คลังสำเร็จรูป</strong><small>FG WMS · เปิดเว็บคลังสำเร็จรูป</small></span><span class="department-arrow" aria-hidden="true">→</span></a>
     </div>
-    <p class="department-note">RM WMS เป็นเว็บแยก บัญชีและสิทธิ์ของ BCL WMS ยังไม่ครอบคลุมเว็บนั้น</p>
+    <p class="department-note">RM WMS และ FG WMS เป็นเว็บแยก บัญชีและสิทธิ์ของ BCL WMS ยังไม่ครอบคลุมเว็บเหล่านั้น</p>
     <button type="button" class="department-signout" id="departmentSignout">ออกจากระบบ</button>
-  </section>
-  <section class="department-card department-unavailable" id="departmentUnavailable" hidden aria-live="polite">
-    <p class="department-eyebrow">BCL WMS</p>
-    <h1 id="departmentUnavailableTitle" tabindex="-1"></h1>
-    <p>ยังไม่มีพื้นที่ทำงานของแผนกนี้ในระบบ กรุณาเลือกแผนกอื่น</p>
-    <button type="button" class="department-back" id="departmentBack">← เลือกแผนกอื่น</button>
-    <button type="button" class="department-signout" id="departmentUnavailableSignout">ออกจากระบบ</button>
   </section>
 </main>
 <a class="skip-link" href="#mainDashboard">ข้ามไปยังเนื้อหาหลัก</a>
@@ -9875,7 +9868,7 @@ window.addEventListener('pageshow', () => {
 <script src="notifications.js?v=20260926-1"></script>
 <script src="receipt-plan.js?v=20260926-1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20260928-3"></script>
+<script src="account-status.js?v=20260928-4"></script>
 <script src="cycle-counts-core.js?v=20260926-1"></script>
 <script src="cycle-counts.js?v=20260926-1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>
