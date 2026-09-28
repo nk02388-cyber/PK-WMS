@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/rm-wms",
+      "destination": "https://nk02388-cyber.github.io/RM-Stock-Control-Dashboard/"
+    },
+    {
+      "source": "/rm-wms/",
+      "destination": "https://nk02388-cyber.github.io/RM-Stock-Control-Dashboard/"
+    },
+    {
+      "source": "/rm-wms/:path*",
+      "destination": "https://nk02388-cyber.github.io/RM-Stock-Control-Dashboard/:path*"
+    }
+  ]
+}
