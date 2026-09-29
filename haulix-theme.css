@@ -149,6 +149,14 @@ header.top .meta { gap: 9px; }
 .viz-root .filter-bar select { border-radius: 12px !important; }
 .speed-meter-card .sm-value { font-weight: 800; }
 .two-col { gap: 14px; }
+.viz-root .incoming-view-nav button[aria-pressed="true"],
+.viz-root .incoming-step .incoming-primary,
+.viz-root .incoming-record-actions button[data-select-tag] {
+  color: #1d2410 !important; background: #cede62 !important; border-color: #cede62 !important;
+}
+.viz-root .incoming-view-nav button[aria-pressed="true"] :where(b, small) { color: #1d2410; opacity: 1; }
+.viz-root .incoming-view-nav button[aria-pressed="true"] .incoming-nav-number { color: #1d2410; background: #f3f7d3; }
+.viz-root :is(.incoming-form-group h4 span, .incoming-scan-card h4 span) { color: #283018; background: #e4ecac; }
 .bar-fill, .barchart.vertical .bar-fill, #whChart .bar-fill { background: #cede62; }
 .bar-row[data-warehouse]:hover .bar-fill, .bar-row[data-warehouse][aria-checked="true"] .bar-fill { background: #e2ef9b; }
 .bar-row .name { color: var(--text-secondary); }
