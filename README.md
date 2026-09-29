@@ -47,6 +47,7 @@ Vercel ใช้ [`vercel.json`](vercel.json) ส่งคำขอ `/rm-wms/` �
 | แหล่งข้อมูล | ที่เก็บ / พฤติกรรม |
 | --- | --- |
 | Stock snapshot | เก็บใน Supabase; การอัปเดตใช้ RPC `replace_stock_inventory` และ Update PIN แยกจาก PIN เข้าระบบ |
+| Withdrawal Skill Matrix catalog | RPC `get_withdrawal_stock_catalog` ส่งเฉพาะรหัส ชื่อ หน่วย และวันที่สแนปช็อตล่าสุดให้เว็บใบเบิก; ไม่ส่งยอดคงเหลือหรือมูลค่า (`supabase-withdrawal-stock-catalog.sql`) |
 | พาเลต ตำแหน่ง วันที่รับ และรายการรับเข้า | เก็บใน Supabase; การแก้ไขพาเลตผ่าน `save_pallet_changes` พร้อมตรวจเวอร์ชันเพื่อลดการเขียนทับข้อมูลที่มีคนแก้พร้อมกัน |
 | ปฏิทินนัดหมาย | เก็บใน Supabase และซิงค์ข้ามเครื่องผ่าน Realtime/การรีเฟรชระหว่างเปิดหน้าเว็บ |
 | แผนรับเข้าประจำวัน | อ่านไฟล์ Excel จาก Google Drive แบบ read-only; รีเฟรชทุก 5 นาทีขณะเปิดแท็บ และรีเฟรชเองได้ การแสดงแผนไม่เพิ่มยอดรับจริง |
