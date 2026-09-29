@@ -3,15 +3,15 @@
   "rewrites": [
     {
       "source": "/rm-wms",
-      "destination": "https://nk02388-cyber.github.io/RM-Stock-Control-Dashboard/"
+      "destination": "https://nk02388-cyber.github.io/RM-WMS/"
     },
     {
       "source": "/rm-wms/",
-      "destination": "https://nk02388-cyber.github.io/RM-Stock-Control-Dashboard/"
+      "destination": "https://nk02388-cyber.github.io/RM-WMS/"
     },
     {
       "source": "/rm-wms/:path*",
-      "destination": "https://nk02388-cyber.github.io/RM-Stock-Control-Dashboard/:path*"
+      "destination": "https://nk02388-cyber.github.io/RM-WMS/:path*"
     }
   ]
 }

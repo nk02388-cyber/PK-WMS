@@ -1,15 +1,15 @@
-# BCL WMS
+# PK WMS — ระบบจัดการคลังสินค้าบรรจุภัณฑ์ของ BIO-COSLAB
 
-ระบบจัดการคลังสินค้าและบรรจุภัณฑ์ของ BIO-COSLAB สำหรับดูสต็อก รับเข้า จัดเก็บ เบิก รับคืน ตรวจนับ และติดตามงานจากเว็บเบราว์เซอร์
+PK WMS เป็นระบบจัดการคลังสินค้าบรรจุภัณฑ์ของ BIO-COSLAB สำหรับดูสต็อก รับเข้า จัดเก็บ เบิก รับคืน ตรวจนับ และติดตามงานจากเว็บเบราว์เซอร์ โดยหน้าเข้าสู่ระบบและเลือกแผนกใช้ชื่อรวมว่า BCL WMS
 
-- **เข้าใช้งาน:** [BCL WMS บน Vercel](https://bcl-wms.vercel.app/) · [GitHub Pages](https://nk02388-cyber.github.io/bcl-wms/)
-- **ซอร์สโค้ด:** [nk02388-cyber/bcl-wms](https://github.com/nk02388-cyber/bcl-wms)
-- **สถานะเอกสาร:** ตรวจเทียบกับโค้ดใน `main` ณ 28 กันยายน 2026
+- **เข้าใช้งาน:** [BCL WMS บน Vercel](https://bcl-wms.vercel.app/) · [GitHub Pages](https://nk02388-cyber.github.io/PK-WMS/)
+- **ซอร์สโค้ด:** [nk02388-cyber/PK-WMS](https://github.com/nk02388-cyber/PK-WMS)
+- **สถานะเอกสาร:** ตรวจเทียบกับโค้ดใน `main` ณ 29 กันยายน 2026
 
 ## เริ่มใช้งาน
 
 1. เปิดเว็บและเข้าสู่ระบบด้วยบัญชีที่ Admin กำหนด ผู้ใช้ย่อยใช้ **ชื่อผู้ใช้และ PIN ตัวเลข 6 หลัก** โดยไม่ต้องกรอกอีเมล
-2. เลือกแผนกหลังเข้าสู่ระบบ: **คลังบรรจุภัณฑ์ (PK WMS)** เปิดพื้นที่ทำงานปัจจุบัน, **คลังวัตถุดิบ (RM WMS)** เปิด [RM Stock Control Dashboard](https://bcl-wms.vercel.app/rm-wms/) และ **คลังสำเร็จรูป (FG WMS)** เปิด [FG WMS](https://fg-wms.vercel.app/) ซึ่งเป็นเว็บแยก
+2. เลือกแผนกหลังเข้าสู่ระบบ: **คลังบรรจุภัณฑ์ (PK WMS)** เปิดพื้นที่ทำงานปัจจุบัน, **คลังวัตถุดิบ (RM WMS)** เปิด [RM WMS](https://bcl-wms.vercel.app/rm-wms/) และ **คลังสำเร็จรูป (FG WMS)** เปิด [FG WMS](https://fg-wms.vercel.app/) ซึ่งเป็นเว็บแยก
 3. ใน PK WMS เลือกเมนูที่ได้รับสิทธิ์จากแถบด้านซ้าย บนมือถือใช้เมนูนำทางของหน้าเว็บ หากต้องการเปลี่ยนแผนกให้เปิดเมนูบัญชีผู้ใช้
 4. ตรวจวันที่ข้อมูลและสถานะการเชื่อมต่อก่อนบันทึกรายการ ข้อมูล Stock, พาเลต และแผนรับเข้าอาจอัปเดตคนละเวลา
 
@@ -19,8 +19,8 @@ Admin ใช้ไอคอนบัญชีที่มุมขวาบน�
 
 | แผนก | GitHub project | ทางเข้าบน BCL WMS |
 | --- | --- | --- |
-| คลังบรรจุภัณฑ์ (PK WMS) | [`bcl-wms`](https://github.com/nk02388-cyber/bcl-wms) | หน้าเว็บหลักหลังล็อกอิน |
-| คลังวัตถุดิบ (RM WMS) | [`RM-Stock-Control-Dashboard`](https://github.com/nk02388-cyber/RM-Stock-Control-Dashboard) | [`/rm-wms/`](https://bcl-wms.vercel.app/rm-wms/) |
+| คลังบรรจุภัณฑ์ (PK WMS) | [`PK-WMS`](https://github.com/nk02388-cyber/PK-WMS) | หน้าเว็บหลักหลังล็อกอิน |
+| คลังวัตถุดิบ (RM WMS) | [`RM-WMS`](https://github.com/nk02388-cyber/RM-WMS) | [`/rm-wms/`](https://bcl-wms.vercel.app/rm-wms/) |
 | คลังสำเร็จรูป (FG WMS) | [`FG-WMS`](https://github.com/nk02388-cyber/FG-WMS) | [`fg-wms.vercel.app`](https://fg-wms.vercel.app/) |
 
 Vercel ใช้ [`vercel.json`](vercel.json) ส่งคำขอ `/rm-wms/` ไปยัง GitHub Pages ของ repo RM จึงไม่ต้องเก็บโค้ด RM ซ้ำใน repo PK เมื่อ repo RM เผยแพร่รุ่นใหม่บน GitHub Pages หน้า `/rm-wms/` จะอ่านรุ่นใหม่จากต้นทางโดยไม่ต้อง push repo PK อีกครั้ง ส่วน FG WMS เปิดเว็บแยกที่ `fg-wms.vercel.app` ทั้งนี้บัญชีและสิทธิ์ของ BCL WMS ยังไม่ได้ควบคุมการเข้าถึงหน้า RM หรือ FG; หน้าเหล่านั้นเปิดได้โดยไม่ต้องล็อกอิน และข้อมูลที่บันทึกในเบราว์เซอร์ไม่ซิงค์ข้ามเครื่อง
