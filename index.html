@@ -9,9 +9,9 @@
   // toggle removed data-theme for "normal", which silently re-enabled OS auto-dark and made the
   // button appear not to work on devices whose system theme was dark.
   (() => {
-    let theme = 'light';
+    let theme = 'dark';
     try {
-      const saved = localStorage.getItem('pk-dashboard-theme');
+      const saved = localStorage.getItem('pk-dashboard-theme-haulix');
       if (saved === 'light' || saved === 'dark') theme = saved;
     } catch (_) { /* Storage can be unavailable in private/restricted webviews. */ }
     document.documentElement.setAttribute('data-theme', theme);
@@ -1967,6 +1967,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="scrap-inventory.css?v=20260926-1">
 <link rel="stylesheet" href="reorder-points.css?v=20260926-1">
 <link rel="stylesheet" href="wms-operations.css?v=20260928-1">
+<link rel="stylesheet" href="haulix-theme.css?v=20260929-1">
 </head>
 <body class="viz-root auth-pending">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2098,6 +2099,11 @@ header.top .header-logo { border-radius: 14px; }
 
   <!-- ============ TAB: STOCK ============ -->
   <div class="tab-pane" id="pane-stock" role="tabpanel" aria-labelledby="tab-stock">
+
+    <div class="overview-heading">
+      <div><p class="overview-eyebrow"><span aria-hidden="true"></span> PK WMS / OPERATIONS OVERVIEW</p><h1>ภาพรวมคลังบรรจุภัณฑ์</h1><p>ติดตามพื้นที่จัดเก็บ อายุบรรจุภัณฑ์ และมูลค่าสต็อกในหน้าจอเดียว</p></div>
+      <span class="overview-live"><span aria-hidden="true"></span> ข้อมูลที่มีล่าสุด</span>
+    </div>
 
     <div class="filter-bar">
       <div class="stock-update-box" aria-label="อัปเดตสต็อก">
@@ -9831,7 +9837,7 @@ function applyDashboardTheme(theme, persist = false) {
   btn.setAttribute('aria-label', selected === 'dark' ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
   btn.setAttribute('title', selected === 'dark' ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
   if (persist) {
-    try { localStorage.setItem('pk-dashboard-theme', selected); }
+    try { localStorage.setItem('pk-dashboard-theme-haulix', selected); }
     catch (_) { /* Theme still works for this page when storage is unavailable. */ }
   }
 }
@@ -9840,12 +9846,12 @@ btn.addEventListener('click', () => applyDashboardTheme(
   document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', true
 ));
 window.addEventListener('storage', event => {
-  if (event.key === 'pk-dashboard-theme' && (event.newValue === 'light' || event.newValue === 'dark')) applyDashboardTheme(event.newValue);
+  if (event.key === 'pk-dashboard-theme-haulix' && (event.newValue === 'light' || event.newValue === 'dark')) applyDashboardTheme(event.newValue);
 });
 window.addEventListener('pageshow', () => {
   let saved = null;
-  try { saved = localStorage.getItem('pk-dashboard-theme'); } catch (_) {}
-  applyDashboardTheme(saved === 'dark' ? 'dark' : 'light');
+  try { saved = localStorage.getItem('pk-dashboard-theme-haulix'); } catch (_) {}
+  applyDashboardTheme(saved === 'light' ? 'light' : 'dark');
 });
 </script>
 <script src="pallet-audit.js?v=20260926-2"></script>

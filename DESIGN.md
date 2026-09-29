@@ -1,147 +1,81 @@
 ---
 version: alpha
-name: BCL WMS Carbon Operations
-description: A flat, square warehouse workspace based on IBM Carbon principles for stock, pallet maps, scanning and inventory workflows.
+name: PK WMS Operations
+description: Charcoal operations dashboard with lime signals for BIO-COSLAB packaging inventory.
 colors:
-  primary: "#0F62FE"
-  primary-hover: "#0050E6"
-  on-primary: "#FFFFFF"
-  surface: "#F4F4F4"
-  canvas: "#FFFFFF"
-  canvas-dark: "#161616"
-  surface-dark: "#262626"
-  ink: "#161616"
-  ink-dark: "#F4F4F4"
-  secondary: "#525252"
-  secondary-dark: "#C6C6C6"
-  muted: "#6F6F6F"
-  border: "#D7D7D7"
-  border-dark: "#474747"
-  success: "#198038"
-  warning: "#806000"
-  danger: "#B81922"
-  focus: "#0F62FE"
+  primary: "#CEDE62"
+  primary-hover: "#DEF184"
+  on-primary: "#1D2410"
+  canvas-dark: "#111311"
+  surface-dark: "#1C1E1B"
+  raised-dark: "#242720"
+  ink-dark: "#F4F4F0"
+  secondary-dark: "#BABDB4"
+  muted-dark: "#91958B"
+  border-dark: "#363A33"
+  canvas: "#F4F4F0"
+  surface: "#FFFFFF"
+  ink: "#20231D"
+  secondary: "#555A51"
+  border: "#DCE0D5"
+  success: "#A8D88C"
+  warning: "#D8C36F"
+  danger: "#FA8582"
+  focus: "#CEDE62"
 typography:
   page-title:
-    fontFamily: IBM Plex Sans Thai
-    fontSize: 24px
-    fontWeight: 300
-    lineHeight: 1.3
+    fontFamily: Noto Sans Thai
+    fontSize: 30px
+    fontWeight: 760
+    lineHeight: 1.2
   section-title:
-    fontFamily: IBM Plex Sans Thai
-    fontSize: 18px
-    fontWeight: 500
+    fontFamily: Noto Sans Thai
+    fontSize: 16px
+    fontWeight: 760
     lineHeight: 1.4
   body:
-    fontFamily: IBM Plex Sans Thai
+    fontFamily: Noto Sans Thai
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
-  label:
-    fontFamily: IBM Plex Sans Thai
-    fontSize: 13px
-    fontWeight: 600
-    lineHeight: 1.4
-  data:
-    fontFamily: IBM Plex Sans Thai
-    fontSize: 12px
-    fontWeight: 500
-    lineHeight: 1.4
 rounded:
-  sm: 0px
-  md: 0px
-  lg: 0px
-  pill: 0px
+  control: 12px
+  panel: 19px
+  pill: 999px
 spacing:
   xs: 4px
   sm: 8px
   md: 12px
   lg: 16px
   xl: 24px
-  xxl: 32px
 components:
-  page:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
   page-dark:
     backgroundColor: "{colors.canvas-dark}"
     textColor: "{colors.ink-dark}"
   card-dark:
     backgroundColor: "{colors.surface-dark}"
-    textColor: "{colors.secondary-dark}"
-  helper-text:
-    textColor: "{colors.muted}"
-  divider:
-    backgroundColor: "{colors.border}"
-  divider-dark:
-    backgroundColor: "{colors.border-dark}"
-  success-badge:
-    backgroundColor: "{colors.success}"
-    textColor: "{colors.on-primary}"
-  warning-indicator:
-    backgroundColor: "{colors.warning}"
-    textColor: "{colors.ink}"
-  danger-badge:
-    backgroundColor: "{colors.danger}"
-    textColor: "{colors.on-primary}"
-  focus-indicator:
-    backgroundColor: "{colors.focus}"
-    textColor: "{colors.on-primary}"
+    textColor: "{colors.ink-dark}"
+    rounded: "{rounded.panel}"
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.control}"
     height: 44px
-  button-primary-hover:
-    backgroundColor: "{colors.primary-hover}"
-  button-secondary:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.sm}"
-    height: 44px
-  field:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.sm}"
-    height: 44px
-  card:
-    backgroundColor: "{colors.surface}"
-    rounded: "{rounded.lg}"
+  focus-indicator:
+    backgroundColor: "{colors.focus}"
+    textColor: "{colors.on-primary}"
 ---
 
-## Overview
+## Direction
 
-This is a working warehouse interface. Staff must distinguish actions, stock status, scanned locations and document numbers quickly on desktop and mobile. The visual direction adapts [IBM's DESIGN.md in VoltAgent's collection](https://github.com/VoltAgent/awesome-design-md/tree/main/design-md/ibm): white and gray surfaces, charcoal navigation, IBM Blue as the action accent, square controls and hairline borders. BCL's data, logo, Thai labels and task flows remain the source of content.
+PK WMS adapts the visual hierarchy of [Haulix by Phenomenon Studio](https://dribbble.com/shots/27229691-UI-UX-Design-for-Logistics-Dashboard-Haulix): a charcoal navigation rail, deep graphite cards, restrained borders and a lime active color. The reference is a fleet dashboard; PK WMS continues to show actual packaging stock, pallet occupancy, aging and warehouse-value data. Do not copy sample fleet metrics or artwork.
 
-## Colors
+Dark is the default theme. A warm neutral light theme remains available through the existing toggle. The selected theme is stored under `pk-dashboard-theme-haulix`, allowing this redesign to start in dark mode while preserving future user choice. `haulix-theme.css` is loaded after the workflow CSS; functional layouts and responsive rules remain in their existing files.
 
-Charcoal identifies navigation and IBM Blue identifies active destinations and main actions. Green means successful or available; yellow indicates caution; red means error or overdue. Light-gray modules sit on a white canvas; dark mode uses charcoal and graphite surfaces. Color accompanies text, never replaces it.
+## Layout and interaction
 
-## Typography
+Desktop has a 278px navigation rail, a compact header and a fluid work area. The stock overview begins with a title, update controls, occupancy cards, age and capacity cards, then interactive warehouse and category charts. Keep Thai labels, real values and status text. Use a visible focus ring and at least 44px touch targets where practical. Mobile keeps the horizontal navigation and stacks overview cards. Reduced-motion users should not receive decorative transitions.
 
-Use IBM Plex Sans Thai and IBM Plex Sans with Noto Sans Thai and system fallbacks. Display text is light in weight; section titles use medium weight. Labels stay close to their fields. Tabular numerals keep quantities, costs, document numbers and pallet counts easy to scan. Never shrink mobile form text below 16px, avoiding browser zoom on focus.
+## Status and data
 
-## Layout
-
-Use a 4px spacing grid. Desktop has a 256px charcoal navigation rail and a fluid content area. The stock overview groups the building table beside age, capacity and value cards. Narrow screens use a horizontal tab rail and single-column forms. Keep related controls inside one panel. Preserve full-width maps, responsive data tables and 44px minimum interactive targets.
-
-## Elevation & Depth
-
-Use 1px gray borders and flat surface changes instead of shadows on ordinary cards. Dialogs may cast a stronger shadow. Avoid gradients on ordinary cards and summary values.
-
-## Shapes
-
-Inputs, buttons, tabs, cards and panels use square corners. Keep icon stroke weight and button heights consistent across workflows.
-
-## Components
-
-Buttons have primary, secondary, danger and disabled states. Inputs, search, select and scan fields share height, a square bottom-rule treatment and a visible blue focus outline. Table headers use a neutral gray wash; numerical cells use tabular figures. Panels, step cards, tables, empty states and status badges use the same surface and border tokens. Critical information is never conveyed by color alone.
-
-## Do's and Don'ts
-
-- Do keep quantity, location, product and document labels visible beside their data.
-- Do use short Thai action labels and predictable spacing in receive, putaway, issue and print flows.
-- Do preserve status text and keyboard focus when adding color.
-- Don't center narrow forms inside a wide page or let controls use inconsistent heights.
-- Don't apply decorative treatments to the CAD map, QR code or printed labels.
-- Don't copy decorative sample metrics or warehouse counts from the reference image.
+Lime marks selection and primary actions. Green, amber and red continue to communicate availability, aging and problems, always paired with labels or numbers. Use tabular numerals for counts and values. Keep CAD maps, QR codes, pallet status and printed labels legible; decorative styling must not obscure operational information.
