@@ -860,6 +860,17 @@
     overflow-y: auto; overscroll-behavior: contain; flex: 0 1 auto;
   }
   .floorplan-slot-edit[hidden] { display: none; }
+  @media (max-width: 900px) {
+    .floorplan-zoom-modal.keyboard-open {
+      top: var(--keyboard-viewport-top, 0px); bottom: auto;
+      height: var(--keyboard-viewport-height); box-sizing: border-box; padding: 0;
+    }
+    .floorplan-zoom-modal.keyboard-open .floorplan-zoom-box { height: 100%; max-height: 100%; aspect-ratio: auto; }
+    .floorplan-zoom-modal.keyboard-open .floorplan-zoom-viewport { flex: 0 0 60px; min-height: 60px; }
+    .floorplan-zoom-modal.keyboard-open .floorplan-slot-edit:not([hidden]) { flex: 1 1 0; min-height: 0; max-height: none; }
+    .floorplan-zoom-modal.keyboard-open .floorplan-zoom-status,
+    .floorplan-zoom-modal.keyboard-open .fz-hint { display: none; }
+  }
   .fse-head {
     position: sticky; top: 0; z-index: 8; display: flex; align-items: center; justify-content: space-between;
     gap: 12px; margin: 0 -18px 12px; padding: 12px 18px; background: var(--surface-1);
@@ -4533,6 +4544,7 @@ function openZoomModal(zoneCode) {
 }
 function closeZoomModal() {
   zoomModal.hidden = true;
+  zoomModal.classList.remove('keyboard-open');
   editingSlot = null;
   if (slotEditPanel) slotEditPanel.hidden = true;
 }
@@ -5950,6 +5962,31 @@ function revealSlotActionForm(formEl, fieldSelector) {
   });
 }
 
+function keepSlotFieldAboveKeyboard() {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+  const field = document.activeElement;
+  const keyboardOpen = !zoomModal.hidden && window.innerWidth <= 900 && viewport.scale === 1
+    && slotEditPanel.contains(field) && field.matches('input, textarea, select')
+    && window.innerHeight - viewport.height > 120;
+  zoomModal.classList.toggle('keyboard-open', keyboardOpen);
+  zoomModal.style.setProperty('--keyboard-viewport-height', `${viewport.height}px`);
+  zoomModal.style.setProperty('--keyboard-viewport-top', `${viewport.offsetTop}px`);
+  if (!keyboardOpen) return;
+  requestAnimationFrame(() => {
+    if (field !== document.activeElement || !field.isConnected) return;
+    const bounds = field.getBoundingClientRect();
+    const top = slotEditPanel.querySelector('.fse-head').getBoundingClientRect().bottom + 12;
+    const bottom = Math.min(slotEditPanel.getBoundingClientRect().bottom, viewport.offsetTop + viewport.height) - 12;
+    if (bounds.bottom > bottom) slotEditPanel.scrollTop += bounds.bottom - bottom;
+    else if (bounds.top < top) slotEditPanel.scrollTop -= top - bounds.top;
+  });
+}
+window.visualViewport?.addEventListener('resize', keepSlotFieldAboveKeyboard);
+window.visualViewport?.addEventListener('scroll', keepSlotFieldAboveKeyboard);
+slotEditPanel.addEventListener('focusin', keepSlotFieldAboveKeyboard);
+slotEditPanel.addEventListener('focusout', () => requestAnimationFrame(keepSlotFieldAboveKeyboard));
+
 fseItemsList.addEventListener('click', async (e) => {
   if (!editingSlot) return;
   if (movementSaving) return;
@@ -6227,8 +6264,9 @@ document.addEventListener('keydown', (e) => {
   // Close the innermost workflow first so Escape never discards an in-progress edit/withdrawal
   // by hiding the entire slot panel in one step.
   if (editItemIndex != null) { editItemIndex = null; renderSlotEdit(); return; }
-  if (withdrawOpenIndex != null) { withdrawOpenIndex = null;
-  returnOpenIndex = null; renderSlotEdit(); return; }
+   if (withdrawOpenIndex != null || returnOpenIndex != null) {
+     withdrawOpenIndex = null; returnOpenIndex = null; renderSlotEdit(); return;
+   }
   if (removeConfirmIndex != null) { removeConfirmIndex = null; renderSlotEdit(); return; }
   if (editingSlot) { closeSlotEdit(); return; }
   if (!zoomModal.hidden) closeZoomModal();
