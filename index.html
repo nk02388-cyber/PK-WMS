@@ -5452,17 +5452,7 @@ function renderWithdrawForm(i, item, remaining) {
   const hint = remaining != null
     ? `เบิกได้ไม่เกิน ${escapeHtml(String(remaining))}${item.unit ? ' ' + escapeHtml(item.unit) : ''}`
     : `ไม่ระบุยอดรับ · บันทึกเฉพาะประวัติการเบิก ไม่คำนวณคงเหลือ`;
-  // Records already logged for this item render as read-only rows above the live entry row, so
-  // the whole thing reads as one "ตารางรายการเบิก" (withdrawal-records table) -- history plus the
-  // in-progress entry -- rather than a bare input row with no record of past withdrawals.
-  const historyRows = (item.withdrawals || []).map(w => `
-      <tr class="fw-history-row">
-        <td>${formatMovementDate(w.date)}</td>
-        <td>${escapeHtml(String(w.qty != null ? w.qty : '-'))}</td>
-        <td>${escapeHtml(w.unit || '-')}</td>
-        <td>${escapeHtml(w.by || '-')}</td>
-        <td></td>
-      </tr>`).join('');
+  // Movement history is already shown in the stock card above this entry form.
   return `
     <div class="fse-withdraw-form" data-idx="${i}">
       <table class="fw-table">
@@ -5470,7 +5460,6 @@ function renderWithdrawForm(i, item, remaining) {
           <tr><th>วันที่เบิก</th><th>จำนวนที่เบิก</th><th>หน่วย</th><th>ผู้เบิก</th><th></th></tr>
         </thead>
         <tbody>
-          ${historyRows}
           <tr class="fw-entry-row">
             <td><input type="date" class="fw-date" title="วันที่เบิกจ่าย"></td>
             <td><input type="number" class="fw-qty" placeholder="จำนวน" min="0"${maxAttr} step="any" inputmode="decimal"></td>
@@ -5486,13 +5475,11 @@ function renderWithdrawForm(i, item, remaining) {
 }
 
 function renderReturnForm(i, item, returnable) {
-  const historyRows = (item.returns || []).map(r => `
-      <tr class="fw-history-row"><td>${formatMovementDate(r.date)}</td><td>${escapeHtml(String(r.qty != null ? r.qty : '-'))}</td><td>${escapeHtml(r.unit || '-')}</td><td>${escapeHtml(r.by || '-')}</td><td></td></tr>`).join('');
   return `
     <div class="fse-return-form" data-idx="${i}">
       <table class="fw-table">
         <thead><tr><th>วันที่รับคืน</th><th>จำนวนรับคืน</th><th>หน่วย</th><th>ผู้คืน</th><th></th></tr></thead>
-        <tbody>${historyRows}<tr class="fw-entry-row">
+        <tbody><tr class="fw-entry-row">
           <td><input type="date" class="fr-date" title="วันที่รับคืน"></td>
           <td><input type="number" class="fr-qty" placeholder="จำนวน" min="0" max="${returnable}" step="any" inputmode="decimal"></td>
           <td><input type="text" class="fr-unit" placeholder="หน่วย" value="${escapeHtml(item.unit || '')}"></td>
@@ -5946,6 +5933,23 @@ function captureMovementDraft(e) {
 }
 fseItemsList.addEventListener('input', captureMovementDraft);
 fseItemsList.addEventListener('change', captureMovementDraft);
+function revealSlotActionForm(formEl, fieldSelector) {
+  if (!formEl) return;
+  // Focus during the click event so mobile browsers can open the keyboard.
+  const field = formEl.querySelector(fieldSelector);
+  field?.focus({ preventScroll: true });
+  requestAnimationFrame(() => {
+    if (!formEl.isConnected || slotEditPanel.hidden) return;
+    const headHeight = slotEditPanel.querySelector('.fse-head').getBoundingClientRect().height;
+    const top = slotEditPanel.scrollTop + formEl.getBoundingClientRect().top
+      - slotEditPanel.getBoundingClientRect().top - headHeight - 12;
+    slotEditPanel.scrollTo({
+      top: Math.max(0, top),
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  });
+}
+
 fseItemsList.addEventListener('click', async (e) => {
   if (!editingSlot) return;
   if (movementSaving) return;
@@ -5958,7 +5962,7 @@ fseItemsList.addEventListener('click', async (e) => {
     movementEdit = { ...editingSlot, itemIndex, type: movementBtn.dataset.type, index: Number(movementBtn.dataset.index), snapshot: JSON.stringify(item) };
     editItemIndex = null; withdrawOpenIndex = null; returnOpenIndex = null; removeConfirmIndex = null;
     renderSlotEdit();
-    fseItemsList.querySelector('.sm-input-date')?.focus();
+    revealSlotActionForm(fseItemsList.querySelector('.sm-form'), '.sm-input-qty');
     return;
   }
   if (e.target.closest('.sm-cancel')) {
@@ -6010,7 +6014,7 @@ fseItemsList.addEventListener('click', async (e) => {
     renderSlotEdit();
     const formEl = fseItemsList.querySelector(`.fse-edit-form[data-idx="${idx}"]`);
     updateItemEditBtnState(formEl);
-    if (formEl) formEl.querySelector('.fe-code').focus();
+    revealSlotActionForm(formEl, '.fe-code');
     return;
   }
 
@@ -6089,6 +6093,7 @@ fseItemsList.addEventListener('click', async (e) => {
     editItemIndex = null;
     removeConfirmIndex = null;
     renderSlotEdit();
+    revealSlotActionForm(fseItemsList.querySelector(`.fse-withdraw-form[data-idx="${idx}"]`), '.fw-qty');
     return;
   }
 
@@ -6100,6 +6105,7 @@ fseItemsList.addEventListener('click', async (e) => {
     editItemIndex = null;
     removeConfirmIndex = null;
     renderSlotEdit();
+    revealSlotActionForm(fseItemsList.querySelector(`.fse-return-form[data-idx="${idx}"]`), '.fr-qty');
     return;
   }
 
