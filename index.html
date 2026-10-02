@@ -1969,7 +1969,7 @@ header.top .header-logo { border-radius: 14px; }
 }
 </style>
 <link rel="stylesheet" href="dashboard-shell.css?v=20260926-9">
-<link rel="stylesheet" href="account-login.css?v=20261002-login1">
+<link rel="stylesheet" href="account-login.css?v=20261002-deptdesign1">
 <link rel="stylesheet" href="product-history.css?v=20260925-3">
 <link rel="stylesheet" href="top-withdrawals.css?v=20260925-1">
 <link rel="stylesheet" href="notifications.css?v=20260926-1">
@@ -1998,17 +1998,17 @@ header.top .header-logo { border-radius: 14px; }
 </main>
 <main class="department-screen" id="departmentScreen" aria-labelledby="departmentTitle">
   <section class="department-card" id="departmentChooser">
-    <img src="assets/bcl-logo-monochrome.png?v=2" alt="" width="52" height="52">
-    <p class="department-eyebrow">BCL WMS</p>
+    <div class="auth-brand department-brand"><img src="assets/bcl-logo-monochrome.png?v=2" alt="BIO-COSLAB" width="48" height="48"><div><strong>BCL WMS</strong><span>BIO-COSLAB</span></div><span class="auth-department">ระบบคลังสินค้า</span></div>
     <h1 id="departmentTitle">เลือกแผนกที่ต้องการเข้าใช้งาน</h1>
     <p class="department-intro" id="departmentWelcome">เลือกแผนกก่อนเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
     <div class="department-options" aria-label="แผนก">
-      <button type="button" class="department-option" data-department="pk"><span class="department-number">01</span><span><strong>คลังบรรจุภัณฑ์</strong><small>PK WMS · เปิดเว็บคลังบรรจุภัณฑ์</small></span><span class="department-arrow" aria-hidden="true">→</span></button>
-      <a class="department-option" href="https://bcl-wms.vercel.app/rm-wms/"><span class="department-number">02</span><span><strong>คลังวัตถุดิบ</strong><small>RM WMS · เปิดเว็บคลังวัตถุดิบ</small></span><span class="department-arrow" aria-hidden="true">→</span></a>
-      <a class="department-option" href="https://fg-wms.vercel.app/"><span class="department-number">03</span><span><strong>คลังสำเร็จรูป</strong><small>FG WMS · เปิดเว็บคลังสำเร็จรูป</small></span><span class="department-arrow" aria-hidden="true">→</span></a>
+      <button type="button" class="department-option department-pk" data-department="pk"><span class="department-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 7 9-4 9 4-9 4-9-4Zm0 0v10l9 4 9-4V7M12 11v10M7 5l9 4"/></svg></span><span class="department-copy"><span class="department-code">PK WMS</span><strong>คลังบรรจุภัณฑ์</strong><small>เปิดเว็บคลังบรรจุภัณฑ์</small></span><span class="department-arrow" aria-hidden="true">→</span></button>
+      <a class="department-option department-rm" href="https://bcl-wms.vercel.app/rm-wms/"><span class="department-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4 19a1.4 1.4 0 0 0 1.2 2h13.6a1.4 1.4 0 0 0 1.2-2L14 9V3M7 15h10"/></svg></span><span class="department-copy"><span class="department-code">RM WMS</span><strong>คลังวัตถุดิบ</strong><small>เปิดเว็บคลังวัตถุดิบ</small></span><span class="department-arrow" aria-hidden="true">→</span></a>
+      <a class="department-option department-fg" href="https://fg-wms.vercel.app/"><span class="department-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 9 9-6 9 6v12H3V9Zm5 12v-9h8v9M8 16h8M8 19h8"/></svg></span><span class="department-copy"><span class="department-code">FG WMS</span><strong>คลังสำเร็จรูป</strong><small>เปิดเว็บคลังสำเร็จรูป</small></span><span class="department-arrow" aria-hidden="true">→</span></a>
     </div>
     <p class="department-note">RM WMS และ FG WMS เป็นเว็บแยก บัญชีและสิทธิ์ของ BCL WMS ยังไม่ครอบคลุมเว็บเหล่านั้น</p>
     <button type="button" class="department-signout" id="departmentSignout" hidden>ออกจากระบบ</button>
+    <p class="department-footer">ระบบจัดการคลังสินค้าของ BIO-COSLAB</p>
   </section>
 </main>
 <a class="skip-link" href="#mainDashboard">ข้ามไปยังเนื้อหาหลัก</a>

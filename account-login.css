@@ -86,3 +86,29 @@ body:not(.department-choosing) .department-screen { display: none; }
 .auth-card .auth-footer{padding-top:18px;border-top:1px solid #e7ebdf;color:#8a9583;text-align:center;font-size:11px}
 @media(max-width:480px){.auth-screen{padding:16px}.auth-card{padding:24px;gap:18px;border-radius:20px}.auth-card h1{font-size:23px}.auth-brand{gap:9px}.auth-department{font-size:10px;padding:5px 7px}}
 @media(max-height:650px){.auth-screen{align-items:start}.auth-card{margin:auto 0}}
+
+.department-screen{box-sizing:border-box;background:#edf1e9;color:#223326;padding:28px 20px}
+.department-card{width:min(100%,520px);padding:32px;gap:20px;border:1px solid #dce3d5;border-radius:24px;background:#fff;box-shadow:0 16px 50px #28382512;font-size:14px;line-height:1.5}
+.department-card h1{color:#223326;font-size:25px;line-height:1.4;margin:2px 0 -12px}
+.department-card .department-intro{color:#6b7966;font-size:14px}
+.department-options{gap:12px;margin:2px 0 0}
+.department-option{grid-template-columns:52px minmax(0,1fr) 32px;gap:16px;min-height:108px;padding:17px 18px;border:1px solid #dce3d5;border-radius:16px;background:#fafbf8;color:#223326;box-shadow:none}
+.department-icon{display:grid;place-items:center;width:52px;height:52px;border-radius:14px;background:#eaf0df;color:#526c36}
+.department-icon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.department-copy{display:grid;gap:2px;min-width:0}
+.department-code{font-size:10px;font-weight:700;letter-spacing:.1em;color:#728063}
+.department-option strong{font-size:17px;line-height:1.45;color:#223326}
+.department-option small{margin:0;color:#76836c;font-size:12px}
+.department-arrow{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#edf2e5;color:#52663e;font-size:20px}
+.department-pk{background:#f4f8e8;border-color:#d9e3be}
+.department-pk .department-icon{background:#d4e366;color:#344518}
+.department-pk .department-arrow{background:#d4e366;color:#344518}
+.department-option:hover{background:#eef4e2;border-color:#a1b66c}
+.department-option:focus-visible{outline:3px solid #b5c979;outline-offset:3px;border-color:#7d9637;background:#eef4e2}
+.department-card .department-note{padding:12px 14px;border-radius:12px;background:#f5f7f1;color:#78816f;font-size:11px;line-height:1.7}
+.department-card .department-signout{min-height:44px;padding:8px 12px;border:1px solid #e0e6d8;border-radius:10px;background:#fff;color:#65745a;font-weight:500}
+.department-card .department-signout:hover{color:#223326;background:#f2f6eb;text-decoration:none}
+.department-card [hidden]{display:none!important}
+.department-card .department-footer{padding-top:16px;border-top:1px solid #e7ebdf;color:#8a9583;text-align:center;font-size:11px}
+@media(max-width:480px){.department-screen{padding:16px}.department-card{padding:24px;gap:18px;border-radius:20px}.department-card h1{font-size:23px}.department-option{padding:14px;gap:12px;grid-template-columns:44px minmax(0,1fr) 28px;min-height:102px}.department-icon{width:44px;height:44px;border-radius:12px}.department-option strong{font-size:16px}.department-arrow{width:28px;height:28px}.department-brand{gap:9px}}
+@media(max-height:720px){.department-screen{align-items:start}.department-card{margin:auto 0}}
