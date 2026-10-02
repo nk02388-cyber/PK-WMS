@@ -1,3 +1,4 @@
+import {renderWithdrawalReport} from './print-report.mjs?v=20261002-1';
 import {isWipCode} from './material-policy.mjs?v=1';
 import {formulaDraft,mergeFormulas} from './saved-formulas.mjs?v=2';
 import {withdrawalTimePerformance,MINUTES_PER_DOCUMENT} from './time-performance.mjs?v=1';
@@ -300,13 +301,14 @@ function reportFiltersText(filters){
 }
 function populateReport(list,filters){
   const counts={queued:0,active:0,paused:0,done:0,partial:0,cancelled:0};list.forEach(ticket=>{const status=followupComplete(ticket,state.management?.cases)?'done':ticket.status;if(status in counts)counts[status]+=ticketDocumentCount(ticket);});
-  const rows=list.map((ticket,index)=>{
-    const materials=Array.isArray(ticket.materials)&&ticket.materials.length?`<strong>รายการวัสดุ</strong><div>${ticket.materials.map(line=>`<span>${line.source==='stock'?'[นอก BOM] ':''}${esc(line.pk_code)} ${esc(line.pk_name)}: ${qtyText(line.required_qty)} ${esc(line.unit)} · ${line.confirmed_at?`เบิกจริง ${qtyText(line.actual_qty)} · ${esc(pickVarianceText(line.required_qty,line.actual_qty,line.unit,qtyText))} ${esc(Math.abs(Math.round((line.actual_qty-Number(line.required_qty))*10000))>10000?line.short_reason||'':'')}`:'ยังไม่บันทึกยอดจริง'}</span>`).join('')}</div>`:'';
-    const detail=materials||ticket.description||ticket.status_reason?`<tr class="report-materials"><td colspan="10">${materials}<p>${esc(pickCompleteness(ticket).label)}</p>${documentSummary(ticket)}${ticket.description?`<p><strong>หมายเหตุ:</strong> ${esc(ticket.description)}</p>`:''}${ticket.status_reason&&(!followupComplete(ticket,state.management?.cases)||ticket.materials?.some(l=>l.confirmed_at&&Math.abs(Math.round((l.actual_qty-Number(l.required_qty))*10000))>10000))?`<p><strong>เหตุผลสถานะ:</strong> ${esc(ticket.status_reason)}</p>`:''}</td></tr>`:'';
-    const status=followupComplete(ticket,state.management?.cases)?'เบิกครบ':statusLabels[ticket.status]||ticket.status;
-    return `<tbody class="report-ticket"><tr><td>${index+1}</td><td><strong>${esc(ticket.ticket_no)}</strong><br>${ticketDocumentCount(ticket)} ใบ · 1 งาน</td><td>${esc(fmtReport(ticket.created_at))}</td><td>${esc(nameFor(ticket.assignee_id))}</td><td>${esc(jobFor(ticket.job_type_id))}</td><td>${ticket.fg_code?`${esc(ticket.fg_code)}<br>${esc(ticket.fg_name||'')}<br><strong>${qtyText(ticket.requested_qty)} FG</strong>`:'—'}</td><td>${esc(status)}</td><td>${esc(fmtReport(ticket.started_at))}</td><td>${esc(fmtReport(ticket.ended_at))}</td><td>${esc(minutesText(workBreakdown(ticket)?.activeMinutes??null))}</td></tr>${detail}</tbody>`;
-  }).join('');
-  $('#print-report').innerHTML=`<header><img src="assets/bcl-logo.png" alt="BCL"><div><h1>รายงานใบเบิกของ</h1><p>พิมพ์เมื่อ ${esc(fmtReport(new Date()))} · เวลาไทย (UTC+7)</p></div></header><div class="report-filter-line"><strong>ตัวกรอง:</strong> ${esc(reportFiltersText(filters))}</div><div class="report-summary"><span>ทั้งหมด <strong>${totalDocuments(list)} ใบ · ${list.length} งาน</strong></span>${Object.entries(counts).map(([key,count])=>`<span>${statusLabels[key]} <strong>${count}</strong></span>`).join('')}</div><table class="report-table"><thead><tr><th>#</th><th>เลขที่ใบเบิก</th><th>วันที่สร้าง</th><th>พนักงาน</th><th>ประเภทงาน</th><th>FG / จำนวน</th><th>สถานะ</th><th>เริ่ม</th><th>สิ้นสุด</th><th>เวลาสุทธิ<br>(หักพัก/นอกกะ)</th></tr></thead>${rows||'<tbody><tr><td colspan="10">ไม่พบใบเบิกตามตัวกรอง</td></tr></tbody>'}</table><p class="report-note">วัสดุตามใบเบิก ไม่ใช่ยอดตัดสต็อก · เวลาสุทธิหักพักและเวลานอกกะ</p>`;
+    $('#print-report').innerHTML=renderWithdrawalReport(list,{
+    formatDate:fmtReport,quantity:qtyText,nameFor,jobFor,
+    statusFor:ticket=>followupComplete(ticket,state.management?.cases)?'เบิกครบ':statusLabels[ticket.status]||ticket.status,
+    documentCount:ticketDocumentCount,totalDocuments,counts,statusLabels,filtersText:reportFiltersText(filters),
+    durationFor:ticket=>minutesText(workBreakdown(ticket)?.activeMinutes??null),
+    completenessFor:ticket=>pickCompleteness(ticket).label,documentsFor:documentSummary,
+    varianceFor:line=>pickVarianceText(line.required_qty,line.actual_qty,line.unit,qtyText),printedAt:new Date()
+  });
 }
 function printReport(){const list=selectedTickets();populateReport(list,ticketFilters());document.body.classList.add('print-tickets');window.print();}
 function renderPeople(){$('#people-list').innerHTML=state.people.length?state.people.map(p=>`<div class="person-row"><div class="matrix-person">${personPortrait(p)}<div class="staff-identity"><strong>${esc(p.display_name)}</strong><small>${esc(p.position||'ยังไม่ระบุตำแหน่ง')}</small></div></div><div class="person-controls"><button type="button" class="text-btn" data-edit-person="${esc(p.id)}">แก้ไขข้อมูล</button><label class="staff-photo-button">เปลี่ยนรูป<input type="file" accept="image/jpeg,image/png,image/webp" data-staff-photo="${esc(p.id)}" aria-label="เปลี่ยนรูป ${esc(p.display_name)}"></label><label class="hint"><input type="checkbox" data-active="${esc(p.id)}" ${p.active?'checked':''}> เปิดใช้งาน</label></div></div>`).join(''):empty('ยังไม่มีพนักงาน');}
