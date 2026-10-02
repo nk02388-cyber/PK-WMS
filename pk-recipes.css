@@ -1,0 +1,27 @@
+.pk-recipes { margin-bottom:20px; padding:20px; border:1px solid var(--border); border-radius:var(--radius-panel,16px); background:var(--surface-1); }
+.pk-recipes-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.pk-recipes h3 { margin:0; }
+.pk-recipes p { color:var(--text-secondary); font-size:12px; line-height:1.6; }
+.pk-recipes button { min-height:40px; padding:8px 12px; border:1px solid var(--border); border-radius:var(--radius-control,8px); background:var(--page-plane); color:var(--text-primary); font:inherit; font-size:12px; cursor:pointer; }
+.pk-recipes button:disabled { opacity:.5; cursor:wait; }
+.pk-recipes summary { cursor:pointer; font-weight:700; padding:12px 0; }
+.pk-recipe-fields { display:grid; grid-template-columns:1fr 2fr 1fr 1fr; gap:10px; }
+.pk-recipes label { display:grid; gap:5px; min-width:0; font-size:12px; }
+.pk-recipes input { width:100%; min-width:0; box-sizing:border-box; min-height:42px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--page-plane); color:var(--text-primary); font:inherit; }
+.pk-recipe-line { display:grid; grid-template-columns:1.2fr 2fr 1fr 1fr auto; gap:8px; align-items:end; margin:10px 0; padding:12px; border:1px solid var(--border); border-radius:10px; }
+.pk-recipe-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+#pkRecipeSave { background:var(--brand-blue); color:var(--text-on-brand,#fff); font-weight:700; }
+:root[data-theme="dark"] #pkRecipeSave { color:#1d2410; }
+#pkRecipesList { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; max-height:230px; overflow:auto; }
+#pkRecipeMessage.error, #pkRecipesStatus.error { color:var(--status-critical); }
+#pkRecipeMessage.success { color:var(--status-good); }
+.pk-recipe-history { border-top:1px solid var(--border); padding:10px 0; font-size:12px; }
+@media(max-width:700px) {
+  .pk-recipes { padding:14px; }
+  .pk-recipes-heading { align-items:flex-start; }
+  .pk-recipe-fields { grid-template-columns:1fr 1fr; }
+  .pk-recipe-line { grid-template-columns:1fr 1fr; }
+  .pk-recipe-line label:nth-child(2) { grid-column:1/-1; }
+  .pk-recipe-line button { grid-column:1/-1; }
+  .pk-recipes input { font-size:16px; }
+}

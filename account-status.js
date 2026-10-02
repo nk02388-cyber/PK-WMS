@@ -9,6 +9,7 @@
   const departmentKey = 'bcl-wms-selected-department';
   let profile = null, refreshId = 0;
   window.getWmsUsername = () => profile?.username || '';
+  window.getWmsIsAdmin = () => profile?.role === 'admin';
   const menuButtons = [...document.querySelectorAll('#tabs .tab-btn[data-tab]')];
   const menuChoices = menuButtons.map(button => ({
     key: button.dataset.tab,

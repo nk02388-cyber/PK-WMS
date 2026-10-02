@@ -1,0 +1,42 @@
+// Uses a new local PostgreSQL database only; no production credentials or inventory.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');
+const require=createRequire(path.join(root,'..','pg-testing','package.json'));
+const {default:EmbeddedPostgres}=await import(pathToFileURL(require.resolve('embedded-postgres')));
+const {Client}=require('pg');
+const server=new EmbeddedPostgres({databaseDir:path.join(root,'work','recipes-test-'+Date.now()),user:'postgres',password:'local-only',port:55447,persistent:true,authMethod:'scram-sha-256',initdbFlags:['--encoding=UTF8','--locale=C'],postgresFlags:['-c','listen_addresses=127.0.0.1'],onLog:()=>{},onError:()=>{}});
+let client;
+const admin='11111111-1111-4111-8111-111111111111',staff='22222222-2222-4222-8222-222222222222';
+const recipe={fg_code:'QA-FG',fg_name:'Local fixture',base_qty:1000,fg_unit:'ชิ้น',lines:[{pk_code:'QA-BOX',pk_name:'Box',qty:100,unit:'ใบ'}]};
+try {
+  await server.initialise();await server.start();await server.createDatabase('codex_test_recipes');
+  client=new Client({host:'127.0.0.1',port:55447,user:'postgres',password:'local-only',database:'codex_test_recipes'});await client.connect();
+  await client.query(`create role anon;create role authenticated;create schema auth;
+    create table auth.users(id uuid primary key);
+    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+    create table public.app_users(id uuid primary key,username text,role text,active boolean,menu_access text[]);
+    create function public.has_menu_access(text) returns boolean language sql stable security definer as $$select exists(select 1 from public.app_users where id=auth.uid() and active and (role='admin' or $1=any(menu_access)))$$;
+    insert into auth.users values('${admin}'),('${staff}');
+    insert into public.app_users values('${admin}','Admin','admin',true,'{}'),('${staff}','Staff','user',true,'{bompk}');
+    grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`);
+  await client.query(await fs.readFile(path.join(root,'supabase-pk-recipes.sql'),'utf8'));
+  await client.query('set role authenticated');await client.query("select set_config('request.jwt.claim.sub',$1,false)",[admin]);
+  const save=async (r,v)=>(await client.query('select public.save_pk_recipe($1::jsonb,$2) as r',[JSON.stringify(r),v])).rows[0].r;
+  let row=await save(recipe,0);assert.equal(row.version,1);assert.equal(row.lines.length,1);
+  row=await save({...recipe,fg_name:'Version two'},1);assert.equal(row.version,2);
+  await assert.rejects(save(recipe,1),e=>e.code==='40001');
+  await assert.rejects(save({...recipe,lines:[recipe.lines[0],recipe.lines[0]]},2),e=>e.code==='23505');
+  const current=(await client.query('select public.get_pk_recipes() as r')).rows[0].r;assert.equal(current[0].version,2);assert.equal(current[0].lines.length,1);
+  const history=(await client.query('select public.get_pk_recipe_versions($1) as r',['QA-FG'])).rows[0].r;assert.equal(history.length,2);assert.equal(history[1].recipe.fg_name,'Local fixture');
+  await assert.rejects(client.query("insert into public.pk_recipes(fg_code) values('NO')"),e=>e.code==='42501');
+  await client.query("select set_config('request.jwt.claim.sub',$1,false)",[staff]);
+  assert.equal((await client.query('select public.get_pk_recipes() as r')).rows[0].r.length,1);
+  await assert.rejects(save(recipe,2),e=>e.code==='42501');
+  await client.query('reset role');await client.query("update app_users set active=false where id=$1",[staff]);await client.query('set role authenticated');
+  await assert.rejects(client.query('select public.get_pk_recipes()'),e=>e.code==='42501');
+  console.log('PASS: real PostgreSQL migration, version conflict, atomic rollback, history, Admin-only writes and inactive-account denial');
+}finally{if(client)await client.end();await server.stop();}
