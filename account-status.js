@@ -46,6 +46,13 @@
   $('accountCreateMenus').parentElement.replaceWith(menuFieldset());
 
   function showError(text) { error.textContent = text || ''; error.hidden = !text; }
+  $('authTogglePassword').addEventListener('click', () => {
+    const visible = $('authPassword').type === 'password';
+    $('authPassword').type = visible ? 'text' : 'password';
+    $('authTogglePassword').textContent = visible ? 'ซ่อน' : 'แสดง';
+    $('authTogglePassword').setAttribute('aria-label', visible ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน');
+    $('authTogglePassword').setAttribute('aria-pressed', String(visible));
+  });
   function savedDepartment() {
     try { return sessionStorage.getItem(departmentKey); } catch (_) { return null; }
   }
@@ -158,6 +165,7 @@
   form.addEventListener('submit', async event => {
     event.preventDefault(); showError('');
     const submit = $('authSubmit'); submit.disabled = true;
+    submit.textContent = 'กำลังเข้าสู่ระบบ…';
     try {
       const username = $('authUsername').value.trim();
       const password = $('authPassword').value;
@@ -168,7 +176,7 @@
       saveDepartment('pk');
       location.reload();
     } catch (err) { showError(err.message || 'เข้าสู่ระบบไม่สำเร็จ'); }
-    finally { submit.disabled = false; }
+    finally { submit.disabled = false; submit.textContent = 'เข้าสู่ระบบ'; }
   });
   createForm.addEventListener('submit', async event => {
     event.preventDefault();
@@ -193,7 +201,10 @@
     saveDepartment(null); showDepartment();
   });
   $('authChangeDepartment').addEventListener('click', () => {
-    saveDepartment(null); showError(''); $('authPassword').value = ''; showDepartment();
+    saveDepartment(null); showError(''); $('authPassword').value = '';
+    $('authPassword').type = 'password'; $('authTogglePassword').textContent = 'แสดง';
+    $('authTogglePassword').setAttribute('aria-label', 'แสดงรหัสผ่าน');
+    $('authTogglePassword').setAttribute('aria-pressed', 'false'); showDepartment();
   });
   document.querySelectorAll('button.department-option').forEach(option => option.addEventListener('click', () => {
     saveDepartment(option.dataset.department); showDepartment();

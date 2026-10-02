@@ -55,3 +55,34 @@ body:not(.department-choosing) .department-screen { display: none; }
 .account-user .account-actions .account-save-access { color: var(--text-primary); }
 .tabs .tab-btn[hidden] { display: none !important; }
 @media (max-width: 700px) { .auth-card, .department-card { padding: 22px; } }
+
+/* PK login: pale warehouse green, lime action, and a quiet return control. */
+.auth-screen{box-sizing:border-box;padding:28px 20px;background:#edf1e9;color:#223326}
+.auth-card{box-sizing:border-box;width:min(100%,440px);gap:20px;padding:32px;border:1px solid #dce3d5;border-radius:24px;background:#fff;box-shadow:0 16px 50px #28382512;font-size:14px;line-height:1.5}
+.auth-card .auth-back{justify-self:start;display:flex;align-items:center;gap:8px;min-height:44px;margin:-8px 0 0;padding:0 6px;background:transparent;color:#50634a;font-weight:500;border-radius:8px}
+.auth-card .auth-back:hover{background:#f1f5ed;color:#223326}
+.auth-brand{display:flex;align-items:center;gap:12px;padding-bottom:22px;border-bottom:1px solid #e7ebdf}
+.auth-brand img{width:48px;height:48px;flex:none}
+.auth-brand div{display:grid;gap:2px}
+.auth-brand strong{font-size:19px;letter-spacing:.02em;color:#223326}
+.auth-brand div span{font-size:10px;letter-spacing:.08em;color:#6b7966}
+.auth-department{margin-left:auto;border:1px solid #dce5cb;border-radius:30px;padding:6px 9px;background:#f5f8ec;color:#506044;font-size:11px;white-space:nowrap}
+.auth-card h1{font-size:25px;line-height:1.35;color:#223326;margin:2px 0 -12px}
+.auth-card .auth-intro{color:#6b7966;font-size:14px}
+.auth-card label{gap:8px;color:#344731;font-size:14px;font-weight:600}
+.auth-card input{min-height:50px;padding:12px 14px;border:1px solid #d8dfd2;border-radius:12px;background:#f8faf5;color:#223326;font-size:16px;line-height:1.4;box-shadow:none}
+.auth-card input::placeholder{color:#899381;font-size:14px;font-weight:400}
+.auth-card input:focus-visible{border-color:#7d9637;outline:3px solid #dceba9;outline-offset:1px}
+.auth-password-field{display:block;position:relative}
+.auth-password-field input{padding-right:66px}
+.auth-card #authTogglePassword{position:absolute;right:5px;top:3px;min-height:44px;padding:0 10px;border-radius:8px;background:transparent;color:#5b7047;font-size:12px;font-weight:600}
+.auth-card #authTogglePassword:hover{background:#edf2e5}
+.auth-card .auth-help{margin-top:-10px;color:#7a8673;font-size:12px}
+.auth-card #authSubmit{min-height:50px;padding:12px 18px;border-radius:12px;background:#d4e366;color:#253219;font-size:16px;font-weight:700;box-shadow:none}
+.auth-card #authSubmit:hover:not(:disabled){background:#c7d956}
+.auth-card button:focus-visible{outline:3px solid #8ba24a;outline-offset:3px}
+.auth-card .auth-error{padding:10px 12px;border:1px solid #f1c8c8;border-radius:10px;background:#fff4f3;color:#a63333;font-size:13px}
+.auth-card [hidden]{display:none!important}
+.auth-card .auth-footer{padding-top:18px;border-top:1px solid #e7ebdf;color:#8a9583;text-align:center;font-size:11px}
+@media(max-width:480px){.auth-screen{padding:16px}.auth-card{padding:24px;gap:18px;border-radius:20px}.auth-card h1{font-size:23px}.auth-brand{gap:9px}.auth-department{font-size:10px;padding:5px 7px}}
+@media(max-height:650px){.auth-screen{align-items:start}.auth-card{margin:auto 0}}

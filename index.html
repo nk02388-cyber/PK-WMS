@@ -1969,7 +1969,7 @@ header.top .header-logo { border-radius: 14px; }
 }
 </style>
 <link rel="stylesheet" href="dashboard-shell.css?v=20260926-9">
-<link rel="stylesheet" href="account-login.css?v=20260928-4">
+<link rel="stylesheet" href="account-login.css?v=20261002-login1">
 <link rel="stylesheet" href="product-history.css?v=20260925-3">
 <link rel="stylesheet" href="top-withdrawals.css?v=20260925-1">
 <link rel="stylesheet" href="notifications.css?v=20260926-1">
@@ -1983,15 +1983,17 @@ header.top .header-logo { border-radius: 14px; }
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
   <form class="auth-card" id="authLoginForm">
-    <img src="assets/bcl-logo-monochrome.png?v=2" alt="" width="52" height="52">
+    <button type="button" class="auth-back" id="authChangeDepartment"><span aria-hidden="true">←</span> เลือกแผนกอื่น</button>
+    <div class="auth-brand"><img src="assets/bcl-logo-monochrome.png?v=2" alt="BIO-COSLAB" width="52" height="52"><div><strong>PK WMS</strong><span>BIO-COSLAB</span></div><span class="auth-department">คลังบรรจุภัณฑ์</span></div>
     <h1 id="authTitle">เข้าสู่ระบบ PK WMS</h1>
-    <p>ใช้บัญชีที่ผู้ดูแลระบบกำหนดเพื่อเข้าถึงข้อมูลคลัง</p>
-    <label>ชื่อผู้ใช้<input id="authUsername" name="username" autocomplete="username" required autofocus></label>
-    <label>รหัสผ่าน / PIN<input id="authPassword" name="password" type="password" autocomplete="current-password" required></label>
+    <p class="auth-intro">เข้าสู่ระบบเพื่อจัดการคลังบรรจุภัณฑ์</p>
+    <label for="authUsername">ชื่อผู้ใช้<input id="authUsername" name="username" autocomplete="username" placeholder="กรอกชื่อผู้ใช้" required></label>
+    <label for="authPassword">รหัสผ่าน / PIN<span class="auth-password-field"><input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่านหรือ PIN" required><button id="authTogglePassword" type="button" aria-label="แสดงรหัสผ่าน" aria-pressed="false">แสดง</button></span></label>
+    <p class="auth-help">ผู้ใช้ย่อยใช้ PIN 6 หลัก · Admin ใช้รหัสผ่าน</p>
     <p class="auth-error" id="authError" role="alert" hidden></p>
     <button id="authSubmit" type="submit">เข้าสู่ระบบ</button>
-    <button type="button" class="department-signout" id="authChangeDepartment">← เลือกแผนกอื่น</button>
     <span id="authLoading" role="status">กำลังตรวจสอบบัญชี…</span>
+    <p class="auth-footer">ระบบจัดการคลังสินค้าบรรจุภัณฑ์ของ BIO-COSLAB</p>
   </form>
 </main>
 <main class="department-screen" id="departmentScreen" aria-labelledby="departmentTitle">
@@ -9948,7 +9950,7 @@ window.addEventListener('pageshow', () => {
 <script src="notifications.js?v=20260926-1"></script>
 <script src="receipt-plan.js?v=20260926-1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20261002-department1"></script>
+<script src="account-status.js?v=20261002-login1"></script>
 <link rel="stylesheet" href="warehouse-operations-pin.css?v=20261002-1">
 <script src="warehouse-operations.js?v=20261002-pin2"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">

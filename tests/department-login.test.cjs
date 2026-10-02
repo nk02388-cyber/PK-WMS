@@ -22,3 +22,9 @@ test('existing authenticated session still chooses department and opens PK',asyn
  const s=setup(true);await tick();assert.ok(s.classes.has('department-choosing'));await s.pk.fire('click');assert.ok(s.classes.has('auth-ready'));
  await s.node('accountChangeDepartment').fire('click');assert.ok(s.classes.has('department-choosing'));
 });
+test('password visibility toggles and is reset when returning to departments',async()=>{
+ const s=setup();await tick();s.node('authPassword').type='password';
+ await s.node('authTogglePassword').fire('click');assert.equal(s.node('authPassword').type,'text');
+ await s.node('authTogglePassword').fire('click');assert.equal(s.node('authPassword').type,'password');
+ await s.node('authTogglePassword').fire('click');await s.node('authChangeDepartment').fire('click');assert.equal(s.node('authPassword').type,'password');
+});
