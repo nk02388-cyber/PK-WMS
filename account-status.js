@@ -16,7 +16,7 @@
     label: button.querySelector('span:not(.tab-badge)')?.textContent.trim() || button.dataset.tab,
   }));
   const allowedMenus = () => profile?.role === 'admin' ? menuChoices.map(item => item.key)
-    : Array.isArray(profile?.menu_access) ? profile.menu_access : [];
+    : Array.isArray(profile?.menu_access) ? profile.menu_access.filter(key => key !== 'warehouse-operations') : [];
   window.getWmsCanAccess = key => allowedMenus().includes(key);
 
   function menuFieldset(selected = ['stock']) {
@@ -24,7 +24,7 @@
     fields.className = 'account-permissions';
     const legend = document.createElement('legend'); legend.textContent = 'เมนูที่เข้าได้';
     const grid = document.createElement('div');
-    for (const item of menuChoices) {
+    for (const item of menuChoices.filter(item => item.key !== 'warehouse-operations')) {
       const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox'; checkbox.name = 'menu_access'; checkbox.value = item.key;

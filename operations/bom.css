@@ -1,0 +1,23 @@
+.bom-picker{display:grid;gap:10px;padding:14px;background:#f3f9fb;border:1px solid #d7e9ef;border-radius:10px}
+.bom-picker .eyebrow{color:#197d90}.bom-picker .hint{margin:0}.bom-preview{min-height:48px}.bom-preview .empty{padding:15px}
+.bom-results{display:grid;gap:5px;max-height:240px;overflow-y:auto}
+.bom-results:empty{display:none}
+.bom-result{display:grid;grid-template-columns:minmax(100px,auto) minmax(0,1fr);align-items:center;gap:12px;width:100%;text-align:left;border:1px solid #d6e6eb;background:#fff;border-radius:7px;padding:10px 11px;color:#24475a}
+.bom-result:hover,.bom-result:focus-visible{background:#e7f5f6;border-color:#6dc2c9}
+.bom-result.selected{background:#def3f2;border-color:#34a8b2;box-shadow:inset 3px 0 #19a1aa}
+.bom-result strong{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.bom-result span{min-width:0;overflow-wrap:anywhere;font-size:12px}
+@media(max-width:560px){.bom-result{grid-template-columns:1fr;gap:3px}}
+.bom-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;padding:12px;background:#e5f5f5;border-radius:8px;color:#16576a;font-size:13px}
+.bom-summary span,.ticket-fg span{white-space:nowrap}
+.bom-table-wrap{overflow-x:auto;border:1px solid #dce8ed;border-radius:8px;margin-top:8px}
+.bom-table{width:100%;border-collapse:collapse;font-size:12px;min-width:500px}
+.bom-table th,.bom-table td{padding:9px 10px;border-bottom:1px solid #e5eef2;text-align:left;vertical-align:top}
+.bom-table th{background:#f5f9fb;color:#557584}.bom-table tr:last-child td{border-bottom:0}
+.bom-table td small{display:block;color:#647f8c;margin-top:2px}
+.bom-table th:nth-child(n+2),.bom-table td:nth-child(n+2){white-space:nowrap;text-align:right}
+.bom-preview .hint{margin:9px 0 0}.ticket-main{flex:1}
+.ticket-no-message{margin:-12px 0 0;color:#a74436;font-size:12px}.ticket-no-message:empty{display:none}.ticket-no-suggestion{justify-self:start;margin-top:-12px}
+.ticket-fg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;color:#186578;font-size:13px}
+.ticket-materials{margin-top:9px}.ticket-materials summary{cursor:pointer;color:#197d90;font-size:12px;font-weight:600}.ticket-materials .bom-table-wrap{max-width:850px}
+#ticket-dialog{width:min(100% - 30px,760px);max-height:90vh;overflow:auto}
