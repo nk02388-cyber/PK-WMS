@@ -1,0 +1,13 @@
+.git/
+.vercel/
+.github/
+work/
+node_modules/
+tests/
+docs/
+tools/
+supabase/
+.env*
+*.sql
+*.md
+operations/README.md
