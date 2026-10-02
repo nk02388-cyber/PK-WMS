@@ -7,7 +7,7 @@
  const dialog=document.createElement('dialog');
  dialog.className='warehouse-pin-dialog';
  dialog.setAttribute('aria-labelledby','warehousePinTitle');
- dialog.innerHTML=`<form><h2 id="warehousePinTitle">ใบเบิกและผลงาน</h2>
+ dialog.innerHTML=`<form><h2 id="warehousePinTitle">ใบเบิกบรรจุภัณฑ์</h2>
  <p>กรอก PIN เพื่อเปิดเมนูนี้</p><label for="warehousePinInput">PIN</label>
  <input id="warehousePinInput" type="password" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" autocomplete="off" required>
  <p class="warehouse-pin-error" role="alert" hidden></p>

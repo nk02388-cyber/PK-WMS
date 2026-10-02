@@ -3,7 +3,7 @@ const {chromium}=require('C:/Users/ADMIN/.cache/codex-runtimes/codex-primary-run
 const root=path.resolve(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const tabs=html.slice(html.indexOf('const tabButtons ='),html.indexOf("document.getElementById('tabBadgeStock').textContent"));
-const fixture=`<div id="tabs"><button class="tab-btn active" data-tab="stock" id="stock">Dashboard</button><button class="tab-btn" data-tab="warehouse-operations" id="tab-warehouse-operations" hidden>ใบเบิกและผลงาน</button></div><div id="pane-stock" class="tab-pane"></div><div id="pane-warehouse-operations" class="tab-pane" hidden><iframe id="warehouseOperationsFrame"></iframe></div><div id="dashboardContent"></div>`;
+const fixture=`<div id="tabs"><button class="tab-btn active" data-tab="stock" id="stock">Dashboard</button><button class="tab-btn" data-tab="warehouse-operations" id="tab-warehouse-operations" hidden>ใบเบิกบรรจุภัณฑ์</button></div><div id="pane-stock" class="tab-pane"></div><div id="pane-warehouse-operations" class="tab-pane" hidden><iframe id="warehouseOperationsFrame"></iframe></div><div id="dashboardContent"></div>`;
 (async()=>{
  const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
  try{

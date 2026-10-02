@@ -1,4 +1,4 @@
-# ใบเบิกและผลงาน PK
+# ใบเบิกบรรจุภัณฑ์ PK
 
 Module at /operations/, opened by the Admin-only PK WMS menu. Uses the PK Supabase project and PK Supabase Auth session. Business data is isolated in warehouse_ops.
 

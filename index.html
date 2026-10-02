@@ -2078,12 +2078,12 @@ header.top .header-logo { border-radius: 14px; }
     <button class="tab-btn" id="tab-daily-receive" data-tab="daily-receive" type="button" role="tab" aria-selected="false" aria-controls="pane-daily-receive" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m-4-4 4 4 4-4M4 16v4h16v-4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>รายการรับเข้าประจำวัน</span><span class="tab-badge" id="tabBadgeDailyReceive">วันนี้</span></button>
     <button class="tab-btn" id="tab-daily-issue" data-tab="daily-issue" type="button" role="tab" aria-selected="false" aria-controls="pane-daily-issue" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V4m-4 4 4-4 4 4M4 16v4h16v-4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>รายการเบิกประจำวัน</span><span class="tab-badge" id="tabBadgeDailyIssue">วันนี้</span></button>
     <button class="tab-btn" id="tab-receipt-plan" data-tab="receipt-plan" type="button" role="tab" aria-selected="false" aria-controls="pane-receipt-plan" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h14v16H5V5Zm3-2v4m8-4v4M5 10h14m-9 4h4m-4 3h3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>แผนรับเข้าประจำวัน</span><span class="tab-badge" id="tabBadgeReceiptPlan">—</span></button>
-<button class="tab-btn" id="tab-warehouse-operations" data-tab="warehouse-operations" data-admin-only="true" type="button" role="tab" aria-selected="false" aria-controls="pane-warehouse-operations" tabindex="-1" hidden><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4" stroke-width="1.8"/></svg><span>ใบเบิกและผลงาน</span></button>
+<button class="tab-btn" id="tab-warehouse-operations" data-tab="warehouse-operations" data-admin-only="true" type="button" role="tab" aria-selected="false" aria-controls="pane-warehouse-operations" tabindex="-1" hidden><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4" stroke-width="1.8"/></svg><span>ใบเบิกบรรจุภัณฑ์</span></button>
     <button class="tab-btn" id="tab-audit" data-tab="audit" type="button" role="tab" aria-selected="false" aria-controls="pane-audit" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9M12 7v5l3 2M17 3h4v4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>ประวัติการแก้ไขพาเลต</span></button>
   </nav>
   <main class="dashboard-content" id="dashboardContent" aria-label="แดชบอร์ดสินค้าคงคลัง">
 
-<div class="tab-pane" id="pane-warehouse-operations" role="tabpanel" aria-labelledby="tab-warehouse-operations" hidden><iframe id="warehouseOperationsFrame" title="ใบเบิกและผลงาน PK" style="display:block;width:100%;height:calc(100vh - 110px);min-height:640px;border:0;border-radius:18px" referrerpolicy="same-origin"></iframe></div>
+<div class="tab-pane" id="pane-warehouse-operations" role="tabpanel" aria-labelledby="tab-warehouse-operations" hidden><iframe id="warehouseOperationsFrame" title="ใบเบิกบรรจุภัณฑ์ PK" style="display:block;width:100%;height:calc(100vh - 110px);min-height:640px;border:0;border-radius:18px" referrerpolicy="same-origin"></iframe></div>
   <div class="tab-pane" id="pane-product-history" role="tabpanel" aria-labelledby="tab-product-history" hidden>
     <section class="panel product-history-panel" aria-labelledby="productHistoryTitle">
       <h2 id="productHistoryTitle">ค้นหาการเคลื่อนไหวสินค้า</h2>
@@ -9949,7 +9949,7 @@ window.addEventListener('pageshow', () => {
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
 <script src="account-status.js?v=20261002-ops1"></script>
 <link rel="stylesheet" href="warehouse-operations-pin.css?v=20261002-1">
-<script src="warehouse-operations.js?v=20261002-pin1"></script>
+<script src="warehouse-operations.js?v=20261002-pin2"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
 <script src="pk-recipes-core.js?v=20261002-1"></script>
 <script src="pk-recipes.js?v=20261002-1"></script>
