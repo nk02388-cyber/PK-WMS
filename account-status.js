@@ -62,10 +62,11 @@
     let selected = savedDepartment();
     if (selected === 'rm' || selected === 'fg') { saveDepartment(null); selected = null; }
     if (selected === 'pk') {
-      showStage('auth-ready');
+      showStage(profile ? 'auth-ready' : 'auth-pending');
     } else {
       const changed = !document.body.classList.contains('department-choosing');
-      $('departmentWelcome').textContent = `เข้าสู่ระบบในชื่อ ${profile.username} · เลือกแผนกเพื่อดำเนินการต่อ`;
+      $('departmentWelcome').textContent = 'เลือกแผนกก่อนเข้าสู่ระบบเพื่อดำเนินการต่อ';
+      $('departmentSignout').hidden = !profile;
       showStage('department-choosing');
       if (changed) document.querySelector('.department-option').focus();
     }
@@ -91,12 +92,12 @@
     try {
       const { data: { user }, error: userError } = await client.auth.getUser();
       if (id !== refreshId) return;
-      if (userError || !user) { profile = null; saveDepartment(null); showStage('auth-pending'); return; }
+      if (userError || !user) { profile = null; showDepartment(); return; }
       const { data, error: profileError } = await client.from('app_users').select('username,role,active,menu_access').eq('id', user.id).single();
       if (id !== refreshId) return;
       if (profileError || !data?.active || !['admin', 'user'].includes(data.role)) {
         await client.auth.signOut({ scope: 'local' });
-        profile = null; saveDepartment(null); showStage('auth-pending'); showError('บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน'); return;
+        profile = null; showDepartment(); showError('บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน'); return;
       }
       profile = data;
       window.dispatchEvent(new Event('wms:account-changed'));
@@ -105,7 +106,7 @@
       adminPanel.hidden = data.role !== 'admin';
       applyMenuAccess();
       showError(''); showDepartment();
-    } catch (_) { if (id === refreshId) { showStage('auth-pending'); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
+    } catch (_) { if (id === refreshId) { profile = null; showDepartment(); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
   }
   async function loadUsers() {
     if (profile?.role !== 'admin') return;
@@ -164,7 +165,7 @@
       const { error: sessionError } = await client.auth.setSession(tokens);
       if (sessionError) throw sessionError;
       $('authPassword').value = '';
-      saveDepartment(null);
+      saveDepartment('pk');
       location.reload();
     } catch (err) { showError(err.message || 'เข้าสู่ระบบไม่สำเร็จ'); }
     finally { submit.disabled = false; }
@@ -190,6 +191,9 @@
   $('accountChangeDepartment').addEventListener('click', () => {
     panel.hidden = true; button.setAttribute('aria-expanded', 'false');
     saveDepartment(null); showDepartment();
+  });
+  $('authChangeDepartment').addEventListener('click', () => {
+    saveDepartment(null); showError(''); $('authPassword').value = ''; showDepartment();
   });
   document.querySelectorAll('button.department-option').forEach(option => option.addEventListener('click', () => {
     saveDepartment(option.dataset.department); showDepartment();
