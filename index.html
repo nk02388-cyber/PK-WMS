@@ -3134,7 +3134,9 @@ document.getElementById('reportDate').textContent = String(STOCK.report_date || 
 
 // ---------- Tabs ----------
 const tabButtons = document.querySelectorAll('.tab-btn');
-function activateTab(b, moveFocus = false) {
+async function activateTab(b, moveFocus = false) {
+  if (b.hidden || (window.getWmsCanAccess && !window.getWmsCanAccess(b.dataset.tab))) return;
+  if (b.dataset.tab === 'warehouse-operations' && !(await window.requestWarehouseOperationsPin?.())) return;
   if (b.hidden || (window.getWmsCanAccess && !window.getWmsCanAccess(b.dataset.tab))) return;
   tabButtons.forEach(x => {
     const selected = x === b;
@@ -9946,7 +9948,8 @@ window.addEventListener('pageshow', () => {
 <script src="receipt-plan.js?v=20260926-1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
 <script src="account-status.js?v=20261002-ops1"></script>
-<script src="warehouse-operations.js?v=1"></script>
+<link rel="stylesheet" href="warehouse-operations-pin.css?v=20261002-1">
+<script src="warehouse-operations.js?v=20261002-pin1"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
 <script src="pk-recipes-core.js?v=20261002-1"></script>
 <script src="pk-recipes.js?v=20261002-1"></script>
