@@ -16,4 +16,11 @@ test('compact rows preserve every pallet code, count, row height and other zones
   const xs=[...new Set(changed[zone].map(s=>s.leftPct))].sort((a,b)=>a-b);
   for(let i=1;i<xs.length;i++)assert.ok(xs[i]-xs[i-1]>=.70*.9-1e-9,'cells must not overlap');
  }
+ assert.equal(changed['T-1'].length,18);
+ assert.deepEqual(Array.from(changed['T-1'],s=>s.code),Array.from({length:18},(_,i)=>`T1-${String(i+1).padStart(2,'0')}`));
+ assert.equal(new Set(changed['T-1'].map(s=>s.leftPct)).size,2);
+ assert.equal(new Set(changed['T-1'].map(s=>s.topPct)).size,9);
+ assert.ok(changed['T-1'][0].leftPct<changed['T-1'][1].leftPct);
+ assert.equal(changed['T-1'][0].topPct,changed['T-1'][1].topPct);
+ assert.ok(changed['T-1'][2].topPct>changed['T-1'][0].topPct);
 });

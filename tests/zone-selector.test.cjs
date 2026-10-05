@@ -12,20 +12,21 @@ const before = JSON.stringify(entries);
 const buildings = vm.runInNewContext(html.match(/const AREA_BUILDINGS = \[[^]*?\n\];/)[0] + '\nAREA_BUILDINGS');
 const result = vm.runInNewContext(`${escape}\n(${render})(entries, buildings)`, { entries, buildings });
 const labels = [...result.matchAll(/<button\b[^>]*>([^<]+)<\/button>/g)].map(m => m[1]);
-assert.equal(labels.length, 40);
-assert.equal(new Set(labels).size, 40);
+assert.equal(labels.length, 41);
+assert.equal(new Set(labels).size, 41);
 assert.deepEqual([...labels].sort(), Array.from(buildings.flatMap(building => building.zones)).sort());
 assert.ok(labels.every(x => /^[A-Z](?:-1)?$/.test(x)), 'Only zone codes, no pallet identifiers');
 assert.ok(labels.includes('C') && labels.includes('U'));
-assert.equal((result.match(/aria-pressed="false"/g) || []).length, 40);
-assert.match(result, /เลือกโซน · 40 โซน/);
+assert.equal((result.match(/aria-pressed="false"/g) || []).length, 41);
+assert.match(result, /เลือกโซน · 41 โซน/);
 assert.equal(JSON.stringify(entries), before);
 const groupCodes = key => [...result.match(new RegExp(`data-building="${key}"[^]*?<\\/section>`))[0]
   .matchAll(/data-zone="([^"]+)"/g)].map(m => m[1]);
 assert.deepEqual(groupCodes('new'), 'ABCDEFGHIJKLMNOPQRST'.split(''));
-assert.deepEqual(groupCodes('old'), [...'ABCDEFGHIJKLMNOPQRS'].map(x => x + '-1').concat('U'));
+assert.deepEqual(groupCodes('old'), [...'ABCDEFGHIJKLMNOPQRST'].map(x => x + '-1').concat('U'));
 assert.doesNotMatch(result, /data-building="unassigned"|ยังไม่ระบุคลัง/);
-for (const code of ['T-1', 'V-1', 'W-1', 'X-1', 'Y-1', 'Z-1']) {
+assert.ok(labels.includes('T-1'), 'New aisle zone must have a selector button');
+for (const code of ['V-1', 'W-1', 'X-1', 'Y-1', 'Z-1']) {
   assert.ok(!labels.includes(code), `${code} must not have a selector button`);
   assert.ok(Object.hasOwn(map, code), `${code} data must remain intact`);
 }
@@ -38,4 +39,4 @@ const renderDetail = html.match(/function renderFloorZoneDetail\([^]*?\n\}/)[0];
 const detailPanel = { hidden: true, innerHTML: '' };
 vm.runInNewContext(`(${renderDetail})('F', '204')`, { floorZoneDetail: detailPanel });
 assert.equal(detailPanel.innerHTML, '', 'Zone selection must not rebuild the removed summary');
-console.log('PASS: 40 assigned zone buttons, unassigned group removed, all 46 source zones preserved');
+console.log('PASS: 41 assigned zone buttons including T-1, all 46 source zones preserved');
