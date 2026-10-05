@@ -3338,10 +3338,10 @@ compactPalletRows(ZONE_SLOTS, ZONE_PINS);
 // Number left-to-right within each row, then continue downward (2 columns x 9).
 ZONE_SLOTS['T-1'] = Array.from({length:18}, (_, index) => ({
   code:`T1-${String(index + 1).padStart(2, '0')}`,
-  leftPct:48.18 + (index % 2) * 0.76,
+  leftPct:48.94 + (index % 2) * 0.76,
   topPct:36.175 + Math.floor(index / 2) * 1.1715,
 }));
-ZONE_PINS['T-1'] = {leftPct:48.56, topPct:40.861};
+ZONE_PINS['T-1'] = {leftPct:49.32, topPct:40.861};
 
 const pinnedZones = zoneEntries.filter(([z]) => ZONE_PINS[z]);
 const unpinnedZones = zoneEntries.filter(([z]) => !ZONE_PINS[z]);
