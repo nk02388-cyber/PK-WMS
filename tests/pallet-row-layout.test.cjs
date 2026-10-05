@@ -23,4 +23,8 @@ test('compact rows preserve every pallet code, count, row height and other zones
  assert.ok(changed['T-1'][0].leftPct<changed['T-1'][1].leftPct);
  assert.equal(changed['T-1'][0].topPct,changed['T-1'][1].topPct);
  assert.ok(changed['T-1'][2].topPct>changed['T-1'][0].topPct);
+ const mRows=changed['M-1'];
+ assert.equal(changed['T-1'][0].topPct,Math.min(...mRows.map(s=>s.topPct)));
+ assert.equal(changed['T-1'][17].topPct,Math.max(...mRows.map(s=>s.topPct)));
+ assert.ok(Math.abs((changed['T-1'][1].leftPct-changed['T-1'][0].leftPct)-(mRows[1].leftPct-mRows[0].leftPct))<1e-10);
 });
