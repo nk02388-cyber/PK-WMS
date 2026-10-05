@@ -759,7 +759,7 @@
      slot-code text baked into the background image -- a vector/DOM label is always crisp
      regardless of image resolution or zoom level. container-type: size + flex centering here
      mirror the same technique already used for .floor-pin/.fp-text below. */
-  .zoom-slot {
+  .zoom-slot, .zoom-context-slot {
     position: absolute; box-sizing: border-box; container-type: size;
     display: flex; align-items: center; justify-content: center; overflow: hidden;
     background: rgba(140,140,140,0.32); border: 1.75px solid rgba(55,55,55,0.9);
@@ -798,9 +798,9 @@
      what most needs attention, so a single old item colors the whole slot even if it also
      holds a freshly-received one. Thresholds (slotAgeStatus() in the JS below): green ≤ 2
      months, yellow 2-5 months, red beyond 5 months (approximated as 30 days/month). */
-  .zoom-slot.age-green { background: rgba(12,163,12,0.62); border-color: #0a7d0a; }
-  .zoom-slot.age-yellow { background: rgba(230,180,20,0.68); border-color: #a67c00; }
-  .zoom-slot.age-red { background: rgba(214,40,40,0.62); border-color: #a11212; }
+  .zoom-slot.age-green, .zoom-context-slot.age-green { background: rgba(12,163,12,0.62); border-color: #0a7d0a; }
+  .zoom-slot.age-yellow, .zoom-context-slot.age-yellow { background: rgba(230,180,20,0.68); border-color: #a67c00; }
+  .zoom-slot.age-red, .zoom-context-slot.age-red { background: rgba(214,40,40,0.62); border-color: #a11212; }
   /* Temporary marker for the search-and-jump feature (jumpToSlot()) -- a blinking green dashed
      frame laid over whatever the slot's normal empty/green/blue fill already is, so the found
      slot is unmistakable regardless of its occupancy color. Was a solid pulsing amber glow
@@ -4487,11 +4487,11 @@ function updateZoomView() {
     el.style.width = ((mask.right-mask.left) / 100 * bgW) + 'px';
     el.style.height = ((mask.bottom-mask.top) / 100 * bgH) + 'px';
   });
-  zoomSlotsLayer.querySelectorAll('.zoom-slot').forEach(el => {
+  zoomSlotsLayer.querySelectorAll('.zoom-slot, .zoom-context-slot').forEach(el => {
     const lp = parseFloat(el.dataset.leftPct), tp = parseFloat(el.dataset.topPct);
     const x = posX + (lp / 100 * bgW);
     const y = posY + (tp / 100 * bgH);
-    const slotW = cellW * palletRowScale(currentZoomZone);
+    const slotW = cellW * palletRowScale(el.dataset.zone || currentZoomZone);
     el.style.left = (x - slotW / 2) + 'px';
     el.style.top = (y - cellH / 2) + 'px';
     el.style.width = slotW + 'px';
@@ -4570,6 +4570,15 @@ function renderZoomSlots(zoneCode) {
       : s.code;
     return `<div class="zoom-slot${occCls}${ageCls}" data-slot="${s.code}" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" title="${tip.replace(/"/g,'&quot;')}"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
   }).join('');
+  // T-1 has no rack artwork in the CAD image. Draw its pallets in other zone
+  // views too, while keeping actions and counts scoped to the selected zone.
+  if (zoneCode !== 'T-1') {
+    zoomSlotsLayer.innerHTML += (ZONE_SLOTS['T-1'] || []).map(s => {
+      const status = slotAgeStatus('T-1', s.code);
+      const ageCls = status === 'none' ? '' : ` age-${status}`;
+      return `<div class="zoom-context-slot${ageCls}" data-zone="T-1" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
+    }).join('');
+  }
   updateZoomCount();
 }
 
