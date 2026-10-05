@@ -193,7 +193,7 @@
     const deleteId = event.target.closest('[data-delete]')?.dataset.delete;
     if (!deleteId) return;
     const item = events.find(row => row.id === deleteId);
-    if (!item || syncState !== 'ready' || busy || !confirm(`ลบกิจกรรม “${item.name}” หรือไม่?`)) return;
+    if (!item || syncState !== 'ready' || busy || !window.PKActionConfirmation?.isConfirmed(event.target.closest('[data-delete]'))) return;
     busy=true; setSyncState('ready','กำลังลบกิจกรรม…');
     try {
       const {error:deleteError}=await client.rpc('delete_calendar_event',{p_id:deleteId,p_expected_version:versions.get(deleteId)});

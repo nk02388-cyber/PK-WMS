@@ -129,7 +129,7 @@
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'ลบ';
         remove.setAttribute('aria-label', `ลบผู้ใช้ ${user.username}`);
         remove.addEventListener('click', async () => {
-          if (!confirm(`ลบบัญชี ${user.username} ใช่หรือไม่?`)) return;
+          if (!window.PKActionConfirmation?.isConfirmed(remove)) return;
           remove.disabled = true;
           try { await adminCall('delete', { id: user.id }); await loadUsers(); message.textContent = `ลบ ${user.username} แล้ว`; }
           catch (err) { remove.disabled = false; message.textContent = err.message; }

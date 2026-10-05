@@ -6209,23 +6209,25 @@ fseItemsList.addEventListener('click', async (e) => {
     return;
   }
 
-  // 21 Aug 2026: "✕" no longer deletes on the first click -- it arms a confirm step for that
-  // row instead (removeConfirmIndex), closing any open withdraw form so the two per-row states
-  // never show at once. Clicking elsewhere (a different item's ✕/เบิก, or the panel close
-  // button below) clears it without deleting anything.
+  // Pallet removal now requires the shared own-account/password/reason popup.
+  // Replay is single-use and the transaction still checks the slot version.
   const removeBtn = e.target.closest('.fse-item-remove');
   if (removeBtn) {
-    removeConfirmIndex = parseInt(removeBtn.dataset.idx, 10);
+    if (!window.PKActionConfirmation?.isConfirmed(removeBtn)) return;
+    if (!await runSlotMutation(editingSlot.zone, editingSlot.slot, () => removeSlotItem(editingSlot.zone, editingSlot.slot, parseInt(removeBtn.dataset.idx, 10)), {action:'remove'})) return;
+    removeConfirmIndex = null;
     withdrawOpenIndex = null;
   returnOpenIndex = null;
     editItemIndex = null;
-    renderSlotEdit();
+    syncAfterSlotEdit();
+    showFseFeedback('ลบรายการแล้ว');
     return;
   }
 
   const removeConfirmBtn = e.target.closest('.fse-remove-confirm-btn');
   if (removeConfirmBtn) {
-    if (!await runSlotMutation(editingSlot.zone, editingSlot.slot, () => removeSlotItem(editingSlot.zone, editingSlot.slot, parseInt(removeConfirmBtn.dataset.idx, 10)))) return;
+    if (!window.PKActionConfirmation?.isConfirmed(removeConfirmBtn)) return;
+    if (!await runSlotMutation(editingSlot.zone, editingSlot.slot, () => removeSlotItem(editingSlot.zone, editingSlot.slot, parseInt(removeConfirmBtn.dataset.idx, 10)), {action:'remove'})) return;
     // removing an item shifts every later item's index by one -- clear both per-row states
     // rather than risk either silently re-pointing at the wrong item after the list re-renders.
     removeConfirmIndex = null;
@@ -10040,18 +10042,20 @@ window.addEventListener('pageshow', () => {
 <script src="top-withdrawals.js?v=20260925-2"></script>
 <script src="reorder-points-data.js?v=20260924-1"></script>
 <script src="reorder-points.js?v=20260924-1"></script>
-<script src="event-calendar.js?v=20260926-3"></script>
+<link rel="stylesheet" href="action-confirmation.css?v=1">
+<script src="action-confirmation.js?v=1"></script>
+<script src="event-calendar.js?v=20261005-confirm1"></script>
 <script src="notifications.js?v=20260926-1"></script>
 <script src="receipt-plan.js?v=20260926-1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20261002-login1"></script>
+<script src="account-status.js?v=20261005-confirm1"></script>
 <link rel="stylesheet" href="warehouse-operations-pin.css?v=20261002-1">
 <script src="warehouse-operations.js?v=20261002-pin2"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
 <script src="pk-recipes-core.js?v=20261002-1"></script>
 <script src="pk-recipes.js?v=20261002-1"></script>
 <script src="cycle-counts-core.js?v=20260926-1"></script>
-<script src="cycle-counts.js?v=20260926-1"></script>
+<script src="cycle-counts.js?v=20261005-confirm1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>
 <script src="scrap-inventory.js?v=20260926-1"></script>
 

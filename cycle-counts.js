@@ -137,7 +137,7 @@
   });
   draftBox.addEventListener('click', event => {
     if (event.target.id === 'cycleCountCancel') {
-      if (!window.confirm('ยกเลิกงานตรวจนับที่ยังไม่บันทึกผลหรือไม่?')) return;
+      if (!window.PKActionConfirmation?.isConfirmed(event.target.closest('button'))) return;
       if (persist({ ...state, draft: null })) { renderDraft(); setStatus('ยกเลิกงานตรวจนับแล้ว'); }
     }
     if (event.target.id === 'cycleCountComplete') {
