@@ -1,6 +1,8 @@
 # Delete/cancel confirmation
 
-`action-confirmation.js` captures buttons whose visible text or accessible label contains ลบ or ยกเลิก, including dynamically rendered buttons and submit buttons. The confirmation dialog's own Back/Escape dismisses the request without requiring another confirmation. Ordinary Save controls are unaffected.
+`action-confirmation.js` captures explicit data-removal controls: pallet items, plan rows, recipe component rows, non-BOM material rows, calendar events, user accounts and cancellation of cycle-count drafts. New destructive controls must use `data-confirm-destructive="Action label"`. It does not infer destructive behavior from the words ลบ or ยกเลิก. Back, close, abandoning edits, withdrawing/returning form cancellation, and undoing a pending deletion dismiss normally without credentials or an audit record.
+
+Warehouse ticket Delete/Cancel/Purge buttons first open their existing details form. Only the final submit that deletes/cancels the ticket requires credentials and a reason. Changing the event dialog to Pause/Resume/Restore clears the destructive marker.
 
 The dialog shows the currently logged-in username as read-only. Password/PIN verification uses the existing `pk-user-access` login handler and compares the verified Supabase user ID with the current session's user ID before and after verification. It never sets the verification session as the current session. A temporary authentication session is signed out locally after the check. Credentials are cleared from the form and are not stored in the audit record.
 

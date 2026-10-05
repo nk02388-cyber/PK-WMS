@@ -325,6 +325,9 @@ async function mutate(fn,args,success,errorTarget){return saveOnce(fn+':'+(args.
 function openEvent(kind,ticket){
   pendingEvent={kind,id:ticket.id};const config=eventConfig[kind],form=$('#event-form');
   form.reset();form.elements.reason.required=config.required;
+  const submit=form.querySelector('button[type="submit"]');
+  if(['delete','cancel'].includes(kind))submit.dataset.confirmDestructive=config.title;
+  else delete submit.dataset.confirmDestructive;
   $('#event-title').textContent=config.title;$('#event-ticket').textContent=`ใบเบิก ${ticket.ticket_no}`;
   $('#event-hint').textContent=kind==='delete'?'ย้ายไปถังขยะและไม่นับในภาพรวม กู้คืนได้ เลขใบเบิกยังถูกเก็บไว้':kind==='restore'?'กู้คืนใบเบิกในสถานะเดิม':kind==='partial'?'จบงานในสถานะเบิกไม่ครบ':kind==='cancel'?'ยกเลิกแล้วเริ่มงานต่อไม่ได้':kind==='pause'?'พักงานโดยคงเวลาเริ่มเดิม':'เหตุผลเพิ่มเติม (ถ้ามี)';
   $('#event-dialog').showModal();

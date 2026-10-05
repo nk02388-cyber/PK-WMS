@@ -59,7 +59,9 @@
  function targetButton(event){
   const button=event.type==='submit'?event.submitter:event.target.closest('button,input[type="submit"]');
   if(!button||button.disabled||button.closest('#actionConfirmationDialog')||approved.has(button))return null;
-  const label=[button.getAttribute('aria-label'),button.textContent,button.value,button.title].map(value=>(value||'').trim()).find(value=>/ลบ|ยกเลิก/.test(value));
+  // Confirm data removal/cancellation, never a form's Back/Cancel control.
+  if(!button.matches('[data-confirm-destructive],.fse-item-remove,.fse-remove-confirm-btn,[data-plan-remove],[data-remove-stock],[data-delete],#cycleCountCancel'))return null;
+  const label=button.dataset.confirmDestructive||[button.getAttribute('aria-label'),button.textContent,button.value,button.title].map(value=>(value||'').trim()).find(value=>/ลบ|ยกเลิก/.test(value));
   return label?{button,label}:null;
  }
  async function gate(event){

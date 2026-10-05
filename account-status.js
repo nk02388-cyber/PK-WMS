@@ -127,6 +127,7 @@
         const name = document.createElement('strong'); name.textContent = user.username;
         info.append(name);
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'ลบ';
+        remove.dataset.confirmDestructive = `ลบผู้ใช้ ${user.username}`;
         remove.setAttribute('aria-label', `ลบผู้ใช้ ${user.username}`);
         remove.addEventListener('click', async () => {
           if (!window.PKActionConfirmation?.isConfirmed(remove)) return;

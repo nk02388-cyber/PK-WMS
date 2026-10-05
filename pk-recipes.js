@@ -22,7 +22,7 @@
       });}
       wrap.append(field);row.append(wrap);
     }
-    const remove=document.createElement('button');remove.type='button';remove.textContent='ลบแถว';remove.onclick=()=>row.remove();row.append(remove);$('pkRecipeLines').append(row);
+    const remove=document.createElement('button');remove.type='button';remove.textContent='ลบแถว';remove.dataset.confirmDestructive='ลบแถวส่วนประกอบสูตร';remove.onclick=()=>row.remove();row.append(remove);$('pkRecipeLines').append(row);
   }
   function collect() {
     return core.validateRecipe({fg_code:$('pkRecipeCode').value,fg_name:$('pkRecipeName').value,base_qty:$('pkRecipeBase').value,fg_unit:$('pkRecipeUnit').value,
