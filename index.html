@@ -5451,9 +5451,13 @@ function renderSlotEdit() {
   const { zone, slot } = editingSlot;
   fseSlotTitle.textContent = `ตำแหน่ง ${slot}`;
   const items = slotItemsFor(zone, slot);
-  if (fseItemCount) fseItemCount.textContent = `${items.length} รายการ`;
-  fseItemsList.innerHTML = items.length
-    ? FSE_ITEMS_HEADER + items.map((it, i) => {
+  const depleted = items.map(it => {
+    const balance = getRemainingQty(it);
+    return balance != null && String(balance).trim() !== '' && Number.isFinite(Number(balance)) && Number(balance) === 0;
+  });
+  const activeCount = depleted.filter(value => !value).length;
+  if (fseItemCount) fseItemCount.textContent = `${activeCount} รายการ`;
+  const rows = items.map((it, i) => {
         const metaLine = it.note ? `<span class="fse-item-meta">หมายเหตุ: ${escapeHtml(it.note)}</span>` : '';
 
         // "เบิก" (withdraw) feature, added 20 Aug 2026 per Pornchai's request: a per-item audit
@@ -5518,8 +5522,15 @@ function renderSlotEdit() {
         ${editForm}
         ${withdrawForm}
         ${returnForm}`;
-      }).join('')
-    : `<div class="fse-empty-msg">ตำแหน่งนี้ยังไม่มีรายการสินค้า</div>`;
+      });
+  fseItemsList.innerHTML = activeCount
+    ? FSE_ITEMS_HEADER + rows.filter((_, i) => !depleted[i]).join('')
+    : `<div class="fse-empty-msg">ตำแหน่งนี้ไม่มีรายการสินค้าคงเหลือ</div>`;
+  const historyCount = items.length - activeCount;
+  if (historyCount) {
+    const historyOpen = depleted[editItemIndex] || depleted[withdrawOpenIndex] || depleted[returnOpenIndex] || (movementEdit && depleted[movementEdit.itemIndex]);
+    fseItemsList.innerHTML += `<details class="fse-depleted-history" ${historyOpen ? 'open' : ''}><summary style="cursor:pointer;padding:12px 0;">ประวัติรายการหมดสต็อก ${historyCount} รายการ · ดู Log / รับคืน</summary>${FSE_ITEMS_HEADER}${rows.filter((_, i) => depleted[i]).join('')}</details>`;
+  }
   updateAddBtnState();
   updateWithdrawBtnState();
   updateReturnBtnState();
