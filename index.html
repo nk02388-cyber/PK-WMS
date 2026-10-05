@@ -3313,6 +3313,7 @@ const ZONE_SLOTS = {"A":[{"code":"A-01","leftPct":67.648,"topPct":67.802},{"code
 const COMPACT_PALLET_ZONES = new Set(['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1']);
 const PALLET_ROW_SCALE_X = 0.9;
 const PALLET_ROW_MASKS = [];
+const PALLET_ROW_RACKS = [];
 function palletRowScale(zoneCode) { return COMPACT_PALLET_ZONES.has(zoneCode) ? PALLET_ROW_SCALE_X : 1; }
 function compactPalletRows(slotsByZone, pins) {
   COMPACT_PALLET_ZONES.forEach(zoneCode => {
@@ -3323,6 +3324,7 @@ function compactPalletRows(slotsByZone, pins) {
     const newRight = left + (right - left) * PALLET_ROW_SCALE_X;
     [...new Set(slots.map(slot => slot.topPct))].forEach(top => {
       PALLET_ROW_MASKS.push({left:newRight + 0.70 * PALLET_ROW_SCALE_X / 2, right:right + 0.55, top:top - 0.7, bottom:top + 0.7});
+      PALLET_ROW_RACKS.push({sourceLeft:left-0.55, sourceRight:right+0.55, top:top-0.7, bottom:top+0.7, targetLeft:left-0.55*PALLET_ROW_SCALE_X});
     });
     slots.forEach(slot => { slot.leftPct = left + (slot.leftPct - left) * PALLET_ROW_SCALE_X; });
     if (pins[zoneCode]) pins[zoneCode].leftPct = left + (pins[zoneCode].leftPct - left) * PALLET_ROW_SCALE_X;
@@ -4455,6 +4457,18 @@ function updateZoomView() {
 
   const cellW = (0.65 / 100) * bgW;
   const cellH = (0.95 / 100) * bgH;
+  // Repaint the CAD rack artwork as well as the interactive slots. Crop each
+  // source row and scale it horizontally, preserving every printed pallet label.
+  zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
+    const rack = PALLET_ROW_RACKS[Number(el.dataset.rack)];
+    el.style.left = (posX + rack.targetLeft / 100 * bgW) + 'px';
+    el.style.top = (posY + rack.top / 100 * bgH) + 'px';
+    el.style.width = ((rack.sourceRight-rack.sourceLeft) / 100 * bgW) + 'px';
+    el.style.height = ((rack.bottom-rack.top) / 100 * bgH) + 'px';
+    el.style.backgroundImage = `url(${zoomSourceUrl})`;
+    el.style.backgroundSize = `${bgW}px ${bgH}px`;
+    el.style.backgroundPosition = `${-rack.sourceLeft / 100 * bgW}px ${-rack.top / 100 * bgH}px`;
+  });
   zoomSlotsLayer.querySelectorAll('.zoom-layout-mask').forEach(el => {
     const mask = PALLET_ROW_MASKS[Number(el.dataset.mask)];
     el.style.left = (posX + mask.left / 100 * bgW) + 'px';
@@ -4530,7 +4544,7 @@ function renderZoomSlots(zoneCode) {
   } else {
     zoomZoneBoxBounds = null;
   }
-  zoomSlotsLayer.innerHTML = PALLET_ROW_MASKS.map((_,index) => `<div class="zoom-layout-mask" data-mask="${index}" aria-hidden="true" style="position:absolute;background:#fff;pointer-events:none;"></div>`).join('') + slots.map(s => {
+  zoomSlotsLayer.innerHTML = PALLET_ROW_RACKS.map((_,index) => `<div class="zoom-compact-rack" data-rack="${index}" aria-hidden="true" style="position:absolute;background-color:#fff;background-repeat:no-repeat;transform:scaleX(${PALLET_ROW_SCALE_X});transform-origin:left top;pointer-events:none;"></div>`).join('') + PALLET_ROW_MASKS.map((_,index) => `<div class="zoom-layout-mask" data-mask="${index}" aria-hidden="true" style="position:absolute;background:#fff;pointer-events:none;"></div>`).join('') + slots.map(s => {
     const status = slotAgeStatus(zoneCode, s.code);
     // "occupied" is kept as a plain, unstyled marker class alongside the age-* class that
     // actually drives the fill color (see slotAgeStatus() / the .zoom-slot.age-* CSS) -- purely
