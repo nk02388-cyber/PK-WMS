@@ -3778,6 +3778,7 @@ Object.entries(ZONE_SLOTS).forEach(([zone, slots]) => slots.forEach(slot => {
 }));
 zoomCadSlotLabels.appendChild(cadSlotFragment);
 Object.entries(ZONE_PINS).forEach(([code, pin]) => {
+  if (code === 'T-1') return; // T-1 has no CAD label to replace; avoid covering its pallets.
   const label = document.createElement('span');
   label.className = 'zoom-cad-label';
   label.textContent = code;
