@@ -4066,7 +4066,7 @@ function refreshAfterRemoteChange(zoneCode, slotCode) {
   rebuildItemToSlots();
   refreshSearchDatalist();
   renderOverviewSlotStatus();
-  if (currentZoomZone && (!zoneCode || zoneCode === currentZoomZone)) {
+  if (currentZoomZone && (!zoneCode || zoneCode === currentZoomZone || zoneCode === 'T-1')) {
     renderZoomSlots(currentZoomZone);
     updateZoomView();
   }
@@ -4482,7 +4482,6 @@ function updateZoomView() {
     el.style.top = (posY + rack.top / 100 * bgH) + 'px';
     el.style.width = ((rack.sourceRight-rack.sourceLeft) / 100 * bgW) + 'px';
     el.style.height = ((rack.bottom-rack.top) / 100 * bgH) + 'px';
-    el.style.backgroundImage = `url(${zoomSourceUrl})`;
     el.style.backgroundSize = `${bgW}px ${bgH}px`;
     el.style.backgroundPosition = `${-rack.sourceLeft / 100 * bgW}px ${-rack.top / 100 * bgH}px`;
   });
@@ -4585,6 +4584,9 @@ function renderZoomSlots(zoneCode) {
       return `<div class="zoom-context-slot${ageCls}" data-zone="T-1" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
     }).join('');
   }
+  zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
+    el.style.backgroundImage = `url(${zoomSourceUrl})`;
+  });
   updateZoomCount();
 }
 

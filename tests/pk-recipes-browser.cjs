@@ -4,7 +4,7 @@ const {chromium}=require('C:/Users/ADMIN/.cache/codex-runtimes/codex-primary-run
 const root=path.resolve(__dirname,'..'),records=new Map();
 let failSave=false;
 const fixture=`<script>
-document.body.classList.remove('auth-pending');document.body.classList.add('auth-ready');
+document.body.classList.remove('auth-pending','department-choosing');document.body.classList.add('auth-ready');
 window.getWmsIsAdmin=()=>true;window.getWmsCanAccess=()=>true;
 supabaseClient={rpc:async(name,args)=>{const response=await fetch('/qa/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,args})});return response.json();}};
 </script>`;

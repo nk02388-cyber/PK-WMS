@@ -41,7 +41,7 @@ assert.match(ctx.floorplanSearchDatalist.innerHTML,/&quot;&gt;|&quot;>/);
 console.log('PASS: JSONB key ordering, genuine conflicts, draft retention, visible errors, numeric validation and HTML escaping');
 let renders = 0;
 Object.assign(ctx,{rebuildItemToSlots(){},refreshSearchDatalist(){},renderOverviewSlotStatus(){},
-  currentZoomZone:null,renderSlotEdit(){renders++},document:{querySelector(){return null}},window:{}});
+  currentZoomZone:null,renderSlotEdit(){renders++},document:{querySelector(){return null},getElementById(){return {hidden:true}}},window:{}});
 vm.runInContext(extract('refreshAfterRemoteChange'),ctx);
 ctx.refreshAfterRemoteChange();
 assert.equal(renders,1,'Initial full sync must refresh an already-open slot panel');
@@ -50,3 +50,9 @@ assert.equal(renders,1,'Unrelated slot event must not redraw the active editor')
 ctx.refreshAfterRemoteChange('F','F-18');
 assert.equal(renders,2,'Matching slot event refreshes the panel');
 console.log('PASS: initial full-sync and matching-slot panel refresh');
+let zoomRenders = 0;
+Object.assign(ctx,{currentZoomZone:'M-1',renderZoomSlots(){zoomRenders++},updateZoomView(){}});
+ctx.refreshAfterRemoteChange('T-1','T1-01');
+assert.equal(zoomRenders,1,'T-1 context colors must refresh while M-1 is open');
+ctx.refreshAfterRemoteChange('A','A-01');
+assert.equal(zoomRenders,1,'Unrelated zones must not rebuild the zoom view');
