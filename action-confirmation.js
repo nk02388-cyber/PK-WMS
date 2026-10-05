@@ -59,15 +59,15 @@
  function targetButton(event){
   const button=event.type==='submit'?event.submitter:event.target.closest('button,input[type="submit"]');
   if(!button||button.disabled||button.closest('#actionConfirmationDialog')||approved.has(button))return null;
-  const label=(button.getAttribute('aria-label')||button.textContent||button.value||'').trim();
-  return /ลบ|ยกเลิก/.test(label)?{button,label}:null;
+  const label=[button.getAttribute('aria-label'),button.textContent,button.value,button.title].map(value=>(value||'').trim()).find(value=>/ลบ|ยกเลิก/.test(value));
+  return label?{button,label}:null;
  }
  async function gate(event){
   const action=targetButton(event);if(!action)return;
   event.preventDefault();event.stopImmediatePropagation();
   const {button,label}=action;
   const container=button.closest('.fse-item, tr, .account-user, .calendar-event, article, form');
-  const target=container?.textContent?.trim().replace(/\s+/g,' ').slice(0,1000)||button.id||label;
+  const target=container?.innerText?.trim().replace(/\s+/g,' ').slice(0,1000)||button.id||label;
   const result=await request(label,target);
   if(!result||!button.isConnected||button.disabled)return;
   approved.add(button);
