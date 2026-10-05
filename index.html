@@ -1060,6 +1060,15 @@
     background: #d9f2d9; border-color: #43a047; color: #1b4620;
   }
   .fw-actions { display: flex; gap: 6px; white-space: nowrap; }
+  .fse-withdraw-form > label, .fse-return-form > label {
+    display: flex; flex-direction: column; gap: 6px; margin-top: 12px;
+  }
+  .fse-withdraw-form > .fw-actions, .fse-return-form > .fw-actions {
+    margin-top: 12px; gap: 10px; flex-wrap: wrap;
+  }
+  .fse-withdraw-form > .fw-actions button, .fse-return-form > .fw-actions button {
+    min-height: 40px; padding: 8px 16px;
+  }
   .fse-withdraw-form .fw-hint { margin-top: 6px; font-size: 10.5px; color: var(--text-secondary); }
   /* Save button mirrors the same yellow/green language: yellow while the form isn't fully valid
      yet (disabled -- can't be pressed), green once every field is valid (enabled -- ready to
@@ -1384,7 +1393,7 @@
     .fse-return-form .fw-entry-row td:nth-child(2)::before { content: "จำนวนรับคืน *"; }
     .fse-return-form .fw-entry-row td:nth-child(3)::before { content: "หน่วย *"; }
     .fse-return-form .fw-entry-row td:nth-child(4)::before { content: "ผู้คืน *"; }
-    .fse-withdraw-form > .fw-actions, .fse-return-form > .fw-actions { margin-top: 10px; }
+    .fse-withdraw-form > .fw-actions, .fse-return-form > .fw-actions { margin-top: 12px; }
     .fse-withdraw-form > .fw-actions button,
     .fse-return-form > .fw-actions button { flex: 1 1 0; min-height: 44px; white-space: normal; }
     .fse-withdraw-form > label, .fse-return-form > label {
