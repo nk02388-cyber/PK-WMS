@@ -4402,7 +4402,11 @@ function renderPackagingAgeStatus() {
 const floorplanSlotStatus = document.getElementById('floorplanSlotStatus');
 function renderOverviewSlotStatus() {
   if (!floorplanSlotStatus) return;
-  let html = PALLET_ROW_MASKS.map(mask => `<div aria-hidden="true" style="position:absolute;left:${mask.left}%;top:${mask.top}%;width:${mask.right-mask.left}%;height:${mask.bottom-mask.top}%;background:#fff;"></div>`).join('');
+  let html = PALLET_ROW_RACKS.map(rack => {
+    const width = rack.sourceRight - rack.sourceLeft;
+    const height = rack.bottom - rack.top;
+    return `<div class="ov-compact-rack" aria-hidden="true" style="position:absolute;overflow:hidden;left:${rack.targetLeft}%;top:${rack.top}%;width:${width}%;height:${height}%;background:#fff;transform:scaleX(${PALLET_ROW_SCALE_X});transform-origin:left top;"><img alt="" style="position:absolute;max-width:none;width:${10000/width}%;height:${10000/height}%;left:${-rack.sourceLeft/width*100}%;top:${-rack.top/height*100}%;"></div>`;
+  }).join('') + PALLET_ROW_MASKS.map(mask => `<div aria-hidden="true" style="position:absolute;left:${mask.left}%;top:${mask.top}%;width:${mask.right-mask.left}%;height:${mask.bottom-mask.top}%;background:#fff;"></div>`).join('');
   Object.keys(ZONE_SLOTS).forEach(zoneCode => {
     const slots = ZONE_SLOTS[zoneCode] || [];
     slots.forEach(s => {
@@ -4414,6 +4418,8 @@ function renderOverviewSlotStatus() {
     });
   });
   floorplanSlotStatus.innerHTML = html;
+  const source = document.querySelector('#floorplanImageWrap > img');
+  if (source) floorplanSlotStatus.querySelectorAll('.ov-compact-rack img').forEach(img => { img.src = source.src; });
   // Keep building usage cards and the capacity gauge synced with occupancy changes.
   renderBuildingUsage();
   renderSpeedMeter();
