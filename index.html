@@ -3827,15 +3827,8 @@ Object.entries(mobileMapView ? {} : ZONE_SLOTS).forEach(([zone, slots]) => slots
   cadSlotFragment.appendChild(label);
 }));
 zoomCadSlotLabels.appendChild(cadSlotFragment);
-Object.entries(ZONE_PINS).forEach(([code, pin]) => {
-  if (code === 'T-1') return; // T-1 has no CAD label to replace; avoid covering its pallets.
-  const label = document.createElement('span');
-  label.className = 'zoom-cad-label';
-  label.textContent = code;
-  label.dataset.leftPct = pin.leftPct;
-  label.dataset.topPct = pin.topPct;
-  zoomCadLabels.appendChild(label);
-});
+// Keep the original orange CAD zone signs and the active orange zone heading.
+// Additional white zone-name overlays obscure the drawing and are not needed.
 zoomViewport.style.backgroundImage = 'none';
 zoomStage.append(zoomZoneBox, zoomCadSlotLabels, zoomSlotsLayer, zoomCadLabels, zoomZoneLabel);
 zoomViewport.append(zoomStage);
