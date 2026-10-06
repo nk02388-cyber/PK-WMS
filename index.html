@@ -3774,11 +3774,40 @@ const zoomZoneLabel = document.getElementById('floorplanZoomZoneLabel');
 const zoomTitle = document.getElementById('floorplanZoomTitle');
 const zoomCountEl = document.getElementById('floorplanZoomCount');
 const zoomSourceUrl = document.getElementById('floorplanZoomSource').src;
+const mobileMapView = window.matchMedia('(max-width:900px), (pointer:coarse)').matches;
 // Rotate the drawing and hit targets together, leaving the dialog controls upright.
 const zoomStage = document.createElement('div');
 zoomStage.id = 'floorplanZoomStage';
 zoomStage.className = 'floorplan-zoom-stage';
-zoomStage.style.backgroundImage = `url(${zoomSourceUrl})`;
+zoomStage.style.backgroundImage = mobileMapView ? 'none' : `url(${zoomSourceUrl})`;
+const mobileMapSurface = mobileMapView ? document.createElement('canvas') : null;
+let mobileMapSource = null;
+function applyZoomBackdrop(bgW,bgH,posX,posY) {
+  if(!mobileMapSurface){zoomStage.style.backgroundSize=`${bgW}px ${bgH}px`;zoomStage.style.backgroundPosition=`${posX}px ${posY}px`;return;}
+  if(!mobileMapSource){
+    mobileMapSource=new Image();mobileMapSource.decoding='async';
+    mobileMapSource.onload=()=>{
+      const width=2048,height=Math.round(width*FLOORPLAN_ZOOM_H/FLOORPLAN_ZOOM_W);
+      mobileMapSurface.width=width;mobileMapSurface.height=height;
+      const ctx=mobileMapSurface.getContext('2d');ctx.drawImage(mobileMapSource,0,0,width,height);
+      for(const rack of PALLET_ROW_RACKS){const x=rack.sourceLeft/100,y=rack.top/100,w=(rack.sourceRight-rack.sourceLeft)/100,h=(rack.bottom-rack.top)/100;ctx.drawImage(mobileMapSource,x*mobileMapSource.naturalWidth,y*mobileMapSource.naturalHeight,w*mobileMapSource.naturalWidth,h*mobileMapSource.naturalHeight,rack.targetLeft/100*width,y*height,w*PALLET_ROW_SCALE_X*width,h*height);}
+      ctx.fillStyle='#fff';for(const mask of PALLET_ROW_MASKS)ctx.fillRect(mask.left/100*width,mask.top/100*height,(mask.right-mask.left)/100*width,(mask.bottom-mask.top)/100*height);
+      zoomViewLayout=null;if(!zoomModal.hidden)requestAnimationFrame(updateZoomView);
+    };
+    mobileMapSource.src=zoomSourceUrl;
+  }
+  const width=mobileMapSurface.width||2048,height=mobileMapSurface.height||1583;
+  mobileMapSurface.style.transform=`translate3d(${posX}px,${posY}px,0) scale(${bgW/width},${bgH/height})`;
+}
+if(mobileMapSurface){
+  mobileMapSurface.className='mobile-map-surface';mobileMapSurface.setAttribute('aria-hidden','true');
+  mobileMapSurface.style.cssText='position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;';
+  zoomStage.append(mobileMapSurface);
+  // Safari gesture events can otherwise magnify the entire page instead of the map.
+  zoomViewport.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+  zoomViewport.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+  zoomViewport.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
+}
 const zoomCadLabels = document.createElement('div');
 zoomCadLabels.className = 'zoom-cad-labels';
 // Slot names in the CAD image are pixels, so they turn upside down with the drawing.
@@ -3786,7 +3815,6 @@ zoomCadLabels.className = 'zoom-cad-labels';
 const zoomCadSlotLabels = document.createElement('div');
 zoomCadSlotLabels.className = 'zoom-cad-slot-labels';
 const cadSlotFragment = document.createDocumentFragment();
-const mobileMapView = window.matchMedia('(max-width:900px), (pointer:coarse)').matches;
 Object.entries(mobileMapView ? {} : ZONE_SLOTS).forEach(([zone, slots]) => slots.forEach(slot => {
   const label = document.createElement('span');
   label.className = 'zoom-cad-slot-label';
@@ -4479,8 +4507,7 @@ function updateZoomView() {
     const ratio=zoomScale/zoomViewLayout.scale,bgW=FLOORPLAN_ZOOM_W*zoomScale,bgH=FLOORPLAN_ZOOM_H*zoomScale;
     const posX=rect.width/2-zoomCenterPct.leftPct/100*bgW+rect.panX,posY=rect.height/2-zoomCenterPct.topPct/100*bgH+rect.panY;
     const dx=posX-ratio*zoomViewLayout.posX,dy=posY-ratio*zoomViewLayout.posY;
-    zoomStage.style.backgroundSize=`${bgW}px ${bgH}px`;
-    zoomStage.style.backgroundPosition = `${posX}px ${posY}px`;
+    applyZoomBackdrop(bgW,bgH,posX,posY);
     for(const layer of [zoomSlotsLayer,zoomCadLabels,zoomCadSlotLabels,zoomZoneBox])if(layer)layer.style.transform=`translate3d(${dx}px,${dy}px,0) scale(${ratio})`;
     if(zoomZoneLabel&&zoomZoneBoxBounds){zoomZoneLabel.style.left=(posX+(zoomZoneBoxBounds.minL+zoomZoneBoxBounds.maxL)/200*bgW)+'px';zoomZoneLabel.style.top=Math.max(posY+zoomZoneBoxBounds.minT/100*bgH-(zoomViewLayout.labelHeight||30)-6,4)+'px';}
     return;
@@ -4496,8 +4523,7 @@ function updateZoomView() {
   const posX = rect.width / 2 - (zoomCenterPct.leftPct / 100 * bgW) + rect.panX;
   const posY = rect.height / 2 - (zoomCenterPct.topPct / 100 * bgH) + rect.panY;
   zoomViewLayout.posX=posX;zoomViewLayout.posY=posY;
-  zoomStage.style.backgroundSize = `${bgW}px ${bgH}px`;
-  zoomStage.style.backgroundPosition = `${posX}px ${posY}px`;
+  applyZoomBackdrop(bgW,bgH,posX,posY);
   zoomCadSlotLabels.style.display = mapRotation && zoomScale >= 1.5 ? 'block' : 'none';
   zoomCadSlotLabels.style.left = `${posX}px`;
   zoomCadSlotLabels.style.top = `${posY}px`;
@@ -4628,8 +4654,9 @@ function renderZoomSlots(zoneCode) {
     }).join('');
   }
   zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
-    el.style.backgroundImage = `url(${zoomSourceUrl})`;
+    if(mobileMapView)el.style.display='none';else el.style.backgroundImage = `url(${zoomSourceUrl})`;
   });
+  if(mobileMapView)zoomSlotsLayer.querySelectorAll('.zoom-layout-mask').forEach(el=>el.style.display='none');
   updateZoomCount();
 }
 
