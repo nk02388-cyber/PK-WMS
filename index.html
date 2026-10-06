@@ -1991,6 +1991,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="wms-operations.css?v=20260928-1">
 <link rel="stylesheet" href="haulix-theme.css?v=20261006-spacing3">
 <link rel="stylesheet" href="bom-results.css?v=20261006-1">
+<link rel="stylesheet" href="sidebar-toggle.css?v=20261006-1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2028,6 +2029,7 @@ header.top .header-logo { border-radius: 14px; }
 
   <header class="top">
     <div class="header-brand">
+      <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="ปิดไซด์บาร์" aria-expanded="true" aria-controls="tabs" title="ปิดไซด์บาร์"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.7"/></svg></button>
       <img class="header-logo" src="assets/bcl-logo-monochrome.png?v=2" alt="โลโก้ BIO-COSLAB .,CO LTD.">
       <div class="header-brand-copy"><strong class="header-product-name">PK WMS</strong><p class="welcome-greeting" id="welcomeGreeting">ยินดีต้อนรับ ขอให้วันนี้เป็นวันที่ดี</p></div>
     </div>
@@ -2078,7 +2080,7 @@ header.top .header-logo { border-radius: 14px; }
 
   <div class="dashboard-layout" id="dashboardLayout">
   <nav class="tabs" id="tabs" role="tablist" aria-label="ส่วนข้อมูลแดชบอร์ด">
-    <div class="dashboard-nav-brand" aria-label="PK WMS โดย BIO-COSLAB .,CO LTD."><img src="assets/bcl-logo-monochrome.png?v=2" alt=""><span class="dashboard-nav-name">PK WMS <small>BIO-COSLAB .,CO LTD.</small></span></div>
+    <div class="dashboard-nav-brand" aria-label="PK WMS โดย BIO-COSLAB .,CO LTD."><img src="assets/bcl-logo-monochrome.png?v=2" alt=""><span class="dashboard-nav-name">PK WMS <small>BIO-COSLAB .,CO LTD.</small></span><button type="button" class="sidebar-close" id="sidebarClose" aria-label="ปิดเมนูด้านข้าง">✕</button></div>
     <button class="tab-btn active" id="tab-stock" data-tab="stock" type="button" role="tab" aria-selected="true" aria-controls="pane-stock"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 7 8-4 8 4-8 4-8-4Z" stroke-width="1.8"/><path d="m4 7v10l8 4 8-4V7M12 11v10" stroke-width="1.8"/></svg><span>DASHBORD</span><span class="tab-badge" id="tabBadgeStock">฿32.41M</span></button>
     <button class="tab-btn" id="tab-incoming" data-tab="incoming" type="button" role="tab" aria-selected="false" aria-controls="pane-incoming" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4M4 7h4m8 0h4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>รับเข้าและจัดเก็บ</span><span class="tab-badge" id="tabBadgeIncoming">—</span></button>
     <button class="tab-btn" id="tab-floorplan" data-tab="floorplan" type="button" role="tab" aria-selected="false" aria-controls="pane-floorplan" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z" stroke-width="1.8"/><path d="M9 3v15m6-12v15" stroke-width="1.8"/></svg><span>แผนผังคลังสินค้า</span><span class="tab-badge" id="tabBadgeFloorplan">46 โซน</span></button>
@@ -3169,6 +3171,7 @@ async function activateTab(b, moveFocus = false) {
   document.querySelectorAll('.tab-pane').forEach(p => p.hidden = true);
   document.getElementById('pane-' + b.dataset.tab).hidden = false;
   if (moveFocus) b.focus();
+  window.PKSidebar?.afterNavigation();
   if (window.matchMedia('(max-width: 1023px)').matches && !moveFocus) {
     document.getElementById('dashboardContent').scrollIntoView({block:'start'});
   }
@@ -3767,7 +3770,8 @@ document.addEventListener('keydown', event => {
 // re-apply so an already-panned/zoomed view stays clamped correctly against the new size.
 // Reflow even at default zoom, and when opening a previously hidden tab or resizing a panel.
 window.addEventListener('resize', ovApply);
-new ResizeObserver(ovApply).observe(floorplanWrap);
+let overviewResizeFrame=0;
+new ResizeObserver(()=>{if(!overviewResizeFrame)overviewResizeFrame=requestAnimationFrame(()=>{overviewResizeFrame=0;ovApply();});}).observe(floorplanWrap);
 floorplanStage.querySelector('.floorplan-image').addEventListener('load', ovApply);
 ovApply();
 
@@ -6467,7 +6471,8 @@ document.addEventListener('keydown', (e) => {
   if (!zoomModal.hidden) closeZoomModal();
 });
 window.addEventListener('resize', () => { if (!zoomModal.hidden) updateZoomView(); });
-new ResizeObserver(() => { if (!zoomModal.hidden) updateZoomView(); }).observe(zoomViewport);
+let zoomResizeFrame=0;
+new ResizeObserver(()=>{if(!zoomModal.hidden&&!zoomResizeFrame)zoomResizeFrame=requestAnimationFrame(()=>{zoomResizeFrame=0;if(!zoomModal.hidden)updateZoomView();});}).observe(zoomViewport);
 
 zoomViewport.addEventListener('wheel', (e) => {
   e.preventDefault();
@@ -10130,6 +10135,7 @@ window.addEventListener('pageshow', () => {
 <link rel="stylesheet" href="slot-copy.css?v=20261006-1">
 <script src="slot-copy-core.js?v=20261006-1"></script>
 <script src="slot-copy.js?v=20261006-1"></script>
+<script src="sidebar-toggle.js?v=20261006-1"></script>
 
 
 </body></html>
