@@ -1,0 +1,65 @@
+/* BOM details follow the PK WMS surface, spacing and status tokens. */
+.viz-root #fgBomResult.has-result {
+  padding: 24px; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--radius-panel, 19px); min-width: 0;
+}
+.viz-root #fgBomResult .fg-bom-result-bar { padding-bottom: 16px; }
+.viz-root #fgBomResult .fg-bom-result-bar h3 { font-size: 17px; font-weight: 760; }
+.viz-root #fgBomResult .fg-bom-close,
+.viz-root #fgBomResult .excl-toggle-btn {
+  min-height: 44px; padding: 10px 14px; border: 1px solid var(--border);
+  background: var(--surface-1); color: var(--text-secondary); font: inherit;
+  font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
+}
+.viz-root #fgBomResult :is(.fg-bom-close,.excl-toggle-btn):hover {
+  background: var(--series-1-wash); border-color: var(--series-1); color: var(--text-primary);
+}
+.viz-root #fgBomResult .fg-bom-head {
+  grid-template-columns: minmax(0, 1fr) minmax(210px, auto); margin: 20px 0;
+  gap: 24px; align-items: center;
+}
+.viz-root #fgBomResult .fg-bom-product {
+  padding: 0; border: 0; background: transparent; gap: 6px;
+}
+.viz-root #fgBomResult .fg-bom-product b { font-size: 17px; line-height: 1.6; font-weight: 700; }
+.viz-root #fgBomResult .fg-bom-product .code { font-size: 12px; line-height: 1.6; color: var(--text-muted); }
+.viz-root #fgBomResult .fg-bom-summary { gap: 7px; }
+.viz-root #fgBomResult .fg-status-chip {
+  border: 0; border-radius: 12px; padding: 12px 16px; font-size: 14px; line-height: 1.6;
+}
+.viz-root #fgBomResult .bom-simulation {
+  background: var(--page-plane); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 20px;
+}
+.viz-root #fgBomResult .bom-simulation p { font-size: 12px; color: var(--text-secondary); margin: 4px 0; }
+.viz-root #fgBomResult .bom-simulation p:first-child { font-size: 14px; color: var(--text-primary); }
+.viz-root #fgBomResult .bom-simulation .excl-toggle-btn { margin-top: 10px; }
+.viz-root #fgBomResult .fg-bom-table-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: auto; }
+.viz-root #fgBomResult .fg-bom-table { min-width: 1180px; border-collapse: separate; border-spacing: 0; width: 100%; }
+.viz-root #fgBomResult .fg-bom-table thead th {
+  padding: 14px 12px; font-size: 11px; line-height: 1.65; background: var(--page-plane);
+  color: var(--text-secondary); border-bottom: 1px solid var(--border); font-weight: 600;
+}
+.viz-root #fgBomResult .fg-bom-table td { padding: 16px 12px; font-size: 12px; line-height: 1.65; vertical-align: middle; }
+.viz-root #fgBomResult .fg-bom-table td.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.viz-root #fgBomResult .fg-bom-table .name-cell { min-width: 260px; max-width: 360px; }
+.viz-root #fgBomResult .fg-bom-table .code { font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 5px; }
+.viz-root #fgBomResult .fg-bom-table tbody tr:not(.fg-bom-total-row):hover td { background: var(--series-1-wash); }
+.viz-root #fgBomResult .fg-bom-table tr.bom-bottleneck-row td { background: color-mix(in srgb, var(--status-warning) 7%, var(--surface-1)); }
+.viz-root #fgBomResult .fg-bom-table tr.bom-bottleneck-row td:first-child { border-left: 3px solid var(--status-warning); }
+.viz-root #fgBomResult .fg-bom-table .badge {
+  border-radius: 999px; padding: 5px 10px; font-size: 11px; line-height: 1.5; white-space: nowrap;
+}
+.viz-root #fgBomResult .fg-bom-table .badge.blue { background: var(--page-plane); border: 0; }
+.viz-root #fgBomResult .fg-bom-table .fg-bom-total-row td {
+  background: var(--page-plane); border-top: 1px solid var(--border); border-bottom: 0;
+  padding-block: 18px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.viz-root #fgBomResult .excl-toggle-btn.excluded { background: var(--series-1-wash); border-color: var(--series-1); }
+.viz-root #fgBomResult .row-count { padding-top: 12px; color: var(--text-muted); font-size: 11px; }
+@media(max-width: 760px) {
+  .viz-root #fgBomResult.has-result { padding: 16px; }
+  .viz-root #fgBomResult .fg-bom-head { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .viz-root #fgBomResult .fg-bom-summary { justify-items: start; text-align: left; }
+  .viz-root #fgBomResult .fg-bom-product b { font-size: 15px; }
+}
