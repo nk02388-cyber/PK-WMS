@@ -1339,6 +1339,7 @@
     .bar-row .name { font-size: 11px; }
     .filter-bar select { min-width: 0; flex: 1; }
     .floorplan-zoom-modal { padding: 0; }
+    .floorplan-zoom-modal { backdrop-filter: none; -webkit-backdrop-filter: none; }
     .floorplan-zoom-box { width: 100vw; max-height: 100vh; height: 100vh; aspect-ratio: auto; border-radius: 0; }
     .floorplan-zoom-head { display:grid; grid-template-columns:minmax(0,1fr); flex-shrink: 0; padding: 10px 12px; }
     .floorplan-zoom-controls { flex-wrap:wrap; justify-content:flex-start; }
@@ -3632,15 +3633,29 @@ function bindMapGestures(viewport, options) {
   const pointers = new Map();
   const threshold = 6;
   let baseline = null, tapTarget = null, moved = false;
+  let frame = 0, pendingView = null;
+  function flushView() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    const view = pendingView; pendingView = null;
+    if (view) options.write(...view);
+  }
+  function queueView(scale, x, y) {
+    pendingView = [scale, x, y];
+    if (!frame) frame = requestAnimationFrame(flushView);
+  }
   function geometry() {
     const points = [...pointers.values()].slice(0, 2);
     const a = points[0], b = points[1] || a;
     return {x:(a.x+b.x)/2, y:(a.y+b.y)/2, distance:Math.hypot(a.x-b.x, a.y-b.y)};
   }
   function rebase() {
-    baseline = pointers.size ? {...geometry(), ...options.read()} : null;
+    flushView();
+    baseline = pointers.size ? {...geometry(), ...options.read(), rect:viewport.getBoundingClientRect()} : null;
   }
   function clear() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0; pendingView = null;
     const ids = [...pointers.keys()];
     pointers.clear(); baseline = null; tapTarget = null; moved = false;
     viewport.classList.remove(options.dragClass);
@@ -3665,23 +3680,24 @@ function bindMapGestures(viewport, options) {
       if (baseline.distance < 1) { rebase(); return; }
       const limits = options.limits();
       const scale = Math.max(limits.min, Math.min(limits.max, baseline.scale * point.distance / baseline.distance));
-      const rect = viewport.getBoundingClientRect();
+      const rect = baseline.rect;
       const originX = rect.left + (options.centered ? rect.width / 2 : 0);
       const originY = rect.top + (options.centered ? rect.height / 2 : 0);
       const ratio = scale / baseline.scale;
-      options.write(scale,
+      queueView(scale,
         point.x - originX - (baseline.x - originX - baseline.panX) * ratio,
         point.y - originY - (baseline.y - originY - baseline.panY) * ratio);
     } else {
       const dx = point.x - baseline.x, dy = point.y - baseline.y;
       if (Math.hypot(dx,dy) > threshold) { moved = true; tapTarget = null; }
       if (!moved) return;
-      options.write(baseline.scale, baseline.panX + dx, baseline.panY + dy);
+      queueView(baseline.scale, baseline.panX + dx, baseline.panY + dy);
     }
     viewport.classList.add(options.dragClass);
   });
   function end(e) {
     if (!pointers.has(e.pointerId)) return;
+    flushView();
     const isTap = e.type === 'pointerup' && pointers.size === 1 && !moved && tapTarget
       && Math.hypot(e.clientX-baseline.x, e.clientY-baseline.y) <= threshold;
     const target = tapTarget;
@@ -4451,9 +4467,22 @@ function zoomPortraitLayout(width, height, panX = 0, panY = 0, rotation = 0) {
     transform: `translate(${offsets[0]}px, ${offsets[1]}px) rotate(${turn * 90}deg)` };
 }
 
+let zoomViewLayout = null;
 function updateZoomView() {
   const viewportRect = zoomViewport.getBoundingClientRect();
   const rect = zoomPortraitLayout(viewportRect.width, viewportRect.height, zoomPanX, zoomPanY, mapRotation);
+  const key = [viewportRect.width,viewportRect.height,zoomScale,mapRotation,zoomCenterPct.leftPct,zoomCenterPct.topPct,currentZoomZone].join('|');
+  if (zoomViewLayout?.key === key) {
+    // Keep the backdrop covering the viewport. Move prepared overlays together
+    // instead of rewriting every pallet's dimensions and position on each drag.
+    const dx=rect.panX-zoomViewLayout.panX,dy=rect.panY-zoomViewLayout.panY;
+    zoomStage.style.backgroundPosition = `${zoomViewLayout.posX+dx}px ${zoomViewLayout.posY+dy}px`;
+    for(const layer of [zoomSlotsLayer,zoomCadLabels,zoomCadSlotLabels,zoomZoneBox])if(layer)layer.style.transform=`translate3d(${dx}px,${dy}px,0)`;
+    if(zoomZoneLabel)zoomZoneLabel.style.transform=`translate3d(${dx}px,${dy}px,0) translateX(-50%)`;
+    return;
+  }
+  zoomViewLayout = {key,panX:rect.panX,panY:rect.panY};
+  for(const layer of [zoomSlotsLayer,zoomCadLabels,zoomCadSlotLabels,zoomZoneBox,zoomZoneLabel])if(layer)layer.style.transform='';
   zoomStage.style.width = rect.width + 'px';
   zoomStage.style.height = rect.height + 'px';
   zoomStage.style.setProperty('--map-label-rotation', `${-mapRotation}deg`);
@@ -4462,6 +4491,7 @@ function updateZoomView() {
   const bgH = FLOORPLAN_ZOOM_H * zoomScale;
   const posX = rect.width / 2 - (zoomCenterPct.leftPct / 100 * bgW) + rect.panX;
   const posY = rect.height / 2 - (zoomCenterPct.topPct / 100 * bgH) + rect.panY;
+  zoomViewLayout.posX=posX;zoomViewLayout.posY=posY;
   zoomStage.style.backgroundSize = `${bgW}px ${bgH}px`;
   zoomStage.style.backgroundPosition = `${posX}px ${posY}px`;
   zoomCadSlotLabels.style.display = mapRotation && zoomScale >= 1.5 ? 'block' : 'none';
@@ -4546,6 +4576,7 @@ function updateZoomCount() {
 }
 
 function renderZoomSlots(zoneCode) {
+  zoomViewLayout = null;
   const slots = ZONE_SLOTS[zoneCode] || [];
   zoomCadSlotLabels.querySelectorAll('.zoom-cad-slot-label').forEach(label => {
     label.hidden = label.dataset.zone === zoneCode;
@@ -4653,6 +4684,8 @@ function openZoomModal(zoneCode) {
   requestAnimationFrame(updateZoomView);
 }
 function closeZoomModal() {
+  zoomGestures.clear();
+  zoomViewLayout = null;
   zoomModal.hidden = true;
   zoomModal.classList.remove('keyboard-open');
   editingSlot = null;

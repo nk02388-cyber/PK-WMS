@@ -3,16 +3,17 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const source = html.match(/function bindMapGestures\([^]*?\n\}/)[0];
 function setup(centered=false) {
   const events={},windowEvents={},captures=new Set(),classes=new Set();
-  let state={scale:1,panX:0,panY:0}, taps=0;
+  let state={scale:1,panX:0,panY:0}, taps=0,writes=0,nextFrame=0;const frames=new Map();
+  const flush=()=>{const callbacks=[...frames.values()];frames.clear();callbacks.forEach(fn=>fn());};
   const viewport={addEventListener:(type,fn)=>events[type]=fn,
     getBoundingClientRect:()=>({left:10,top:20,width:400,height:600}),
     setPointerCapture:id=>captures.add(id),hasPointerCapture:id=>captures.has(id),releasePointerCapture:id=>captures.delete(id),
     classList:{add:x=>classes.add(x),remove:x=>classes.delete(x)}};
-  const bind=vm.runInNewContext(`(${source})`,{window:{addEventListener:(type,fn)=>windowEvents[type]=fn}});
-  const controller=bind(viewport,{read:()=>state,write:(scale,panX,panY)=>state={scale,panX,panY},
+  const bind=vm.runInNewContext(`(${source})`,{window:{addEventListener:(type,fn)=>windowEvents[type]=fn},requestAnimationFrame:fn=>{frames.set(++nextFrame,fn);return nextFrame},cancelAnimationFrame:id=>frames.delete(id)});
+  const controller=bind(viewport,{read:()=>state,write:(scale,panX,panY)=>{writes++;state={scale,panX,panY}},
     limits:()=>({min:1,max:6}),centered,target:'.pin',ignore:'.controls',dragClass:'dragging',tap:()=>taps++});
   const send=(type,id,x,y,extra={})=>events[type]({type,pointerId:id,clientX:x,clientY:y,button:0,target:{closest:s=>s==='.pin'?{}:null},...extra});
-  return {send,controller,windowEvents,captures,classes,get state(){return state},get taps(){return taps}};
+  return {send,controller,windowEvents,captures,classes,flush,get writes(){return writes},get state(){flush();return state},get taps(){return taps}};
 }
 for(const centered of [false,true]) {
   const g=setup(centered);
@@ -48,4 +49,9 @@ for(const centered of [false,true]) {
 }
 assert.match(html,/bindMapGestures\(floorplanWrap/);
 assert.match(html,/bindMapGestures\(zoomViewport/);
+const burst=setup();burst.send('pointerdown',1,100,200);
+for(let i=1;i<=200;i++)burst.send('pointermove',1,100+i,200+i);
+assert.equal(burst.writes,0,'Moves wait for the next paint frame');burst.flush();assert.equal(burst.writes,1,'A burst paints only the latest position');
+assert.equal(burst.state.panX,200);assert.equal(burst.state.panY,200);
+burst.send('pointermove',1,350,450);burst.controller.clear();burst.flush();assert.equal(burst.writes,1,'Closing clears pending paint');
 console.log('PASS: two-finger zoom, anchored midpoint, limits, continuation, tap/drag isolation and cancellation on both maps');
