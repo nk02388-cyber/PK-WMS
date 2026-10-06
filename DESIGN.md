@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: PK WMS Operations
-description: Charcoal operations dashboard with lime signals for BIO-COSLAB packaging inventory.
+description: BIO-COSLAB green navigation and lime signals for packaging inventory.
 colors:
   primary: "#CEDE62"
   primary-hover: "#DEF184"
@@ -75,6 +75,8 @@ components:
 ---
 
 ## Direction
+
+Navigation uses BIO-COSLAB green (`#175D42`) in light and dark themes, including the mobile drawer. Hover uses `#246D51`, count badges use `#2B7357` and navigation text uses `#E3F0E8`. The selected menu retains its lime background. Main-page light/dark surfaces remain independent of the navigation palette.
 
 PK WMS adapts the visual hierarchy of [Haulix by Phenomenon Studio](https://dribbble.com/shots/27229691-UI-UX-Design-for-Logistics-Dashboard-Haulix): a charcoal navigation rail, deep graphite cards, restrained borders and a lime active color. The reference is a fleet dashboard; PK WMS continues to show actual packaging stock, pallet occupancy, aging and warehouse-value data. Do not copy sample fleet metrics or artwork.
 

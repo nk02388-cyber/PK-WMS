@@ -4,9 +4,9 @@
   color-scheme: dark;
   --brand-blue: #cede62;
   --brand-blue-hover: #def184;
-  --nav-ink: #111311;
+  --nav-ink: #175d42;
   --nav-active: #cede62;
-  --nav-text: #bbbeb7;
+  --nav-text: #e3f0e8;
   --surface-1: #1c1e1b;
   --page-plane: #111311;
   --text-primary: #f4f4f0;
@@ -33,9 +33,9 @@
 :root[data-theme="light"] .viz-root {
   --brand-blue: #75862f;
   --brand-blue-hover: #627228;
-  --nav-ink: #242720;
+  --nav-ink: #175d42;
   --nav-active: #cede62;
-  --nav-text: #e0e3db;
+  --nav-text: #e3f0e8;
   --surface-1: #fff;
   --page-plane: #f4f4f0;
   --text-primary: #20231d;
@@ -75,10 +75,10 @@ body.viz-root { letter-spacing: -.005em; }
   border: 1px solid transparent; border-radius: 12px;
   font-size: 12.5px; line-height: 1.35; font-weight: 600;
 }
-.viz-root .tab-btn:hover:not(.active) { color: #fff; background: #2a2d28; }
+.viz-root .tab-btn:hover:not(.active) { color: #fff; background: #246d51; }
 .viz-root .tab-btn.active { color: #1e2411; background: #cede62; border-color: #cede62; }
 .viz-root .tab-btn.active .tab-icon { stroke-width: 2; }
-.viz-root .tab-btn .tab-badge { margin-left: auto; color: #e6e8e1; background: #363a33; border-radius: 7px; }
+.viz-root .tab-btn .tab-badge { margin-left: auto; color: #f0fff6; background: #2b7357; border-radius: 7px; }
 .viz-root .tab-btn.active .tab-badge { color: #232817; background: #e7f1ae; }
 .viz-root .tab-btn .tab-badge.critical { color: #ffe5e3; background: #8b3534; }
 
