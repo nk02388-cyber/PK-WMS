@@ -64,7 +64,7 @@ body.viz-root { letter-spacing: -.005em; }
   .dashboard-layout > .tabs { padding: 0 12px 28px; border-right: 1px solid var(--border); }
   .dashboard-nav-brand { padding-inline: 20px; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
   .dashboard-nav-brand img { width: 40px; height: 40px; }
-  .dashboard-layout > .dashboard-content { padding: 16px 30px 48px; }
+  .viz-root .dashboard-layout > .dashboard-content { padding: 20px 30px 48px; }
   header.top { padding-inline: 30px; border-bottom: 1px solid var(--border); }
 }
 
