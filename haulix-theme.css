@@ -177,6 +177,28 @@ tbody tr:hover td { background: var(--series-1-wash); }
 :root[data-theme="dark"] .auth-card input { color: #f4f4f0; background: #242720; border-color: #41463b; }
 :root[data-theme="dark"] .auth-card button { color: #1d2410; background: #cede62; }
 :root[data-theme="dark"] .auth-card #authLoading { color: #babdb4; }
+:root[data-theme="dark"] :is(.auth-card,.department-card) h1,
+:root[data-theme="dark"] .auth-brand strong,
+:root[data-theme="dark"] .department-option strong,
+:root[data-theme="dark"] .auth-card label { color:#f4f4f0; }
+:root[data-theme="dark"] .auth-brand { border-color:#41453d; }
+:root[data-theme="dark"] .auth-brand div span,
+:root[data-theme="dark"] .department-code { color:#babdb4; }
+:root[data-theme="dark"] .auth-department { background:#242720;border-color:#41463b;color:#cede62; }
+:root[data-theme="dark"] .department-icon { background:#303627;color:#cede62; }
+:root[data-theme="dark"] .department-pk .department-icon { background:#cede62;color:#1d2410; }
+:root[data-theme="dark"] .department-arrow { background:#303627;color:#cede62; }
+:root[data-theme="dark"] .department-pk .department-arrow { background:#cede62;color:#1d2410; }
+:root[data-theme="dark"] .department-card .department-note { background:#242720;color:#babdb4;border:1px solid #383c34; }
+:root[data-theme="dark"] .department-card .department-signout { background:#242720;color:#f4f4f0;border-color:#41463b; }
+:root[data-theme="dark"] .department-card .department-signout:hover { background:#303627;color:#f4f4f0; }
+:root[data-theme="dark"] :is(.auth-card,.department-card) :is(.auth-footer,.department-footer) { border-color:#41453d;color:#babdb4; }
+:root[data-theme="dark"] .auth-card .auth-back,
+:root[data-theme="dark"] .auth-card #authTogglePassword { background:transparent;color:#babdb4; }
+:root[data-theme="dark"] .auth-card .auth-back:hover,
+:root[data-theme="dark"] .auth-card #authTogglePassword:hover { background:#303627;color:#f4f4f0; }
+:root[data-theme="dark"] .auth-card input::placeholder { color:#a4aa9c; }
+:root[data-theme="dark"] .auth-card .auth-error { background:#332322;color:#fa8582;border-color:#743537; }
 
 @media (max-width: 1023px) {
   .tabs { background: var(--nav-ink); }
