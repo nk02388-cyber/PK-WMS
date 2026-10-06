@@ -25,19 +25,27 @@ colors:
 typography:
   page-title:
     fontFamily: Noto Sans Thai
-    fontSize: 30px
-    fontWeight: 760
+    fontSize: 22px
+    fontWeight: 700
     lineHeight: 1.2
   section-title:
     fontFamily: Noto Sans Thai
-    fontSize: 16px
-    fontWeight: 760
+    fontSize: 18px
+    fontWeight: 600
     lineHeight: 1.4
   body:
     fontFamily: Noto Sans Thai
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
+  controls:
+    fontFamily: Noto Sans Thai
+    fontSize: 14px
+    fontWeight: 600
+  table:
+    fontFamily: Noto Sans Thai
+    fontSize: 14px
+    fontWeight: 400
 rounded:
   control: 12px
   panel: 19px
@@ -74,7 +82,13 @@ Dark is the default theme. A warm neutral light theme remains available through 
 
 ## Layout and interaction
 
-Desktop has a 278px navigation rail, a compact header and a fluid work area. The stock overview begins with a title, update controls, occupancy cards, age and capacity cards, then interactive warehouse and category charts. Keep Thai labels, real values and status text. Use a visible focus ring and at least 44px touch targets where practical. Mobile keeps the horizontal navigation and stacks overview cards. Reduced-motion users should not receive decorative transitions.
+Desktop has a collapsible 278px navigation rail, a compact header and a fluid work area. The stock overview begins with update controls, occupancy cards, age and capacity cards, then interactive warehouse and category charts. Keep Thai labels, real values and status text. Use a visible focus ring and at least 44px touch targets where practical. Mobile uses a navigation drawer and stacks overview cards. Reduced-motion users should not receive decorative transitions.
+
+## Typography implementation
+
+`typography.css` serves Noto Sans Thai locally for both PK WMS and the embedded warehouse-operations page. Controls use 14px/600, body text 14px/400, product names up to 15px, headings 18–22px/600–700 and screen table cells 14px with tabular numerals. Auxiliary captions and map-relative pallet labels retain their compact sizes. Mobile input text is 16px to avoid automatic input-focus magnification. Print layout sizes are not overridden by the screen typography rules. Wide BOM tables remain inside their horizontal scrolling region.
+
+Verification: `node tests/typography-browser.cjs` and the same script with `PK_FONT_BROWSER=webkit` confirm local font loading, computed family/size/weight, equal digit widths, light/dark BOM tables and mobile bounds at 390 and 1440px. Existing sidebar, pallet-copy and WebKit map workflows passed; the unit suite passed 78 tests. Physical iPhone hardware was not tested.
 
 ## Status and data
 

@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap");
 
 /* IBM Carbon-inspired operations UI. BCL data, logo and status meanings stay intact. */
 @media screen {
@@ -65,7 +64,7 @@
   }
   body.viz-root {
     color: var(--text-primary);
-    font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", system-ui, sans-serif;
+    font-family: "Noto Sans Thai", system-ui, sans-serif;
     letter-spacing: .01em;
   }
   .viz-root .dashboard-content { background: var(--page-plane); }
