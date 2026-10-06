@@ -28,7 +28,12 @@ for (const width of [320, 768, 960]) {
     }
   }
 }
-assert.match(html, /new ResizeObserver\(ovApply\)\.observe\(floorplanWrap\)/);
+// ResizeObserver must not write layout during observer delivery (WebKit loop).
+const resizeSource=html.match(/let overviewResizeFrame=0;[^]*?\.observe\(floorplanWrap\);/)[0];
+let resizeCallback,paints=0;const frames=[],wrap={};
+vm.runInNewContext(resizeSource,{floorplanWrap:wrap,ovApply:()=>paints++,requestAnimationFrame:fn=>{frames.push(fn);return frames.length;},ResizeObserver:class{constructor(fn){resizeCallback=fn;}observe(node){assert.equal(node,wrap);}}});
+for(let i=0;i<10;i++)resizeCallback();assert.equal(paints,0);assert.equal(frames.length,1);
+frames[0]();assert.equal(paints,1);resizeCallback();assert.equal(frames.length,2);
 assert.match(html, /let mapRotation = 0;/);
 assert.match(html, /rotate\(\$\{mapRotation\}deg\)/);
 console.log(`PASS: ${scripts.length} inline scripts parse; landscape default crop, orientation, resize and pan/zoom geometry`);
