@@ -2925,6 +2925,7 @@ header.top .header-logo { border-radius: 14px; }
         </div>
         <div class="fse-quick-actions">
           <button type="button" class="fse-quick-btn" id="fseMoveToggle" aria-expanded="false" aria-controls="fseMoveForm">↗ ย้ายสินค้าไปพาเลตอื่น</button>
+          <button type="button" class="fse-quick-btn" id="fseCopyToggle" aria-expanded="false" aria-controls="fseCopyForm">คัดลอกพาเลต</button>
           <span class="fse-feedback" id="fseFeedback" role="status" aria-live="polite"></span>
         </div>
         <div class="fse-move-form" id="fseMoveForm" role="region" aria-label="ย้ายสินค้าไปตำแหน่งพาเลตอื่น" hidden>
@@ -2943,8 +2944,18 @@ header.top .header-logo { border-radius: 14px; }
           <div id="fseMoveStatus" role="status" aria-live="polite"></div>
           <div class="fse-move-actions"><button type="button" id="fseMoveCancel">ยกเลิก</button><button type="button" id="fseMoveConfirm" disabled>ยืนยันย้ายตำแหน่ง</button></div>
         </div>
+        <form id="fseCopyForm" hidden aria-label="คัดลอกพาเลต">
+          <strong id="fseCopySource"></strong>
+          <p>สร้างรายการรับเข้าใหม่จากข้อมูลต้นทาง ไม่ย้ายยอดและไม่คัดลอกประวัติเบิก/คืน หากปลายทางมีสินค้า จะเพิ่มรายการโดยไม่ทับข้อมูลเดิม</p>
+          <div class="slot-copy-fields"><label>โซนปลายทาง<select id="fseCopyZone"></select></label><label>วันที่รับสำหรับพาเลตใหม่<input type="date" id="fseCopyDate" required></label><label>เลขเอกสารรับ<input id="fseCopyReference" maxlength="200" required></label></div>
+          <strong>เลือกพาเลตปลายทางได้หลายตำแหน่ง</strong><div id="fseCopyDestinations" class="slot-copy-destinations"></div>
+          <strong>รายการสินค้าและจำนวนรับต่อพาเลต</strong><div id="fseCopyItems"></div>
+          <p id="fseCopyStatus" role="status" aria-live="polite"></p>
+          <div class="slot-copy-actions"><button type="button" id="fseCopyCancel">ยกเลิก</button><button type="submit" id="fseCopySave" disabled>ยืนยันคัดลอก</button></div>
+        </form>
       </div>
       <div class="floorplan-zoom-status">
+
         <div class="fz-legend">
           <span id="floorplanZoomCount">-- </span>
           <span><i class="age-none"></i>ไม่ระบุอายุ</span>
@@ -4708,6 +4719,7 @@ function openZoomModal(zoneCode) {
   requestAnimationFrame(updateZoomView);
 }
 function closeZoomModal() {
+  window.PKSlotCopy?.close();
   zoneGestures.clear();
   zoomViewLayout = null;
   zoomModal.hidden = true;
@@ -5907,6 +5919,7 @@ function syncAfterSlotEdit() {
 }
 
 function openSlotEdit(zoneCode, slotCode) {
+  window.PKSlotCopy?.close();
   hideAddProductSuggestions();
   closeSlotMoveForm();
   movementEdit = null;
@@ -5925,6 +5938,7 @@ function openSlotEdit(zoneCode, slotCode) {
   requestAnimationFrame(updateZoomView);
 }
 function closeSlotEdit() {
+  window.PKSlotCopy?.close();
   hideAddProductSuggestions();
   closeSlotMoveForm();
   movementEdit = null;
@@ -5996,6 +6010,7 @@ function updateSlotMoveState(preserveError = false) {
   }
 }
 fseMoveToggle.addEventListener('click', () => {
+  window.PKSlotCopy?.close();
   if (!fseMoveForm.hidden) { closeSlotMoveForm(); return; }
   if (!editingSlot || !slotItemsFor(editingSlot.zone,editingSlot.slot).length) { showFseFeedback('ตำแหน่งนี้ไม่มีรายการสินค้าให้ย้าย','error'); return; }
   moveSourceVersion = editingSlot.version;
@@ -10112,6 +10127,9 @@ window.addEventListener('pageshow', () => {
 <script src="cycle-counts.js?v=20261005-confirm1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>
 <script src="scrap-inventory.js?v=20260926-1"></script>
+<link rel="stylesheet" href="slot-copy.css?v=20261006-1">
+<script src="slot-copy-core.js?v=20261006-1"></script>
+<script src="slot-copy.js?v=20261006-1"></script>
 
 
 </body></html>
