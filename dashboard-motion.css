@@ -1,0 +1,8 @@
+/* Motion uses compositor-friendly transforms; displayed quantities stay unchanged. */
+@media(prefers-reduced-motion:no-preference) {
+  .viz-root.pk-motion-enabled #pane-stock .bar-fill { transition:none; }
+  @media(hover:hover) and (pointer:fine) {
+    .viz-root.pk-motion-enabled #pane-stock :is(.panel,.packaging-age-card,.speed-meter-card,.kpi-total-fixed) { transition:transform .18s ease,border-color .18s ease; }
+    .viz-root.pk-motion-enabled #pane-stock :is(.panel,.packaging-age-card,.speed-meter-card,.kpi-total-fixed):hover { transform:translateY(-2px);border-color:var(--series-1); }
+  }
+}

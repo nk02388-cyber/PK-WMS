@@ -18,7 +18,7 @@
  }
  function close(focus=true){open=false;render();if(focus)toggle.focus({preventScroll:true});}
  toggle.addEventListener('click',()=>{
-  if(desktop.matches){collapsed=!collapsed;try{localStorage.setItem(key,String(collapsed));}catch{}render();}
+  if(desktop.matches){collapsed=!collapsed;try{localStorage.setItem(key,String(collapsed));}catch{}render();window.PKMotion?.sidebar();}
   else{open=!open;render();if(open){nav.scrollTop=0;(nav.querySelector('.tab-btn.active:not([hidden])')||closeButton).focus({preventScroll:true});}}
  });
  closeButton.addEventListener('click',()=>close());backdrop.addEventListener('click',()=>close());
