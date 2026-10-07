@@ -1,0 +1,24 @@
+@media (max-width: 1023px) {
+  .viz-root .floorplan-map-shell { display: flex; flex-direction: column; gap: 8px; }
+  .viz-root .floorplan-map-shell .floorplan-ov-controls {
+    position: static; order: 0; flex: none; display: flex; align-items: center;
+    width: 100%; max-width: none; box-sizing: border-box; gap: 4px; padding: 6px;
+    flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto;
+    box-shadow: none; border-radius: 10px;
+  }
+  .viz-root .floorplan-map-shell .floorplan-image-wrap { order: 1; }
+  .viz-root .floorplan-ov-controls .floorplan-zoom-level { min-width: 32px; padding: 0 4px; font-size: 12px; flex: none; align-self: stretch; }
+  .viz-root .floorplan-ov-controls .fz-zoom-ctrl-btn { width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 0; flex: none; }
+  .viz-root .floorplan-ov-controls #floorplanOverviewZoomReset { width: auto; min-width: 54px; padding: 0 6px; font-size: 14px; }
+  .viz-root .floorplan-ov-controls #floorplanOverviewRotate,
+  .viz-root .floorplan-ov-controls #floorplanOverviewFullscreen { width: 44px; padding: 0; font-size: 0 !important; }
+  .viz-root .floorplan-ov-controls #floorplanOverviewRotate::before { content: '↻'; font-size: 23px; }
+  .viz-root .floorplan-ov-controls #floorplanOverviewFullscreen::before { content: '⛶'; font-size: 23px; }
+  .viz-root .floorplan-map-shell.is-fullscreen {
+    gap: 0; box-sizing: border-box; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .viz-root .floorplan-map-shell.is-fullscreen .floorplan-ov-controls { border-radius: 0; }
+  .viz-root .floorplan-map-shell.is-fullscreen .floorplan-image-wrap {
+    flex: 1 1 0; min-height: 0; height: auto; width: 100%; aspect-ratio: auto !important;
+  }
+}
