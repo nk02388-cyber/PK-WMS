@@ -16,7 +16,7 @@
     label: button.querySelector('span:not(.tab-badge)')?.textContent.trim() || button.dataset.tab,
   }));
   const allowedMenus = () => profile?.role === 'admin' ? menuChoices.map(item => item.key)
-    : Array.isArray(profile?.menu_access) ? profile.menu_access.filter(key => key !== 'warehouse-operations') : [];
+    : Array.isArray(profile?.menu_access) ? profile.menu_access.filter(key => !menuButtons.find(button => button.dataset.tab === key)?.hasAttribute('data-admin-only')) : [];
   window.getWmsCanAccess = key => allowedMenus().includes(key);
 
   function menuFieldset(selected = ['stock']) {
@@ -24,7 +24,7 @@
     fields.className = 'account-permissions';
     const legend = document.createElement('legend'); legend.textContent = 'เมนูที่เข้าได้';
     const grid = document.createElement('div');
-    for (const item of menuChoices.filter(item => item.key !== 'warehouse-operations')) {
+    for (const item of menuChoices.filter(item => !menuButtons.find(button => button.dataset.tab === item.key)?.hasAttribute('data-admin-only'))) {
       const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox'; checkbox.name = 'menu_access'; checkbox.value = item.key;
@@ -111,6 +111,7 @@
       status.textContent = `${data.username} · ${data.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้'}`;
       button.classList.add('is-logged-in');
       adminPanel.hidden = data.role !== 'admin';
+      if (adminPanel.hidden) userList.replaceChildren();
       applyMenuAccess();
       showError(''); showDepartment();
     } catch (_) { if (id === refreshId) { profile = null; showDepartment(); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
@@ -120,6 +121,7 @@
     message.textContent = 'กำลังโหลดรายชื่อ…';
     try {
       const { users } = await adminCall('list');
+      if (profile?.role !== 'admin') return;
       userList.replaceChildren();
       for (const user of users.filter(item => item.role === 'user' && !item.username.startsWith('legacy-disabled-'))) {
         const row = document.createElement('div'); row.className = 'account-user';
@@ -213,7 +215,9 @@
   button.addEventListener('click', () => {
     const opening = panel.hidden; panel.hidden = !opening;
     button.setAttribute('aria-expanded', String(opening));
-    if (opening) loadUsers();
+  });
+  $('tab-settings').addEventListener('click', () => {
+    if (profile?.role === 'admin' && !$('pane-settings').hidden) loadUsers();
   });
   document.addEventListener('click', event => {
     if (panel.hidden || event.target.closest('.account-anchor')) return;

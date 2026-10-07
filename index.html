@@ -1994,6 +1994,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="sidebar-toggle.css?v=20261007-align1">
 <link rel="stylesheet" href="typography.css?v=20261006-noto1">
 <link rel="stylesheet" href="dashboard-motion.css?v=20261007-1">
+<link rel="stylesheet" href="settings.css?v=20261007-1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2052,17 +2053,6 @@ header.top .header-logo { border-radius: 14px; }
         </button>
         <div class="account-panel" id="accountPanel" hidden>
           <strong>บัญชีผู้ใช้</strong><span id="accountStatus">กำลังตรวจสอบการเข้าสู่ระบบ…</span>
-          <div id="accountAdmin" hidden>
-            <h3>จัดการผู้ใช้ย่อย</h3>
-            <form id="accountCreateForm">
-              <label>ชื่อผู้ใช้<input name="username" required minlength="3" maxlength="32" pattern="[A-Za-z][A-Za-z0-9._-]{2,31}" autocomplete="off"></label>
-              <label>PIN 6 หลัก<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" title="กรอกตัวเลข 6 หลัก" required autocomplete="new-password"></label>
-              <fieldset class="account-permissions"><legend>เมนูที่เข้าได้</legend><div id="accountCreateMenus"></div></fieldset>
-              <button type="submit">เพิ่มผู้ใช้</button>
-            </form>
-            <p id="accountManageMessage" role="status"></p>
-            <div id="accountUserList" aria-label="รายชื่อผู้ใช้ย่อย"></div>
-          </div>
           <button type="button" id="accountChangeDepartment">เปลี่ยนแผนก</button>
           <button type="button" id="accountLogout">ออกจากระบบ</button>
         </div>
@@ -2099,6 +2089,7 @@ header.top .header-logo { border-radius: 14px; }
     <button class="tab-btn" id="tab-receipt-plan" data-tab="receipt-plan" type="button" role="tab" aria-selected="false" aria-controls="pane-receipt-plan" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h14v16H5V5Zm3-2v4m8-4v4M5 10h14m-9 4h4m-4 3h3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>แผนรับเข้าประจำวัน</span><span class="tab-badge" id="tabBadgeReceiptPlan">—</span></button>
 <button class="tab-btn" id="tab-warehouse-operations" data-tab="warehouse-operations" data-admin-only="true" type="button" role="tab" aria-selected="false" aria-controls="pane-warehouse-operations" tabindex="-1" hidden><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4" stroke-width="1.8"/></svg><span>ใบเบิกบรรจุภัณฑ์</span></button>
     <button class="tab-btn" id="tab-audit" data-tab="audit" type="button" role="tab" aria-selected="false" aria-controls="pane-audit" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9M12 7v5l3 2M17 3h4v4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>ประวัติการแก้ไขพาเลต</span></button>
+<button class="tab-btn" id="tab-settings" data-tab="settings" data-admin-only="true" type="button" role="tab" aria-selected="false" aria-controls="pane-settings" tabindex="-1" hidden><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 3-.6 2.4-2 .9-2.2-.7-2 3.4 1.6 1.7v2.6l-1.6 1.7 2 3.4 2.2-.7 2 .9L9 21h6l.6-2.4 2-.9 2.2.7 2-3.4-1.6-1.7v-2.6l1.6-1.7-2-3.4-2.2.7-2-.9L15 3H9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg><span>ตั้งค่า</span></button>
   </nav>
   <main class="dashboard-content" id="dashboardContent" aria-label="แดชบอร์ดสินค้าคงคลัง">
 
@@ -3114,6 +3105,21 @@ header.top .header-logo { border-radius: 14px; }
       <div id="receiptPlanSummary" class="daily-kpis"></div>
       <div id="receiptPlanResult" class="daily-result"></div>
     </div>
+  </div>
+  <div class="tab-pane" id="pane-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+    <section class="panel settings-panel" aria-labelledby="settingsTitle"><h2 id="settingsTitle">ตั้งค่า</h2><p class="panel-sub">จัดการบัญชีและสิทธิ์การใช้งาน PK WMS</p>
+          <div id="accountAdmin" hidden>
+            <h3>จัดการผู้ใช้</h3><p class="panel-sub">เพิ่มผู้ใช้และกำหนดสิทธิ์การเข้าถึงเมนู</p>
+            <form id="accountCreateForm">
+              <label>ชื่อผู้ใช้<input name="username" required minlength="3" maxlength="32" pattern="[A-Za-z][A-Za-z0-9._-]{2,31}" autocomplete="off"></label>
+              <label>PIN 6 หลัก<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" title="กรอกตัวเลข 6 หลัก" required autocomplete="new-password"></label>
+              <fieldset class="account-permissions"><legend>เมนูที่เข้าได้</legend><div id="accountCreateMenus"></div></fieldset>
+              <button type="submit">เพิ่มผู้ใช้</button>
+            </form>
+            <p id="accountManageMessage" role="status"></p>
+            <div id="accountUserList" aria-label="รายชื่อผู้ใช้ย่อย"></div>
+          </div>
+    </section>
   </div>
   <div class="tab-pane" id="pane-audit" role="tabpanel" aria-labelledby="tab-audit" hidden>
     <div class="panel">
@@ -10125,7 +10131,7 @@ window.addEventListener('pageshow', () => {
 <script src="notifications.js?v=20260926-1"></script>
 <script src="receipt-plan.js?v=20260926-1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20261005-confirm2"></script>
+<script src="account-status.js?v=20261007-settings1"></script>
 <link rel="stylesheet" href="warehouse-operations-pin.css?v=20261002-1">
 <script src="warehouse-operations.js?v=20261002-pin2"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
