@@ -18,8 +18,21 @@
 #pane-settings .account-user .account-actions button:first-child { color: var(--text-primary); }
 #pane-settings .account-save-access { margin-top: 16px; }
 #pane-settings #accountManageMessage { min-height: 20px; }
+#pane-settings [hidden] { display: none !important; }
+#pane-settings #accountCreateForm select,
+#pane-settings .account-credential-editor input { width: 100%; min-height: 44px; padding: 10px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); color: var(--text-primary); font: inherit; }
+#pane-settings .account-role-badge { display: inline-block; margin-top: 6px; padding: 4px 8px; border-radius: 8px; background: var(--series-1-wash); color: var(--text-secondary); font-size: 13px; }
+#pane-settings .account-user .account-actions { flex-wrap: wrap; }
+#pane-settings .account-user .account-actions button { color: var(--text-primary); }
+#pane-settings .account-user .account-actions button[data-confirm-destructive] { color: #c42d35; }
+#pane-settings .account-credential-editor { flex: 0 0 100%; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+#pane-settings .account-credential-editor label { display: grid; gap: 8px; }
+#pane-settings .account-credential-editor p,
+#pane-settings .account-credential-editor .account-actions { grid-column: 1 / -1; margin: 0; }
 @media (max-width: 700px) {
   #pane-settings #accountCreateForm { padding: 16px; grid-template-columns: minmax(0, 1fr); }
   #pane-settings #accountCreateForm input { font-size: 16px; }
   #pane-settings .account-permissions > div { grid-template-columns: minmax(0, 1fr); }
+  #pane-settings .account-credential-editor { grid-template-columns: minmax(0, 1fr); }
+  #pane-settings .account-credential-editor input { font-size: 16px; }
 }

@@ -123,11 +123,12 @@
       const { users } = await adminCall('list');
       if (profile?.role !== 'admin') return;
       userList.replaceChildren();
-      for (const user of users.filter(item => item.role === 'user' && !item.username.startsWith('legacy-disabled-'))) {
+      for (const user of users.filter(item => ['admin','user'].includes(item.role) && !item.username.startsWith('legacy-disabled-'))) {
         const row = document.createElement('div'); row.className = 'account-user';
         const info = document.createElement('div');
         const name = document.createElement('strong'); name.textContent = user.username;
-        info.append(name);
+        const badge = document.createElement('span'); badge.className = 'account-role-badge'; badge.textContent = user.role === 'admin' ? 'Admin · ทุกเมนู' : 'ผู้ใช้';
+        info.append(name, badge);
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'ลบ';
         remove.dataset.confirmDestructive = `ลบผู้ใช้ ${user.username}`;
         remove.setAttribute('aria-label', `ลบผู้ใช้ ${user.username}`);
@@ -159,10 +160,40 @@
           finally { save.disabled = false; }
         });
         permissions.append(save);
-        actions.append(manage, remove);
-        row.append(info, actions, permissions); userList.append(row);
+        const editCredential = document.createElement('button'); editCredential.type = 'button';
+        const usesPin = user.login_kind !== 'password';
+        editCredential.textContent = usesPin ? 'เปลี่ยน PIN' : 'เปลี่ยนรหัสผ่าน';
+        editCredential.setAttribute('aria-expanded','false');
+        const editor = document.createElement('form'); editor.className = 'account-credential-editor'; editor.hidden = true;
+        const fields = [];
+        for (const text of [usesPin ? 'PIN ใหม่ · 6 หลัก' : 'รหัสผ่านใหม่ · 8–128 ตัวอักษร', usesPin ? 'ยืนยัน PIN ใหม่' : 'ยืนยันรหัสผ่านใหม่']) {
+          const label = document.createElement('label'); label.textContent = text;
+          const input = document.createElement('input'); input.type = 'password'; input.required = true; input.autocomplete = 'new-password';
+          input.minLength = usesPin ? 6 : 8; input.maxLength = usesPin ? 6 : 128;
+          if (usesPin) { input.inputMode = 'numeric'; input.pattern = '[0-9]{6}'; }
+          fields.push(input); label.append(input); editor.append(label);
+        }
+        const feedback = document.createElement('p'); feedback.setAttribute('role','status');
+        const buttons = document.createElement('div'); buttons.className = 'account-actions';
+        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.textContent = 'ยกเลิก';
+        const submitCredential = document.createElement('button'); submitCredential.type = 'submit'; submitCredential.textContent = 'บันทึก';
+        const closeEditor = () => { editor.reset(); editor.hidden = true; feedback.textContent = ''; editCredential.setAttribute('aria-expanded','false'); };
+        cancel.addEventListener('click',closeEditor);
+        editCredential.addEventListener('click', () => { if (!editor.hidden) closeEditor(); else { editor.hidden = false; editCredential.setAttribute('aria-expanded','true'); fields[0].focus(); } });
+        editor.addEventListener('submit', async event => {
+          event.preventDefault();
+          if (fields[0].value !== fields[1].value) { feedback.textContent = 'รหัสยืนยันไม่ตรงกัน'; fields[1].focus(); return; }
+          submitCredential.disabled = true; cancel.disabled = true; editCredential.disabled = true;
+          try { await adminCall('set_credential', {id: user.id, credential: fields[0].value}); closeEditor(); message.textContent = 'เปลี่ยนรหัสของ ' + user.username + ' แล้ว'; }
+          catch(err) { feedback.textContent = err.message; }
+          finally { submitCredential.disabled = false; cancel.disabled = false; editCredential.disabled = false; }
+        });
+        buttons.append(cancel,submitCredential); editor.append(feedback,buttons);
+        if (user.role === 'user') actions.append(manage,remove);
+        actions.append(editCredential);
+        row.append(info, actions); if (user.role === 'user') row.append(permissions); row.append(editor); userList.append(row);
       }
-      message.textContent = users.some(item => item.role === 'user' && !item.username.startsWith('legacy-disabled-')) ? '' : 'ยังไม่มีผู้ใช้ย่อย';
+      message.textContent = userList.children.length ? '' : 'ยังไม่มีผู้ใช้';
     } catch (err) { message.textContent = err.message; }
   }
   form.addEventListener('submit', async event => {
@@ -181,14 +212,31 @@
     } catch (err) { showError(err.message || 'เข้าสู่ระบบไม่สำเร็จ'); }
     finally { submit.disabled = false; submit.textContent = 'เข้าสู่ระบบ'; }
   });
+  function updateCreateForm() {
+    const admin = $('accountCreateRole').value === 'admin';
+    const pin = $('accountCreateKind').value === 'pin';
+    const credential = $('accountCreateCredential');
+    createForm.querySelector('.account-permissions').hidden = admin;
+    createForm.querySelectorAll('.account-permissions input').forEach(input => input.disabled = admin);
+    $('accountAdminAccessNote').hidden = !admin;
+    $('accountCredentialLabel').textContent = pin ? 'PIN 6 หลัก' : 'รหัสผ่าน · 8–128 ตัวอักษร';
+    credential.removeAttribute('minlength'); credential.removeAttribute('maxlength');
+    credential.minLength = pin ? 6 : 8; credential.maxLength = pin ? 6 : 128;
+    if (pin) { credential.pattern = '[0-9]{6}'; credential.inputMode = 'numeric'; }
+    else { credential.removeAttribute('pattern'); credential.removeAttribute('inputmode'); }
+  }
+  $('accountCreateRole').addEventListener('change', updateCreateForm);
+  $('accountCreateKind').addEventListener('change', () => { $('accountCreateCredential').value = ''; updateCreateForm(); });
+  updateCreateForm();
   createForm.addEventListener('submit', async event => {
     event.preventDefault();
     const submit = createForm.querySelector('button[type=submit]'); submit.disabled = true;
     try {
       const formData = new FormData(createForm);
-      const values = { username: formData.get('username'), pin: formData.get('pin'), menu_access: formData.getAll('menu_access') };
+      const values = { username: formData.get('username'), role: formData.get('role'), login_kind: formData.get('login_kind'), menu_access: formData.getAll('menu_access') };
+      values[values.login_kind === 'pin' ? 'pin' : 'password'] = formData.get('credential');
       await adminCall('create', values);
-      createForm.reset(); await loadUsers(); message.textContent = `เพิ่ม ${values.username} แล้ว`;
+      createForm.reset(); updateCreateForm(); await loadUsers(); message.textContent = `เพิ่ม ${values.username} แล้ว`;
     } catch (err) { message.textContent = err.message; }
     finally { submit.disabled = false; }
   });

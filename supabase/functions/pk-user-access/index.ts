@@ -39,6 +39,7 @@ async function backend(path, key, init = {}) {
 
 
 const validUsername = (name) => typeof name === 'string' && /^[a-z][a-z0-9._-]{2,31}$/i.test(name);
+const validPassword = (value) => typeof value === 'string' && value.length >= 8 && value.length <= 128;
 const validPin = (pin) => typeof pin === 'string' && /^[0-9]{6}$/.test(pin);
 const menus = new Set(['stock','incoming','floorplan','product-history','reorder','bompk','bom-plan','reconcile','cycle-counts','scrap','print-labels','daily-receive','daily-issue','receipt-plan','audit']);
 const validMenus = (value) => Array.isArray(value) && value.length > 0 && value.length <= menus.size
@@ -106,27 +107,31 @@ Deno.serve(async (request) => {
 
 
   if (action === 'list') {
-    const result = await backend('/rest/v1/app_users?select=id,username,role,menu_access,created_at&active=eq.true&order=created_at.asc', serviceKey);
-    return response(origin, result.ok ? 200 : 503, result.ok ? { users: await result.json() } : { error: 'โหลดรายชื่อไม่สำเร็จ' });
+    const result = await backend('/rest/v1/app_users?select=id,username,email,role,menu_access,created_at&active=eq.true&order=created_at.asc', serviceKey);
+    return response(origin, result.ok ? 200 : 503, result.ok ? { users: (await result.json()).map(({email, ...user}) => ({...user, login_kind: email.endsWith('@pin.bcl-wms.local') ? 'pin' : 'password'})) } : { error: 'โหลดรายชื่อไม่สำเร็จ' });
   }
 
 
   if (action === 'create') {
     const username = typeof input.username === 'string' ? input.username.trim().toLowerCase() : '';
     // Supabase Auth needs an email identifier internally; staff sign in by username.
-    const email = `${username}@pin.bcl-wms.local`;
+    const role = input.role === undefined ? 'user' : input.role;
+    const kind = input.login_kind === undefined ? 'pin' : input.login_kind;
+    const email = `${username}@${kind === 'pin' ? 'pin.' : ''}bcl-wms.local`;
     const pin = input.pin;
-    const menuAccess = input.menu_access === undefined ? ['stock'] : input.menu_access;
-    if (!validUsername(username) || username === 'admin' || !validPin(pin))
-      return response(origin, 400, { error: 'กรุณาระบุชื่อผู้ใช้และ PIN ตัวเลข 6 หลัก' });
+    const menuAccess = role === 'admin' ? [...menus] : (input.menu_access === undefined ? ['stock'] : input.menu_access);
+    if (!['user','admin'].includes(role) || !['pin','password'].includes(kind))
+      return response(origin, 400, { error: 'ประเภทบัญชีหรือการเข้าสู่ระบบไม่ถูกต้อง' });
+    if (!validUsername(username) || username === 'admin' || (kind === 'pin' ? !validPin(pin) : !validPassword(input.password)))
+      return response(origin, 400, { error: 'กรุณาระบุชื่อผู้ใช้และ PIN 6 หลัก หรือรหัสผ่าน 8–128 ตัวอักษร' });
     if (!validMenus(menuAccess))
       return response(origin, 400, { error: 'กรุณาเลือกอย่างน้อย 1 เมนู' });
     const exists = await backend(`/rest/v1/app_users?select=id&or=(username.eq.${encodeURIComponent(username)},email.eq.${encodeURIComponent(email)})&limit=1`, serviceKey);
     if (!exists.ok) return response(origin, 503, { error: 'ตรวจสอบผู้ใช้ไม่สำเร็จ' });
     if ((await exists.json()).length) return response(origin, 409, { error: 'ชื่อผู้ใช้นี้มีอยู่แล้ว' });
-    const password = await pinPassword(username, pin);
+    const password = kind === 'pin' ? await pinPassword(username, pin) : input.password;
     const createdResponse = await backend('/auth/v1/admin/users', serviceKey, {
-      method: 'POST', body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { username, login_kind: 'pin-v1' } }),
+      method: 'POST', body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { username, login_kind: kind === 'pin' ? 'pin-v1' : 'password' } }),
     });
     if (!createdResponse.ok) return response(origin, 400, { error: 'สร้างบัญชีไม่สำเร็จ กรุณาลองชื่อผู้ใช้อื่น' });
     const created = await createdResponse.json();
@@ -134,13 +139,30 @@ Deno.serve(async (request) => {
     if (!id) return response(origin, 503, { error: 'สร้างบัญชีไม่ครบ กรุณาตรวจสอบใน Supabase' });
     const profile = await backend('/rest/v1/app_users', serviceKey, {
       method: 'POST', headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({ id, username, email, role: 'user', menu_access: menuAccess }),
+      body: JSON.stringify({ id, username, email, role, menu_access: menuAccess }),
     });
     if (!profile.ok) {
       await backend(`/auth/v1/admin/users/${encodeURIComponent(id)}`, serviceKey, { method: 'DELETE' });
       return response(origin, 503, { error: 'สร้างโปรไฟล์ไม่สำเร็จและย้อนบัญชีแล้ว' });
     }
-    return response(origin, 201, { id, username, role: 'user' });
+    return response(origin, 201, { id, username, role });
+  }
+
+  if (action === 'set_credential') {
+    const id = typeof input.id === 'string' ? input.id : '';
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return response(origin, 400, { error: 'บัญชีไม่ถูกต้อง' });
+    const targetResponse = await backend(`/rest/v1/app_users?select=username,email,role,active&id=eq.${encodeURIComponent(id)}&limit=1`, serviceKey);
+    const target = targetResponse.ok ? (await targetResponse.json())[0] : null;
+    if (!target?.active || !['admin','user'].includes(target.role))
+      return response(origin, 400, { error: 'ไม่พบบัญชีที่ใช้งานอยู่' });
+    const usesPin = target.email.endsWith('@pin.bcl-wms.local');
+    if (usesPin ? !validPin(input.credential) : !validPassword(input.credential))
+      return response(origin, 400, { error: usesPin ? 'กรอก PIN ตัวเลข 6 หลัก' : 'กรอกรหัสผ่าน 8–128 ตัวอักษร' });
+    const password = usesPin ? await pinPassword(target.username, input.credential) : input.credential;
+    const updated = await backend(`/auth/v1/admin/users/${encodeURIComponent(id)}`, serviceKey, {
+      method: 'PUT', body: JSON.stringify({ password }),
+    });
+    return response(origin, updated.ok ? 200 : 503, updated.ok ? { updated: true } : { error: 'เปลี่ยนรหัสไม่สำเร็จ กรุณาลองใหม่' });
   }
 
   if (action === 'set_menu_access') {
