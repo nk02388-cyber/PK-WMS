@@ -4,13 +4,16 @@
  const desktop=window.matchMedia('(min-width:1024px)'),key='pk-sidebar-collapsed';
  const backdrop=document.createElement('div');backdrop.className='sidebar-backdrop';backdrop.hidden=true;backdrop.setAttribute('aria-hidden','true');document.body.append(backdrop);
  let collapsed=false,open=false;
+ const menuNames=new Map([...nav.querySelectorAll('.tab-btn')].map(button=>[button,{name:button.querySelector('span')?.textContent.trim()||'',label:button.getAttribute('aria-label')} ]));
  try{collapsed=localStorage.getItem(key)==='true';}catch{}
  function render(){
   const shown=desktop.matches?!collapsed:open;
   document.body.classList.toggle('sidebar-collapsed',desktop.matches&&collapsed);
   document.body.classList.toggle('sidebar-drawer-open',!desktop.matches&&open);
   toggle.setAttribute('aria-expanded',String(shown));toggle.setAttribute('aria-label',shown?'ปิดไซด์บาร์':'เปิดไซด์บาร์');toggle.title=shown?'ปิดไซด์บาร์':'เปิดไซด์บาร์';
-  nav.inert=!shown;nav.setAttribute('aria-hidden',String(!shown));backdrop.hidden=desktop.matches||!open;
+  const navigationVisible=desktop.matches||open;
+  nav.inert=!navigationVisible;nav.setAttribute('aria-hidden',String(!navigationVisible));backdrop.hidden=desktop.matches||!open;
+  for(const [button,info] of menuNames){button.title=info.name;if(desktop.matches&&collapsed)button.setAttribute('aria-label',info.name);else if(info.label)button.setAttribute('aria-label',info.label);else button.removeAttribute('aria-label');}
   content.inert=!desktop.matches&&open;header.inert=!desktop.matches&&open;
  }
  function close(focus=true){open=false;render();if(focus)toggle.focus({preventScroll:true});}

@@ -7,8 +7,12 @@
 .sidebar-close { display:none; }
 .sidebar-backdrop { display:none; }
 @media(min-width:1024px) {
-  .viz-root.sidebar-collapsed .wrap { grid-template-columns:0 minmax(0,1fr); }
-  .viz-root.sidebar-collapsed #tabs { display:none; }
+  .viz-root.sidebar-collapsed .wrap { grid-template-columns:64px minmax(0,1fr); }
+  .viz-root.sidebar-collapsed #tabs { display:flex;width:64px;box-sizing:border-box;padding:12px 8px 24px;gap:4px; }
+  .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand { display:none; }
+  .viz-root.sidebar-collapsed #tabs .tab-btn { display:flex;justify-content:center;align-items:center;width:48px;min-height:44px;padding:10px 0;gap:0; }
+  .viz-root.sidebar-collapsed #tabs .tab-btn > span { display:none; }
+  .viz-root.sidebar-collapsed #tabs .tab-icon { display:block;width:20px;height:20px;flex:none; }
   .viz-root.sidebar-collapsed header.top .header-product-name { display:block; }
 }
 @media(max-width:1023px) {
