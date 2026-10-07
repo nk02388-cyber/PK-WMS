@@ -7,7 +7,7 @@
   const userList = $('accountUserList'), message = $('accountManageMessage');
   const functionUrl = `${SUPABASE_URL}/functions/v1/pk-user-access`;
   const departmentKey = 'bcl-wms-selected-department';
-  let profile = null, refreshId = 0;
+  let profile = null, refreshId = 0, usersLoadId = 0;
   window.getWmsUsername = () => profile?.username || '';
   window.getWmsIsAdmin = () => profile?.role === 'admin';
   const menuButtons = [...document.querySelectorAll('#tabs .tab-btn[data-tab]')];
@@ -15,8 +15,9 @@
     key: button.dataset.tab,
     label: button.querySelector('span:not(.tab-badge)')?.textContent.trim() || button.dataset.tab,
   }));
+  const publicMenuKeys = new Set(menuButtons.filter(button => !button.hasAttribute('data-admin-only')).map(button => button.dataset.tab));
   const allowedMenus = () => profile?.role === 'admin' ? menuChoices.map(item => item.key)
-    : Array.isArray(profile?.menu_access) ? profile.menu_access.filter(key => !menuButtons.find(button => button.dataset.tab === key)?.hasAttribute('data-admin-only')) : [];
+    : Array.isArray(profile?.menu_access) ? profile.menu_access.filter(key => publicMenuKeys.has(key)) : [];
   window.getWmsCanAccess = key => allowedMenus().includes(key);
 
   function menuFieldset(selected = ['stock']) {
@@ -24,7 +25,7 @@
     fields.className = 'account-permissions';
     const legend = document.createElement('legend'); legend.textContent = 'เมนูที่เข้าได้';
     const grid = document.createElement('div');
-    for (const item of menuChoices.filter(item => !menuButtons.find(button => button.dataset.tab === item.key)?.hasAttribute('data-admin-only'))) {
+    for (const item of menuChoices.filter(item => publicMenuKeys.has(item.key))) {
       const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox'; checkbox.name = 'menu_access'; checkbox.value = item.key;
@@ -60,6 +61,7 @@
     try { value ? sessionStorage.setItem(departmentKey, value) : sessionStorage.removeItem(departmentKey); } catch (_) {}
   }
   function showStage(stage) {
+    if (document.body.classList.contains(stage)) return;
     document.body.classList.remove('auth-ready', 'auth-pending', 'department-choosing');
     document.body.classList.add(stage);
     $('authLoading').hidden = true;
@@ -79,14 +81,30 @@
     }
   }
   async function call(action, data = {}, token = '') {
-    const response = await fetch(functionUrl, {
-      method: 'POST', headers: { 'content-type': 'application/json', apikey: SUPABASE_ANON_KEY,
-        ...(token ? { authorization: `Bearer ${token}` } : {}) },
-      body: JSON.stringify({ action, ...data }),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error || 'ไม่สามารถติดต่อระบบบัญชีได้');
-    return result;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await fetch(functionUrl, {
+        method: 'POST', signal: controller.signal,
+        headers: { 'content-type': 'application/json', apikey: SUPABASE_ANON_KEY,
+          ...(token ? { authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ action, ...data }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'ไม่สามารถติดต่อระบบบัญชีได้');
+      return result;
+    } catch (err) {
+      if (err.name === 'AbortError') throw new Error('การเชื่อมต่อใช้เวลานาน กรุณาลองใหม่');
+      throw err;
+    } finally { clearTimeout(timeout); }
+  }
+  function clearAccount() {
+    const changed = !!profile; profile = null; usersLoadId++;
+    adminPanel.hidden = true; userList.replaceChildren(); createForm.reset(); updateCreateForm();
+    message.textContent = ''; panel.hidden = true; button.setAttribute('aria-expanded','false');
+    button.classList.remove('is-logged-in'); status.textContent = 'ยังไม่ได้เข้าสู่ระบบ';
+    applyMenuAccess();
+    if (changed) window.dispatchEvent(new Event('wms:account-changed'));
   }
   async function adminCall(action, data = {}) {
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
@@ -99,29 +117,34 @@
     try {
       const { data: { user }, error: userError } = await client.auth.getUser();
       if (id !== refreshId) return;
-      if (userError || !user) { profile = null; showDepartment(); return; }
+      if (userError || !user) { clearAccount(); showDepartment(); return; }
       const { data, error: profileError } = await client.from('app_users').select('username,role,active,menu_access').eq('id', user.id).single();
       if (id !== refreshId) return;
       if (profileError || !data?.active || !['admin', 'user'].includes(data.role)) {
         await client.auth.signOut({ scope: 'local' });
-        profile = null; showDepartment(); showError('บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน'); return;
+        clearAccount(); showDepartment(); showError('บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน'); return;
+      }
+      const changed = JSON.stringify(profile) !== JSON.stringify(data);
+      if (profile && (profile.username !== data.username || profile.role !== data.role)) {
+        usersLoadId++; userList.replaceChildren(); createForm.reset(); updateCreateForm();
       }
       profile = data;
-      window.dispatchEvent(new Event('wms:account-changed'));
+      if (changed) window.dispatchEvent(new Event('wms:account-changed'));
       status.textContent = `${data.username} · ${data.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้'}`;
       button.classList.add('is-logged-in');
       adminPanel.hidden = data.role !== 'admin';
       if (adminPanel.hidden) userList.replaceChildren();
       applyMenuAccess();
       showError(''); showDepartment();
-    } catch (_) { if (id === refreshId) { profile = null; showDepartment(); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
+    } catch (_) { if (id === refreshId) { clearAccount(); showDepartment(); showError('ตรวจสอบบัญชีไม่สำเร็จ กรุณาลองใหม่'); } }
   }
   async function loadUsers() {
     if (profile?.role !== 'admin') return;
+    const loadId = ++usersLoadId, actor = profile.username;
     message.textContent = 'กำลังโหลดรายชื่อ…';
     try {
       const { users } = await adminCall('list');
-      if (profile?.role !== 'admin') return;
+      if (profile?.role !== 'admin' || profile.username !== actor || loadId !== usersLoadId) return;
       userList.replaceChildren();
       for (const user of users.filter(item => ['admin','user'].includes(item.role) && !item.username.startsWith('legacy-disabled-'))) {
         const row = document.createElement('div'); row.className = 'account-user';
@@ -194,7 +217,7 @@
         row.append(info, actions); if (user.role === 'user') row.append(permissions); row.append(editor); userList.append(row);
       }
       message.textContent = userList.children.length ? '' : 'ยังไม่มีผู้ใช้';
-    } catch (err) { message.textContent = err.message; }
+    } catch (err) { if (loadId === usersLoadId && profile?.role === 'admin') message.textContent = err.message; }
   }
   form.addEventListener('submit', async event => {
     event.preventDefault(); showError('');

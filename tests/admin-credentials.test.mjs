@@ -105,3 +105,11 @@ assert.equal((await handler(request('set_credential',{id,credential:'QA-password
 assert.equal((await handler(request('create',{username:'lead2',role:'admin',pin:'001234'}))).status,403);
 assert.equal(calls.filter(c=>c.method==='PUT'||c.method==='POST').length,writes);
 console.log('PASS: Admin password/PIN creation, reset and new-login validation, old PIN rejected, non-admin denied');
+
+for(const value of [null,[], 'invalid']) {
+ const invalid=new Request('https://example.test/',{method:'POST',headers:{origin:'https://bcl-wms.vercel.app'},body:JSON.stringify(value)});
+ assert.equal((await handler(invalid)).status,400);
+}
+const oversized=new Request('https://example.test/',{method:'POST',headers:{origin:'https://bcl-wms.vercel.app'},body:JSON.stringify({action:'login',password:'x'.repeat(9000)})});
+assert.equal((await handler(oversized)).status,400);
+console.log('PASS: invalid and oversized request bodies are rejected');
