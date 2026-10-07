@@ -9,7 +9,9 @@
 @media(min-width:1024px) {
   .viz-root.sidebar-collapsed .wrap { grid-template-columns:64px minmax(0,1fr); }
   .viz-root.sidebar-collapsed #tabs { display:flex;width:64px;box-sizing:border-box;padding:12px 8px 24px;gap:4px; }
-  .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand { display:none; }
+  .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand { display:flex;justify-content:center;min-height:52px;height:52px;margin:0 0 12px;padding:0;gap:0;border-bottom:1px solid rgba(227,240,232,.25); }
+  .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand img { display:block;width:36px;height:36px;flex:none; }
+  .viz-root.sidebar-collapsed #tabs .dashboard-nav-name { display:none; }
   .viz-root.sidebar-collapsed #tabs .tab-btn { display:flex;justify-content:center;align-items:center;width:48px;min-height:44px;padding:10px 0;gap:0; }
   .viz-root.sidebar-collapsed #tabs .tab-btn > span { display:none; }
   .viz-root.sidebar-collapsed #tabs .tab-icon { display:block;width:20px;height:20px;flex:none; }
