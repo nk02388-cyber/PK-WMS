@@ -7,8 +7,10 @@
 .sidebar-close { display:none; }
 .sidebar-backdrop { display:none; }
 @media(min-width:1024px) {
+  .viz-root .wrap { transition:grid-template-columns .24s cubic-bezier(.22,1,.36,1); }
+  .viz-root #tabs { min-width:0;overflow-x:hidden; }
   .viz-root.sidebar-collapsed .wrap { grid-template-columns:64px minmax(0,1fr); }
-  .viz-root.sidebar-collapsed #tabs { display:flex;width:64px;box-sizing:border-box;padding:0 8px 24px;gap:4px; }
+  .viz-root.sidebar-collapsed #tabs { display:flex;width:100%;box-sizing:border-box;padding:0 8px 24px;gap:4px; }
   .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand { display:flex;justify-content:center;min-height:var(--dashboard-shell-header-h);height:var(--dashboard-shell-header-h);margin:0 -8px 12px;padding:0;gap:0;border-bottom:1px solid rgba(227,240,232,.25); }
   .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand img { display:block;width:36px;height:36px;flex:none; }
   .viz-root.sidebar-collapsed #tabs .dashboard-nav-name { display:none; }
@@ -24,9 +26,10 @@
     height:100dvh;max-height:100dvh;min-height:0;box-sizing:border-box;margin:0;padding:0 12px 24px;
     display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;gap:4px;
     overflow-y:auto;overflow-x:hidden;background:var(--nav-ink);border:0;border-radius:0;
-    transform:translateX(-100%);visibility:hidden;transition:transform .18s ease,visibility .18s;
+    transform:translateX(-100%);visibility:hidden;
+    transition:transform .26s cubic-bezier(.22,1,.36,1),visibility 0s linear .26s;
   }
-  .viz-root.sidebar-drawer-open #tabs { transform:translateX(0);visibility:visible; }
+  .viz-root.sidebar-drawer-open #tabs { transform:translateX(0);visibility:visible;transition-delay:0s; }
   .viz-root #tabs .dashboard-nav-brand { display:flex;align-items:center;gap:12px;padding:16px 12px;margin:0 0 12px;border-bottom:1px solid var(--border);color:#fff; }
   .viz-root #tabs .dashboard-nav-brand img { width:36px;height:36px; }
   .viz-root #tabs .dashboard-nav-name { display:grid;gap:3px;font-size:14px;min-width:0; }
@@ -39,9 +42,11 @@
   .viz-root #tabs .tab-btn .tab-icon { flex:none; }
   .viz-root #tabs .tab-btn .tab-badge { flex:none; }
   .viz-root #tabs .sidebar-close { display:grid;margin-left:auto;width:44px;height:44px;border-color:#555a51;background:transparent;color:#fff; }
-  .sidebar-backdrop:not([hidden]) { display:block;position:fixed;inset:0;z-index:405;background:rgba(0,0,0,.45);border:0; }
+  /* Keep the backdrop mounted while it fades out, without intercepting taps. */
+  .sidebar-backdrop,.sidebar-backdrop[hidden] { display:block;position:fixed;inset:0;z-index:405;background:rgba(0,0,0,.45);border:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .26s ease,visibility 0s linear .26s; }
+  .sidebar-backdrop:not([hidden]) { opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s; }
   body.sidebar-drawer-open { overflow:hidden; }
   .viz-root header.top .header-brand { gap:8px;min-width:0; }
   .viz-root header.top .header-logo { display:none; }
 }
-@media(prefers-reduced-motion:reduce){.viz-root #tabs { transition:none; }}
+@media(prefers-reduced-motion:reduce){.viz-root #tabs,.viz-root .wrap,.sidebar-backdrop { transition:none; }}

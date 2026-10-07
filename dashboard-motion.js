@@ -43,7 +43,7 @@
  function cancelAll(){for(const entry of live)entry.animation.cancel();live.clear();if(chartFrame)cancelAnimationFrame(chartFrame);if(entryFrame)cancelAnimationFrame(entryFrame);chartFrame=0;entryFrame=0;pendingCharts.clear();}
  function preference(){document.body.classList.toggle('pk-motion-enabled',!reduced.matches);if(reduced.matches)cancelAll();}
  reduced.addEventListener('change',preference);document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAll();});
- window.PKMotion={enterPane,sidebar(){if(window.matchMedia('(min-width:1024px)').matches)animate(document.getElementById('tabs'),[{opacity:.7},{opacity:1}],180);}};
+ window.PKMotion={enterPane};
  let ready=false;
  function readyState(){const now=document.body.classList.contains('auth-ready')&&!document.body.classList.contains('department-choosing');if(now&&!ready)enterPane(document.querySelector('.tab-pane:not([hidden])'));ready=now;}
  new MutationObserver(readyState).observe(document.body,{attributes:true,attributeFilter:['class']});
