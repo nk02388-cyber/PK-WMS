@@ -101,7 +101,8 @@
     return rows.sort((a,b) => {
       const aDate = dateKey(a.date), bDate = dateKey(b.date);
       if (!aDate || !bDate) return aDate ? -1 : bDate ? 1 : 0;
-      return aDate.localeCompare(bDate) || String(a.recordedAt || '').localeCompare(String(b.recordedAt || ''));
+      const recordedTime = row => {const time=Date.parse(row.recordedAt || '');return Number.isFinite(time)?time:0;};
+      return aDate.localeCompare(bDate) || recordedTime(a)-recordedTime(b);
     });
   }
 

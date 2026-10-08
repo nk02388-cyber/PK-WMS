@@ -5258,8 +5258,9 @@ function getStockMovement(item) {
   }
   (item.locationMoves || []).forEach((row, index) => rows.push({ type:'move', index, label:`ย้าย ${row.from || 'พาเลตอื่น'} → ${row.to || 'พาเลตอื่น'}`,
     date:row.date || '', qty:0, lotNo:item.lotNo || '', by:row.by || '', unit:item.unit || '', reference: row.reference || '', recordedAt: row.recordedAt || '' }));
+  const recordedTime = row => {const time=Date.parse(row.recordedAt || '');return Number.isFinite(time)?time:0;};
   rows.sort((a, b) => (movementDateKey(a.date) || (a.type === 'receive' ? '00000000' : '99999999'))
-    .localeCompare(movementDateKey(b.date) || (b.type === 'receive' ? '00000000' : '99999999')));
+    .localeCompare(movementDateKey(b.date) || (b.type === 'receive' ? '00000000' : '99999999')) || recordedTime(a)-recordedTime(b));
   let balance = movementNumber(item.qty) == null ? null : 0;
   for (const row of rows) {
     if (row.qty == null || (item.unit && row.unit && item.unit !== row.unit)) balance = null;
@@ -10140,7 +10141,7 @@ window.addEventListener('pageshow', () => {
 <script src="incoming-ui.js?v=20260924-3"></script>
 <script src="daily-movements.js?v=20261008-keywords1"></script>
 <script src="latest-suppliers.js?v=20260924-1"></script>
-<script src="product-history.js?v=20261008-keywords1"></script>
+<script src="product-history.js?v=20261008-chronology1"></script>
 <script src="top-withdrawals.js?v=20260925-2"></script>
 <script src="dashboard-insights.js?v=20261008-1"></script>
 <script src="reorder-points-data.js?v=20260924-1"></script>
