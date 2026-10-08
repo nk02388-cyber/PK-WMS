@@ -104,3 +104,8 @@
 :root[data-theme] .viz-root :is(#authError,#departmentError){color:#b42335}
 :root[data-theme="dark"] .viz-root :is(#authError,#departmentError){color:#ffb4c0}
 @media(max-width:480px){.viz-root .auth-card input{font-size:16px}}
+
+.viz-root header.top .header-stock-meta{margin-left:0;gap:8px;max-width:340px;width:auto;padding:0;border:0}
+.viz-root header.top .header-stock-meta #reportDate{min-height:0;padding:0;background:transparent;border:0;box-shadow:none;font-size:12px}
+.viz-root header.top #stockUpdateBtn{min-height:44px;border-radius:10px!important;white-space:nowrap;padding:8px 12px;box-shadow:none}
+@media(max-width:700px){.viz-root header.top .header-stock-meta{order:10;flex-basis:100%;max-width:none;justify-content:flex-start;font-size:12px}.viz-root header.top #stockUpdateBtn{width:44px;height:44px;padding:0;font-size:0}.viz-root header.top #stockUpdateBtn::before{content:'↥';font-size:22px}.viz-root header.top .header-stock-meta #stockUpdateStatus{font-size:11px}}
