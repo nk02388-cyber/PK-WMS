@@ -1,7 +1,7 @@
-const keywords = query => String(query || '').trim().toLocaleLowerCase('th-TH').split(/\s+/).filter(Boolean);
+const keywords = query => String(query || '').normalize('NFKC').trim().toLocaleLowerCase('th-TH').split(/\s+/).filter(Boolean);
 
 export function matchesKeywords(code, name, query) {
-  const text = `${code} ${name}`.toLocaleLowerCase('th-TH');
+  const text = `${code} ${name}`.normalize('NFKC').toLocaleLowerCase('th-TH');
   return keywords(query).every(term => text.includes(term));
 }
 

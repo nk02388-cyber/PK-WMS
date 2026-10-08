@@ -67,7 +67,7 @@
     const summary = summarizeDailyMovements(allRows);
     const query = normalizeSearchText(panel.querySelector('.daily-query').value);
     const visible = query ? allRows.filter(row =>
-      [row.code,row.name,row.lotNo,row.zone,row.slot,row.by,row.reference].some(value => normalizeSearchText(value).includes(query))) : allRows;
+      query.split(' ').every(term => normalizeSearchText([row.code,row.name,row.lotNo,row.zone,row.slot,row.by,row.reference].join(' ')).includes(term))) : allRows;
     panel.querySelector('.daily-status').textContent = `${palletDataReady ? 'ข้อมูลพาเลตล่าสุดจากระบบ' : 'กำลังโหลดข้อมูลพาเลต · ผลชั่วคราว'} · ${formatMovementDate(selectedDate)} · ${allRows.length} รายการ${query ? ` · แสดง ${visible.length} รายการ` : ''}`;
     panel.querySelector('.daily-kpis').innerHTML = [
       ['รายการ',summary.transactions],['รหัสสินค้า',summary.codes],['ตำแหน่งพาเลต',summary.slots],['โซน',summary.zones]

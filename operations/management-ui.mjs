@@ -1,5 +1,5 @@
 import {withdrawalTimePerformance} from './time-performance.mjs?v=1';
-import {defaultSettings,settingsError,varianceRows,matchesText,safeCsv,planOrder,reportingTickets} from './management.mjs?v=6';
+import {defaultSettings,settingsError,varianceRows,matchesText,safeCsv,planOrder,reportingTickets} from './management.mjs?v=20261008-keywords1';
 import {configureWorkTime,workBreakdown,minutesText,operationalPerformance,pickCompleteness,reasonLabels} from './operations.mjs?v=4';
 import {totalDocuments,ticketDocumentCount} from './withdrawal-documents.mjs';
 import {fromBangkokInput,toBangkokInput,formatBangkokDateTime} from './ticket-time.mjs?v=2';

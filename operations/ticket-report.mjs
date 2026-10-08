@@ -20,7 +20,7 @@ export function filterTickets(tickets, filters) {
     const date = bangkokDate(ticket[basis]);
     const picks=pickCompleteness(ticket);
     const completeness=filters.completeness||'all';
-    return (!query || String(ticket.ticket_no || '').toLocaleLowerCase().includes(query))
+    return (!query || query.normalize('NFKC').split(/\s+/).every(term => [ticket.ticket_no,ticket.search_text,ticket.fg_code,ticket.fg_name,ticket.note,ticket.notes,...(ticket.materials||[]).map(m=>[m.pk_code,m.pk_name,m.name,m.document_no,m.lot_no].join(' '))].join(' ').normalize('NFKC').toLocaleLowerCase().includes(term)))
       && (!filters.assigneeId || ticket.assignee_id === filters.assigneeId)
       && (!filters.jobId || ticket.job_type_id === filters.jobId)
       && (!filters.status || ticket.status === filters.status)

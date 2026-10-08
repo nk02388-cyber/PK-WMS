@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const normalize = value => String(value ?? '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('th-TH').replace(/[\u0e48-\u0e4b]/g, '');
+  const normalize = value => String(value ?? '').normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('th-TH').replace(/[\u0e48-\u0e4b]/g, '');
   const codeKey = value => String(value ?? '').trim().toUpperCase();
 
   function formatRecordedTime(value) {

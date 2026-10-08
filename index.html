@@ -4819,7 +4819,7 @@ function formatMovementDate(value) {
 }
 
 function normalizeSearchText(value) {
-  return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('th-TH')
+  return String(value || '').normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('th-TH')
     .replace(/[\u0E48-\u0E4B]/g, '');
 }
 
@@ -4839,6 +4839,7 @@ function getFloorplanSearchResults(query) {
     else if (normalizedName.split(' ').some(word => word.startsWith(q))) rank = 4;
     else if (normalizedCode.includes(q)) rank = 5;
     else if (normalizedName.includes(q)) rank = 6;
+    if (!Number.isFinite(rank) && q.split(' ').every(term => normalizeSearchText([code,name,...entries.map(e=>[e.name,e.searchName,e.zone,e.slot,e.lotNo,e.by,e.reference].join(' '))].join(' ')).includes(term))) rank = 7;
     return { code, name, entries, rank };
   }).filter(item => Number.isFinite(item.rank)).sort((a, b) =>
     a.rank - b.rank || a.code.localeCompare(b.code, 'th', { numeric: true, sensitivity: 'base' })
@@ -5031,7 +5032,7 @@ function rebuildItemToSlots() {
         const remaining = movementNumber(getRemainingQty(item));
         if (remaining == null || remaining <= 0) return;
         if (!ITEM_TO_SLOTS[item.code]) ITEM_TO_SLOTS[item.code] = [];
-        ITEM_TO_SLOTS[item.code].push({ zone: zoneCode, slot: slotCode, name: item.name, receiveDate: item.receiveDate || '', lotNo: item.lotNo || '' });
+        ITEM_TO_SLOTS[item.code].push({ zone: zoneCode, slot: slotCode, name: item.name, searchName:item.search_name || item.searchName || '', by:item.receivedBy || '', reference:item.receiveReference || '', receiveDate: item.receiveDate || '', lotNo: item.lotNo || '' });
       });
     });
   });
@@ -5851,6 +5852,7 @@ function getAddProductSuggestions(query) {
     else if (code.includes(q)) rank = 5;
     else if (name.includes(q)) rank = 6;
     else if (searchName.includes(q)) rank = 6;
+    if (!Number.isFinite(rank) && q.split(' ').every(term => [code,name,searchName].join(' ').includes(term))) rank = 7;
     return {...item, rank};
   }).filter(item => Number.isFinite(item.rank)).sort((a,b) =>
     a.rank - b.rank || a.code.localeCompare(b.code, 'th', {numeric:true, sensitivity:'base'}));
@@ -8687,8 +8689,9 @@ function getFgSearchResults(query) {
   return BOMPK.fg_list.map(item => {
     const code = normalizeSearchText(item.fg);
     const name = normalizeSearchText(item.fg_name);
-    const rank = code === q ? 0 : name === q ? 1 : code.startsWith(q) ? 2
+    let rank = code === q ? 0 : name === q ? 1 : code.startsWith(q) ? 2
       : name.startsWith(q) ? 3 : code.includes(q) ? 4 : name.includes(q) ? 5 : Infinity;
+    if (!Number.isFinite(rank) && q.split(' ').every(term => [code,name].join(' ').includes(term))) rank = 6;
     return { ...item, rank };
   }).filter(item => Number.isFinite(item.rank)).sort((a, b) =>
     a.rank - b.rank || a.fg.localeCompare(b.fg, 'th', { numeric: true, sensitivity: 'base' }));
@@ -10123,19 +10126,19 @@ window.addEventListener('pageshow', () => {
   applyDashboardTheme(saved === 'light' ? 'light' : 'dark');
 });
 </script>
-<script src="pallet-audit.js?v=20260926-2"></script>
+<script src="pallet-audit.js?v=20261008-keywords1"></script>
 <script src="vendor/html5-qrcode.min.js"></script>
 <script src="vendor/qrcode-generator.js"></script>
 <script src="scan-sound.js?v=20260923-1"></script>
 <script src="barcode-operations.js?v=20260923-3"></script>
 <script src="barcode-ui.js?v=20260926-1"></script>
-<script src="incoming-workflow.js?v=20260923-4"></script>
+<script src="incoming-workflow.js?v=20261008-keywords1"></script>
 <script src="supplier-options-data.js?v=20260924-1"></script>
 <script src="supplier-options.js?v=20260924-1"></script>
 <script src="incoming-ui.js?v=20260924-3"></script>
-<script src="daily-movements.js"></script>
+<script src="daily-movements.js?v=20261008-keywords1"></script>
 <script src="latest-suppliers.js?v=20260924-1"></script>
-<script src="product-history.js?v=20260925-4"></script>
+<script src="product-history.js?v=20261008-keywords1"></script>
 <script src="top-withdrawals.js?v=20260925-2"></script>
 <script src="dashboard-insights.js?v=20261008-1"></script>
 <script src="reorder-points-data.js?v=20260924-1"></script>
@@ -10144,7 +10147,7 @@ window.addEventListener('pageshow', () => {
 <script src="action-confirmation.js?v=2"></script>
 <script src="event-calendar.js?v=20261005-confirm1"></script>
 <script src="notifications.js?v=20260926-1"></script>
-<script src="receipt-plan.js?v=20260926-1"></script>
+<script src="receipt-plan.js?v=20261008-keywords1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
 <script src="account-status.js?v=20261008-rename1"></script>
 <link rel="stylesheet" href="warehouse-operations-pin.css?v=20261008-2">

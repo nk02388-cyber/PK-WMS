@@ -30,7 +30,7 @@
   }
   function render() {
     const q = search.value.trim().toLocaleLowerCase();
-    const shown = rows.filter(row => !q || [row.zone,row.slot_code,row.actor_name,row.document_no,row.action,JSON.stringify(row.after_items)].join(' ').toLocaleLowerCase().includes(q));
+    const shown = rows.filter(row => {const hay=[row.zone,row.slot_code,row.actor_name,row.document_no,row.action,actionLabel(row),JSON.stringify(row.before_items),JSON.stringify(row.after_items)].join(' ').normalize('NFKC').toLocaleLowerCase();return q.normalize('NFKC').split(/\s+/).every(term=>hay.includes(term));});
     status.textContent = `${shown.length} รายการ${q ? ' จากข้อมูลที่โหลดแล้ว' : ''}`;
     result.innerHTML = shown.length ? `<div class="audit-scroll"><table class="audit-table"><thead><tr><th>เวลา</th><th>รายการ / ตำแหน่ง</th><th>ผู้ทำ / เอกสาร</th><th>ยอดก่อน → หลัง</th></tr></thead><tbody>${shown.map(row => `<tr><td>${safe(new Date(row.occurred_at).toLocaleString('th-TH'))}</td><td><b>${safe(actionLabel(row))}</b><br>${safe(row.zone)} / ${safe(row.slot_code)}</td><td>${safe(row.actor_name)}<br><small>${safe(row.document_no)}</small></td><td>${changes(row)}</td></tr>`).join('')}</tbody></table></div>` : '<p>ไม่พบประวัติในข้อมูลที่โหลด</p>';
   }

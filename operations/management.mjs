@@ -14,7 +14,7 @@ export function varianceRows(tickets,cases=[]){return tickets.filter(t=>!t.delet
  const saved=cases.find(c=>c.ticket_id===t.id&&c.line_index===i);
  return [{ticket:t,line:l,index:i,delta,fingerprint,case:saved,fractional:fractionalVariance(l.required_qty,l.actual_qty),status:fractionalVariance(l.required_qty,l.actual_qty)?'resolved':saved?.fingerprint===fingerprint?saved.status:'open',stale:!!saved&&saved.fingerprint!==fingerprint}];
  }));}
-export function matchesText(values,query){const words=String(query).trim().toLocaleLowerCase('th').split(/\s+/).filter(Boolean),hay=values.join(' ').toLocaleLowerCase('th');return words.every(w=>hay.includes(w));}
+export function matchesText(values,query){const words=String(query).normalize('NFKC').trim().toLocaleLowerCase('th').split(/\s+/).filter(Boolean),hay=values.join(' ').normalize('NFKC').toLocaleLowerCase('th');return words.every(w=>hay.includes(w));}
 export function safeCsv(rows){return '\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"').join(',')).join('\r\n');}
 export function planOrder(tickets){const rank={urgent:0,high:1,normal:2};return [...tickets].sort((a,b)=>(rank[a.priority||'normal']-rank[b.priority||'normal'])||String(a.due_at||'9999').localeCompare(String(b.due_at||'9999'))||String(a.created_at).localeCompare(String(b.created_at)));}
 

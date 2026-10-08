@@ -13,7 +13,7 @@
     return match.kind === 'product' ? match.product : null;
   }
   function searchProducts(query, products) {
-    const normalize = value => String(value ?? '').trim().toLocaleLowerCase('th');
+    const normalize = value => String(value ?? '').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('th').replace(/[\u0e48-\u0e4b]/g,'');
     const needle = normalize(query);
     if (!needle) return [];
     const catalog = new Map();
@@ -40,6 +40,7 @@
       else if (name.startsWith(needle) || searchName.startsWith(needle)) rank = 3;
       else if (code.includes(needle)) rank = 4;
       else if (name.includes(needle) || searchName.includes(needle)) rank = 5;
+      if (!Number.isFinite(rank) && needle.split(' ').every(term => [code,name,searchName,normalize(item.unit)].join(' ').includes(term))) rank=6;
       return {...item,rank};
     }).filter(item => Number.isFinite(item.rank))
       .sort((a,b) => a.rank-b.rank || a.code.localeCompare(b.code,'th',{numeric:true,sensitivity:'base'}));

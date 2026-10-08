@@ -2,8 +2,8 @@ import {renderWithdrawalReport} from './print-report.mjs?v=20261002-1';
 import {isWipCode} from './material-policy.mjs?v=1';
 import {formulaDraft,mergeFormulas} from './saved-formulas.mjs?v=2';
 import {withdrawalTimePerformance,MINUTES_PER_DOCUMENT} from './time-performance.mjs?v=1';
-import {followupComplete,reportingTickets,varianceRows} from './management.mjs?v=6';
-import {installManagement} from './management-ui.mjs?v=7';
+import {followupComplete,reportingTickets,varianceRows} from './management.mjs?v=20261008-keywords1';
+import {installManagement} from './management-ui.mjs?v=20261008-keywords1';
 import {workBreakdown,minutesText,pickCompleteness,operationalPerformance,reasonLabels,documentsError} from './operations.mjs?v=4';
 import { prepareStaffPhoto } from './staff-photo.mjs';
 import { pickError, confirmedPickSummary, actualFromInput, pickVarianceText, defaultPickActual, automaticPickCloseStatus } from './picking.mjs?v=7';
@@ -12,9 +12,9 @@ import { splitTicketNumbers, ticketReferences, ticketDocumentCount, totalDocumen
 import { presetDates } from './dashboard-filters.mjs';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, PK_WMS_URL, PK_WMS_PUBLISHABLE_KEY } from './config.js';
-import { filterTickets } from './ticket-report.mjs?v=5';
+import { filterTickets } from './ticket-report.mjs?v=20261008-keywords1';
 import { automaticSkill, completedJobWorkload, personPerformance } from './skill-metrics.mjs?v=5';
-import { matchesKeywords, searchStock } from './stock-search.mjs';
+import { matchesKeywords, searchStock } from './stock-search.mjs?v=20261008-keywords1';
 import { formatBangkokClock, formatBangkokDateTime, fromBangkokInput, timeEditError, toBangkokInput } from './ticket-time.mjs?v=2';
 import { ticketNumberExists, ticketNumberConflicts, ticketConflictText, suggestTicketNumber, isDuplicateTicketNumberError } from './ticket-number.mjs?v=3';
 import { purgeConfirmationError } from './trash.mjs';
@@ -274,7 +274,7 @@ function renderTicketFilterOptions(){
     select.value=previous;
   }
 }
-function selectedTickets(){return filterTickets($('#ticket-filter').value==='deleted'&&supervisor()?state.deletedTickets:reportingTickets(state.tickets,state.management?.cases),{...ticketFilters(),completeness:['short_pending','over_pending'].includes(ticketFilters().completeness)?'all':ticketFilters().completeness,status:['deleted','followup_complete','open'].includes($('#ticket-filter').value)?'':ticketFilters().status}).filter(t=>$('#ticket-filter').value!=='open'||['queued','active','paused'].includes(t.status)).filter(t=>$('#ticket-filter').value!=='followup_complete'||followupComplete(t,state.management?.cases)).filter(t=>ticketFilters().completeness!=='variance'||varianceRows([t],state.management?.cases).some(r=>r.status!=='resolved')).filter(t=>!['short_pending','over_pending'].includes(ticketFilters().completeness)||varianceRows([t],state.management?.cases).some(r=>r.status!=='resolved'&&(ticketFilters().completeness==='short_pending'?r.delta<0:r.delta>0))).map(t=>state.tickets.find(original=>original.id===t.id)||t);}
+function selectedTickets(){const source=$('#ticket-filter').value==='deleted'&&supervisor()?state.deletedTickets:reportingTickets(state.tickets,state.management?.cases);return filterTickets(source.map(t=>({...t,search_text:[nameFor(t.assignee_id),jobFor(t.job_type_id)].join(' ')})),{...ticketFilters(),completeness:['short_pending','over_pending'].includes(ticketFilters().completeness)?'all':ticketFilters().completeness,status:['deleted','followup_complete','open'].includes($('#ticket-filter').value)?'':ticketFilters().status}).filter(t=>$('#ticket-filter').value!=='open'||['queued','active','paused'].includes(t.status)).filter(t=>$('#ticket-filter').value!=='followup_complete'||followupComplete(t,state.management?.cases)).filter(t=>ticketFilters().completeness!=='variance'||varianceRows([t],state.management?.cases).some(r=>r.status!=='resolved')).filter(t=>!['short_pending','over_pending'].includes(ticketFilters().completeness)||varianceRows([t],state.management?.cases).some(r=>r.status!=='resolved'&&(ticketFilters().completeness==='short_pending'?r.delta<0:r.delta>0))).map(t=>state.tickets.find(original=>original.id===t.id)||t);}
 function rememberOpenMaterials(){
   $('#ticket-list').querySelectorAll('[data-material-ticket]').forEach(details=>{
     if(details.open)expandedTickets.add(details.dataset.materialTicket);
@@ -678,7 +678,7 @@ function renderTrash(){
   if(!supervisor())return;
   $('#trash-list').querySelectorAll('[data-material-ticket]').forEach(details=>{if(details.open)expandedTickets.add(details.dataset.materialTicket);else expandedTickets.delete(details.dataset.materialTicket);});
   const query=$('#trash-search').value.trim().toLocaleLowerCase();
-  const list=state.deletedTickets.filter(t=>[t.ticket_no,nameFor(t.assignee_id),jobFor(t.job_type_id)].join(' ').toLocaleLowerCase().includes(query));
+  const list=state.deletedTickets.filter(t=>{const hay=[t.ticket_no,nameFor(t.assignee_id),jobFor(t.job_type_id),t.fg_code,t.fg_name,...(t.materials||[]).map(m=>[m.pk_code,m.pk_name].join(' '))].join(' ').normalize('NFKC').toLocaleLowerCase();return query.normalize('NFKC').split(/\s+/).every(term=>hay.includes(term));});
   $('#trash-count').textContent=`${list.length} งาน · ${totalDocuments(list)} ใบ`;
   $('#trash-list').innerHTML=list.length?list.map(ticketHtml).join(''):empty(query?'ไม่พบใบเบิกในถังขยะตามคำค้น':'ถังขยะว่าง');
 }

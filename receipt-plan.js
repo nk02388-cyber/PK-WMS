@@ -86,8 +86,7 @@
     status.textContent = `${sheet ? `ชีต ${sheetName} · ${rows.length} รายการ` : `ไม่มีชีต ${sheetName} ในไฟล์ต้นทาง`} · โหลดล่าสุด ${stamp}`;
     badge.textContent = selected === localToday() ? `${rows.length} วันนี้` : `${rows.length} รายการ`;
     const key = query.value.trim().toLocaleLowerCase('th');
-    const visible = key ? rows.filter(row => [row.rr,row.company,row.period,row.po,row.code,row.item,row.unit]
-      .some(value => text(value).toLocaleLowerCase('th').includes(key))) : rows;
+    const visible = key ? rows.filter(row => {const hay=[row.rr,row.company,row.period,row.po,row.code,row.item,row.unit].map(value=>text(value)).join(' ').normalize('NFKC').toLocaleLowerCase('th');return key.normalize('NFKC').split(/\s+/).every(term=>hay.includes(term));}) : rows;
     const distinctCodes = new Set(rows.map(row => row.code)).size;
     const distinctCompanies = new Set(rows.map(row => row.company).filter(Boolean)).size;
     const kpis = [['รายการในแผน',rows.length],['รหัสสินค้า',distinctCodes],['บริษัท',distinctCompanies],['ผลค้นหา',visible.length]];
