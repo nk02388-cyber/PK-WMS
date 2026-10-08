@@ -46,53 +46,54 @@ module.exports=async function runDatabaseIntegration({Client,connection}) {
     const extract=n=>html.match(new RegExp(`(?:async )?function ${n}\\([^]*?\\n\\}`))[0];
     const source=['movementMatchesSnapshot','formatMovementDate','getRemainingQty','movementNumber','movementDateKey',
       'getStockMovement','prepareMovementEdit','persistMovementEdit'].map(extract).join('\n');
-    let waiting=0,release;const barrier=new Promise(r=>release=r);
-    function adapter(client) {return {from(table){
-      assert.equal(table,'pallet_slots');const filters=[];let update=null;
-      const q={select(){return q},eq(k,v){filters.push([k,v]);return q},is(k,v){filters.push([k,v]);return q},
-        update(v){update=v;return q},async maybeSingle(){
-          const parameters=[];const where=filters.map(([k,v])=>{
-            assert.ok(['zone','slot_code','updated_at'].includes(k));if(v===null)return `${k} is null`;
-            parameters.push(v);return `${k}=$${parameters.length}`;
-          }).join(' and ');
-          try {
-            let result;
-            if(update) {
-              parameters.push(JSON.stringify(update.items),update.updated_at);
-              result=await client.query(`update public.pallet_slots set items=$${parameters.length-1},updated_at=$${parameters.length} where ${where} returning *`,parameters);
-            } else {
-              result=await client.query(`select * from public.pallet_slots where ${where}`,parameters);
-              if(++waiting===2)release();await barrier;
-            }
-            return {data:result.rows[0]||null,error:null};
-          }catch(error){return {data:null,error};}
-        }};return q;
-    }};}
-    function userContext(client) {
-      const local=[JSON.parse(JSON.stringify(original))];
-      const ctx=vm.createContext({supabaseClient:adapter(client),slotItemsFor:()=>local,
-        applyRemoteSlotRow(row){local.splice(0,local.length,...row.items);}});
-      vm.runInContext(source,ctx);return ctx;
+    // Apply current versioned write and audit migrations to the isolated schema.
+    await admin.query(`create schema auth;
+      create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,is_anonymous boolean default false);
+      create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+      create table public.app_users(id uuid primary key,username text,role text,active boolean default true);
+      insert into auth.users values ('11111111-1111-4111-8111-111111111111','a@test.local',now(),false),('22222222-2222-4222-8222-222222222222','b@test.local',now(),false);
+      insert into public.app_users values ('11111111-1111-4111-8111-111111111111','User A','user',true),('22222222-2222-4222-8222-222222222222','User B','user',true);`);
+    for(const migration of ['supabase-pallet-security.sql','supabase-pallet-public-edit.sql','supabase-pallet-audit.sql','supabase-pallet-audit-login-actor.sql'])
+      await admin.query(fs.readFileSync(path.join(__dirname,'..',migration),'utf8'));
+    await a.query("select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false)");
+    await b.query("select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',false)");
+    for(const client of [a,b,guest]){
+      await assert.rejects(client.query("update public.pallet_slots set occupied=false where zone='QA'"),e=>e.code==='42501');
+      await assert.rejects(client.query("insert into public.receive_dates values('QA-DIRECT','2026-09-03',now(),1)"),e=>e.code==='42501');
     }
-    const ca=userContext(a),cb=userContext(b);
-    const edit={zone:'QA',slot:'QA-01',itemIndex:0,snapshot:JSON.stringify(original)};
+    pass('Current migrations deny direct inventory writes for every browser role');
+    await assert.rejects(guest.query("select public.save_pallet_changes($1::jsonb,'[]')",[JSON.stringify([{zone:'QA',slot_code:'QA-01',occupied:true,items:[{...original,qty:999}],expected_version:1,_audit:{actor:'Forged',action:'adjust',document_no:'QA-1'}}])]),e=>e.code==='42501');
+    pass('Anonymous write through the RPC is rejected by the authenticated audit actor check');
+    report.findings=[]; // Earlier legacy policy probes were setup checks before current migrations.
+    let waiting=0,release;const barrier=new Promise(r=>release=r);
+    function userContext(client,actor){
+      const local=[JSON.parse(JSON.stringify(original))];
+      const ctx=vm.createContext({palletDataReady:true,palletWriteBusy:false,editingSlot:null,palletVersions:new Map(),
+        window:{getWmsUsername:()=>actor},slotItemsFor:()=>local,
+        buildSlotRow:(zone,slot_code)=>({zone,slot_code,occupied:true,items:local}),
+        applyRemoteSlotRow(row){local.splice(0,local.length,...row.items)},applyRemoteReceiveDateRow(){},
+        supabaseClient:{async rpc(name,args){
+          assert.equal(name,'save_pallet_changes');if(++waiting===2)release();await barrier;
+          try{const r=await client.query('select public.save_pallet_changes($1::jsonb,$2::jsonb) data',[JSON.stringify(args.p_slots),JSON.stringify(args.p_dates)]);return {data:r.rows[0].data};}
+          catch(error){return {error};}
+        }}});
+      vm.runInContext(source+'\n'+extract('palletAuditMetadata')+'\n'+extract('savePalletBatch'),ctx);return ctx;
+    }
+    const ca=userContext(a,'User A'),cb=userContext(b,'User B');
+    const edit={zone:'QA',slot:'QA-01',itemIndex:0,version:1,snapshot:JSON.stringify(original)};
     const nextA=ca.prepareMovementEdit(original,'receive',0,{qty:21,date:'2026-09-01',lotNo:'QA',by:'User A'});
     const nextB=cb.prepareMovementEdit(original,'receive',0,{qty:22,date:'2026-09-01',lotNo:'QA',by:'User B'});
     const outcomes=await Promise.allSettled([ca.persistMovementEdit(edit,nextA),cb.persistMovementEdit(edit,nextB)]);
     assert.equal(outcomes.filter(o=>o.status==='fulfilled').length,1);
     assert.equal(outcomes.filter(o=>o.status==='rejected').length,1);
-    assert.match(String(outcomes.find(o=>o.status==='rejected').reason),/พร้อมกัน/);
+    assert.match(String(outcomes.find(o=>o.status==='rejected').reason),/คนแก้/);
     const saved=(await admin.query("select items from public.pallet_slots where zone='QA' and slot_code='QA-01'")).rows[0].items[0];
     assert.ok([21,22].includes(saved.qty));assert.equal(saved.remainingQty,saved.qty-5);
     assert.equal(saved.movementEdits.length,1);assert.equal(saved.withdrawals.length,1);
     pass('Actual application movement persistence with two concurrent PostgreSQL sessions: exactly one writer succeeds, the stale writer is rejected, balance/history/audit remain consistent');
-    // Reproduce the limitation in legacy whole-row writes as an explicit finding, not a pass.
-    const before=(await a.query("select items from public.pallet_slots where zone='QA' and slot_code='QA-01'")).rows[0].items;
-    const first=JSON.parse(JSON.stringify(before)),second=JSON.parse(JSON.stringify(before));
-    first[0].note='User A';second[0].note='User B';
-    await a.query("update public.pallet_slots set items=$1 where zone='QA' and slot_code='QA-01'",[JSON.stringify(first)]);
-    await b.query("update public.pallet_slots set items=$1 where zone='QA' and slot_code='QA-01'",[JSON.stringify(second)]);
-    report.findings.push('Legacy whole-slot writes without an updated_at condition remain last-write-wins; only STOCK CARD movement edits currently reject stale concurrent writes.');
+    const audit=(await admin.query("select * from public.pallet_audit_log where zone='QA' and slot_code='QA-01'")).rows;
+    assert.equal(audit.length,1);assert.ok(['User A','User B'].includes(audit[0].actor_name));assert.equal(Number(audit[0].after_version),2);
+    pass('One committed write creates exactly one log with the server-authenticated username');
     return report;
   } finally {await Promise.allSettled(clients.map(c=>c.end()));await admin.end();}
 };

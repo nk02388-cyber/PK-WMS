@@ -11,7 +11,7 @@ assert.equal(crypto.createHash('sha256').update(protectedContent).digest('hex'),
 // Same JPEG bytes moved out of HTML to avoid repeated base64 parsing/copying.
 for(const [file,hash] of [['floorplan-overview.jpg','01665e8d530bd638c898bea4a2d326e7c9e05d4ba709eaba82b91ffe2b846acc'],['floorplan-detail.jpg','941b1c8a676ccaf7744766d5038680e0bf6799372a0af67f9e00db315e4b5660']])
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,'..','assets',file))).digest('hex'),hash);
-for (const copy of ['<title>PK WMS | BCL WMS</title>', 'class="header-product-name">PK WMS</strong>', '>DASHBORD</span>', '↥ อัปเดตสต็อก',
+for (const copy of ['<title>PK WMS | BCL WMS</title>', 'class="header-product-name">PK WMS</strong>', '>DASHBOARD</span>', '↥ อัปเดตสต็อก',
   'สต็อกพร้อมใช้ (หน่วยตามสูตร)', 'สต็อกหลังใช้บรรจุภัณฑ์', 'มูลค่าหลังใช้บรรจุภัณฑ์ (บาท)',
   '>Import</button>', '>Export</button>', 'กรอก PIN เพื่อยืนยันการอัปเดตสต็อก']) {
   assert.ok(html.includes(copy), `Missing copy: ${copy}`);

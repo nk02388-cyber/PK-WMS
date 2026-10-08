@@ -30,3 +30,7 @@ The runner binds only 127.0.0.1:55439, creates a new local test cluster under `w
 The same findings were confirmed by reading the live policy catalog. The private Stock/PIN tables intentionally have no public SELECT policies; the public Stock RPC checks a PIN. Advisor notices for those functions are review items, not evidence that every warning is an exploitable defect.
 
 Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
+
+## Current runner update — 2026-10-08
+
+The historical 2026-09-03 findings above describe the old write path. The current runner now applies the versioned-write and pallet-audit migrations, plus the server-authenticated audit actor migration, before exercising actual persistMovementEdit through save_pallet_changes. It verifies direct table writes are denied, an anonymous inventory-content change is rejected, concurrent editors yield exactly one commit, and exactly one audit log records the authenticated actor. These are isolated local PostgreSQL results; the runner does not verify hosted production grants or every RPC authorization case.

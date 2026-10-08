@@ -33,6 +33,11 @@ assert.equal(capacity.usedPct.toFixed(1), '0.3');
 assert.equal(JSON.stringify(ctx.SLOT_ITEMS), before, 'capacity calculation does not edit stock history');
 assert.match(html, /if \(!isCapacityUsed\(zoneCode, slot\.code\)\) return;/,
   'age summary and capacity use the same slot rule');
-assert.match(html, /if \(!palletDataReady\) \{\s*gaugeWrap\.innerHTML = '';\s*document\.getElementById\('pkSpeedMeterValue'\)\.textContent = '—';\s*document\.getElementById\('pkSpeedMeterSub'\)\.textContent = 'รอข้อมูลพาเลต';\s*return;/,
-  'gauge does not present a temporary zero as a confirmed capacity');
+const gaugeNodes = {pkSpeedMeterGauge:{innerHTML:'stale gauge',dataset:{percent:'69.6'}},pkSpeedMeterValue:{textContent:'69.6%'},pkSpeedMeterSub:{textContent:'stale capacity'}};
+ctx.document={getElementById:id=>gaugeNodes[id]};ctx.palletDataReady=false;
+vm.runInContext(extract('renderSpeedMeter'),ctx);ctx.renderSpeedMeter();
+assert.equal(gaugeNodes.pkSpeedMeterGauge.innerHTML,'');
+assert.equal(gaugeNodes.pkSpeedMeterGauge.dataset.percent,undefined);
+assert.equal(gaugeNodes.pkSpeedMeterValue.textContent,'—','pending data must not appear as zero capacity');
+assert.equal(gaugeNodes.pkSpeedMeterSub.textContent,'รอข้อมูลพาเลต');
 console.log('PASS: pallet capacity counts active stock, explicit occupancy and unknown balances');
