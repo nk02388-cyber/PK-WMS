@@ -112,3 +112,11 @@
 
 .viz-root header.top #stockUpdateBtn svg{display:none;width:20px;height:20px}
 @media(max-width:700px){.viz-root header.top{height:auto}.viz-root header.top #stockUpdateBtn{display:inline-flex;justify-content:center;align-items:center}.viz-root header.top #stockUpdateBtn span{display:none}.viz-root header.top #stockUpdateBtn svg{display:block}.viz-root header.top #stockUpdateBtn::before{content:none}}
+
+/* Stock upload belongs to the same compact outline toolbar as calendar/notifications. */
+.viz-root header.top #stockUpdateBtn{display:inline-grid;place-items:center;width:40px;height:40px;min-height:40px;padding:0!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface-1)!important;color:var(--text-primary)!important;box-shadow:none}
+.viz-root header.top #stockUpdateBtn span{display:none}
+.viz-root header.top #stockUpdateBtn svg{display:block;width:18px;height:18px}
+.viz-root header.top #stockUpdateBtn::before{content:none}
+.viz-root header.top #stockUpdateBtn:hover{background:var(--series-1-wash)!important;border-color:var(--series-1)!important;filter:none}
+.viz-root header.top #stockUpdateBtn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
