@@ -1997,7 +1997,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="profile-avatar.css?v=20261008-1">
 <link rel="stylesheet" href="settings.css?v=20261008-rename1">
 <link rel="stylesheet" href="floorplan-mobile-controls.css?v=20261007-1">
-<link rel="stylesheet" href="reference-wms.css?v=20261008-minimalgauge2">
+<link rel="stylesheet" href="reference-wms.css?v=20261008-gaugebands1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
 </head>
@@ -4329,9 +4329,9 @@ function renderBuildingUsage() {
 // computeTotalCapacity() (just above), so this stays numerically identical to the
 // building usage cards' combined total by construction.
 const SPEED_METER_BANDS = [
-  { from: 0, to: 45, color: 'var(--status-good)' },
-  { from: 45, to: 75, color: 'var(--status-warning)' },
-  { from: 75, to: 100, color: 'var(--status-critical)' },
+  { from: 0, to: 45, color: '#5aa77d' },
+  { from: 45, to: 75, color: '#d9b44a' },
+  { from: 75, to: 100, color: '#df727a' },
 ];
 // Maps a 0-100 percentage onto a point on the gauge's semicircle: 0% -> 180deg (leftmost,
 // 9 o'clock), 50% -> 90deg (topmost, 12 o'clock), 100% -> 0deg (rightmost, 3 o'clock). The `-`
@@ -4359,15 +4359,15 @@ function renderSpeedMeter() {
   const cap = computeTotalCapacity();
   const pctClamped = Math.min(100, Math.max(0, cap.usedPct));
   const cx=84, cy=80, r=62;
-  const arc='M 22 80 A 62 62 0 0 1 146 80';
+  const bandArcs=SPEED_METER_BANDS.map(b=>{const from=speedMeterPoint(cx,cy,r,b.from),to=speedMeterPoint(cx,cy,r,b.to);return '<path class="sm-band" d="M '+from.x.toFixed(2)+' '+from.y.toFixed(2)+' A '+r+' '+r+' 0 0 1 '+to.x.toFixed(2)+' '+to.y.toFixed(2)+'" fill="none" stroke="'+b.color+'" stroke-width="8" stroke-linecap="butt"/>';}).join('');
   const needlePt=speedMeterPoint(cx,cy,r-12,pctClamped);
-  const needleColor='var(--series-1)';
+  const needleColor='var(--text-primary)';
   if (gaugeWrap.dataset.percent !== String(pctClamped)) {
     gaugeWrap.dataset.percent = String(pctClamped);
   gaugeWrap.innerHTML = `
     <svg viewBox="0 0 168 96" xmlns="http://www.w3.org/2000/svg">
-      <path class="sm-track" d="${arc}" fill="none" stroke="var(--gridline)" stroke-width="8" stroke-linecap="round"/>
-      <path class="sm-progress" d="${arc}" fill="none" stroke="var(--series-1)" stroke-width="8" stroke-linecap="round" pathLength="100" stroke-dasharray="${pctClamped} 100"/>
+      ${bandArcs}
+      <circle cx="22" cy="80" r="4" fill="#5aa77d"/><circle cx="146" cy="80" r="4" fill="#df727a"/>
       <line class="sm-needle" data-percent="${pctClamped}" style="transform-box:view-box;transform-origin:${cx}px ${cy}px" x1="${cx}" y1="${cy}" x2="${needlePt.x.toFixed(2)}" y2="${needlePt.y.toFixed(2)}" stroke="${needleColor}" stroke-width="1.8" stroke-linecap="round"></line>
       <circle cx="${cx}" cy="${cy}" r="3" fill="${needleColor}"></circle>
     </svg>
