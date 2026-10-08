@@ -61,7 +61,7 @@
   function showAccountAvatar() {
     button.querySelector('.profile-avatar')?.remove();button.classList.toggle('with-avatar',!!profile);
     if (profile) button.prepend(avatarPicture(profile.username,profile.avatar_url));
-    ownPhoto.hidden=!profile;
+
   }
   async function resizeAvatar(file) {
     if (!['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('เลือกรูป JPG, PNG หรือ WebP');
@@ -97,9 +97,6 @@
       finally{choose.disabled=false;picker.value='';}
     });wrap.append(choose,picker);return wrap;
   }
-  const photoMessage=document.createElement('span');photoMessage.className='profile-photo-message';photoMessage.setAttribute('role','status');
-  const ownPhoto=photoControl('ของฉัน',null,photoMessage);ownPhoto.hidden=true;
-  panel.insertBefore(ownPhoto,$('accountChangeDepartment'));panel.insertBefore(photoMessage,$('accountChangeDepartment'));
 
   function showError(text) { error.textContent = text || ''; error.hidden = !text; }
   $('authTogglePassword').addEventListener('click', () => {
@@ -156,7 +153,7 @@
     } finally { clearTimeout(timeout); }
   }
   function clearAccount() {
-    const changed = !!profile; profile = null; usersLoadId++;showAccountAvatar();photoMessage.textContent='';
+    const changed = !!profile; profile = null; usersLoadId++;showAccountAvatar();
     adminPanel.hidden = true; userList.replaceChildren(); createForm.reset(); updateCreateForm();
     message.textContent = ''; panel.hidden = true; button.setAttribute('aria-expanded','false');
     button.classList.remove('is-logged-in'); status.textContent = 'ยังไม่ได้เข้าสู่ระบบ';

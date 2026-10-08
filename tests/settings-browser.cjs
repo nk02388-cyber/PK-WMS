@@ -49,20 +49,23 @@ const selectedMenus=page=>page.locator('#accountCreateForm input[name=menu_acces
  assert.deepEqual(actions.filter(a=>a.action==='create').at(-1).menu_access.sort(),paeMenus);assert.deepEqual(await selectedMenus(page),paeMenus);
  }else{assert.equal(await page.locator('#tab-settings').isHidden(),true);assert.equal(await page.evaluate(()=>window.getWmsCanAccess('settings')),false);assert.equal(await page.locator('#accountAdmin').isHidden(),true);assert.equal(lists,0);}
  await page.locator('#accountToggle').click();
+ assert.equal(await page.locator('#accountPanel .profile-photo-control').count(),0);
+ if(role==='admin'){
+ await page.locator('#accountToggle').click();
  const png=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d'),pixels=ctx.createImageData(256,256);for(let i=0;i<pixels.data.length;i+=4){pixels.data[i]=(i*13)%251;pixels.data[i+1]=(i*7)%241;pixels.data[i+2]=(i*17)%239;pixels.data[i+3]=255;}ctx.putImageData(pixels,0,0);return c.toDataURL('image/png').split(',')[1];});
- await page.locator('#accountPanel input[type=file]').setInputFiles({name:'profile.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
- await page.waitForFunction(()=>document.querySelector('.profile-photo-message').textContent==='บันทึกรูปโปรไฟล์แล้ว');
- const uploaded=actions.filter(a=>a.action==='set_avatar').at(-1);assert.match(uploaded.image,/^data:image\/jpeg;base64,/);assert.ok(uploaded.image.length>8192);assert.ok(uploaded.image.length<140000);assert.equal(uploaded.id,undefined);
- assert.equal(await page.locator('#accountToggle .profile-avatar img').getAttribute('src'),avatarUrl);
+ await page.locator('#accountUserList .account-user:last-child input[type=file]').setInputFiles({name:'profile.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+ await page.waitForFunction(()=>document.querySelector('#accountManageMessage').textContent==='บันทึกรูปโปรไฟล์แล้ว');
+ const uploaded=actions.filter(a=>a.action==='set_avatar').at(-1);assert.match(uploaded.image,/^data:image\/jpeg;base64,/);assert.ok(uploaded.image.length>8192);assert.ok(uploaded.image.length<140000);assert.equal(uploaded.id,'qa-user');
+ assert.equal(await page.locator('#accountUserList .account-user:last-child .profile-avatar img').getAttribute('src'),avatarUrl);
  if(role==='admin')assert.equal(await page.locator('.account-user').filter({has:page.getByText('Worker',{exact:true})}).locator('.profile-avatar img').getAttribute('src'),avatarUrl);
  const uploads=actions.filter(a=>a.action==='set_avatar').length;
- await page.locator('#accountPanel input[type=file]').setInputFiles({name:'bad.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg/>')});
- await page.waitForFunction(()=>document.querySelector('.profile-photo-message').textContent.includes('JPG'));
+ await page.locator('#accountUserList .account-user:last-child input[type=file]').setInputFiles({name:'bad.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg/>')});
+ await page.waitForFunction(()=>document.querySelector('#accountManageMessage').textContent.includes('JPG'));
  assert.equal(actions.filter(a=>a.action==='set_avatar').length,uploads);
  await page.reload();await page.waitForFunction(()=>document.querySelector('#accountToggle .profile-avatar img'));
- assert.equal(await page.locator('#accountToggle .profile-avatar img').getAttribute('src'),avatarUrl);
+ }
+ if(role==='admin')assert.equal(await page.locator('#accountToggle .profile-avatar img').getAttribute('src'),avatarUrl);
  if(role==='admin'){
-  await page.locator('#accountToggle').click();
   if(width<1024)await page.locator('#sidebarToggle').click();await page.locator('#tab-settings').click();
   let row=page.locator('.account-user').filter({has:page.getByText('Worker',{exact:true})});
   await row.getByRole('button',{name:'เปลี่ยนชื่อ',exact:true}).click();
