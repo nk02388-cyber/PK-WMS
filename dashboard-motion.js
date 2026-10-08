@@ -41,6 +41,8 @@
    entryFrame=0;if(!visible(pane))return;
    const cards=[...pane.querySelectorAll('.filter-bar,.panel,.packaging-age-card,.speed-meter-card,.kpi-total-fixed')].filter(el=>{const r=el.getBoundingClientRect();return r.height&&r.top<innerHeight+80&&r.bottom>0;}).slice(0,8);
    for(const [index,card] of cards.entries())animate(card,[{opacity:.45,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],340,index*35);
+   const selectedIcon=document.querySelector('#tabs .tab-btn.active .tab-icon');
+   animate(selectedIcon,[{opacity:.5,transform:'scale(.86)'},{opacity:1,transform:'scale(1)'}],220);
    if(pane===stock){charts(stock);gauge(true);}
   });
  }
