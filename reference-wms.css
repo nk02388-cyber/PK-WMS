@@ -90,3 +90,17 @@
 :root[data-theme="dark"] .viz-root .stock-movement :is(.sm-receive,.sm-return){color:#a5ddb6}
 :root[data-theme="dark"] .viz-root .stock-movement .sm-withdraw{color:#ffb4c0}
 :root[data-theme="dark"] .viz-root .fse-item-actions .fse-item-edit-btn.active{color:var(--on-accent)}
+
+/* Entry screens share the active theme, including nested brand and department copy. */
+:root[data-theme] .viz-root :is(.department-card h1,.department-option strong,.auth-brand strong,.auth-card h1){color:var(--text-primary)}
+:root[data-theme] .viz-root :is(.department-option small,.department-card .department-intro,.auth-card p,.auth-brand span,.auth-help){color:var(--text-secondary)}
+:root[data-theme] .viz-root .department-code{color:var(--series-1)}
+:root[data-theme] .viz-root .department-card .department-note{background:var(--surface-2);color:var(--text-secondary)}
+:root[data-theme] .viz-root :is(.department-card .department-footer,.auth-footer){color:var(--text-secondary);border-color:var(--border)}
+:root[data-theme] .viz-root :is(.auth-back,#authTogglePassword,.department-card .department-signout){background:var(--surface-2);color:var(--text-primary);border:1px solid var(--border)}
+:root[data-theme] .viz-root .auth-department{background:var(--series-1-wash);color:var(--series-1)}
+:root[data-theme] .viz-root #authSubmit{background:var(--series-1);color:var(--on-accent);border:1px solid var(--series-1)}
+:root[data-theme] .viz-root :is(.auth-card input,.auth-card button,.department-option):focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+:root[data-theme] .viz-root :is(#authError,#departmentError){color:#b42335}
+:root[data-theme="dark"] .viz-root :is(#authError,#departmentError){color:#ffb4c0}
+@media(max-width:480px){.viz-root .auth-card input{font-size:16px}}

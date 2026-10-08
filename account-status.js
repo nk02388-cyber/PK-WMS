@@ -7,7 +7,7 @@
   const userList = $('accountUserList'), message = $('accountManageMessage');
   const functionUrl = `${SUPABASE_URL}/functions/v1/pk-user-access`;
   const departmentKey = 'bcl-wms-selected-department';
-  let profile = null, refreshId = 0, usersLoadId = 0;
+  let profile = null, refreshId = 0, usersLoadId = 0, loginAttempt = 0, loginBusy = false, signingOut = false;
   window.getWmsUsername = () => profile?.username || '';
   window.getWmsIsAdmin = () => profile?.role === 'admin';
   const menuButtons = [...document.querySelectorAll('#tabs .tab-btn[data-tab]')];
@@ -116,6 +116,7 @@
     try { value ? sessionStorage.setItem(departmentKey, value) : sessionStorage.removeItem(departmentKey); } catch (_) {}
   }
   function showStage(stage) {
+    $('authLoading').hidden = true;
     if (document.body.classList.contains(stage)) return;
     document.body.classList.remove('auth-ready', 'auth-pending', 'department-choosing');
     document.body.classList.add(stage);
@@ -150,6 +151,7 @@
       return result;
     } catch (err) {
       if (err.name === 'AbortError') throw new Error('การเชื่อมต่อใช้เวลานาน กรุณาลองใหม่');
+      if (err instanceof TypeError) throw new Error('ติดต่อระบบบัญชีไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่');
       throw err;
     } finally { clearTimeout(timeout); }
   }
@@ -167,6 +169,7 @@
     return call(action, data, sessionData.session.access_token);
   }
   async function refresh() {
+    if(signingOut)return;
     const id = ++refreshId;
     if (!client) { showError('ระบบเข้าสู่ระบบยังไม่พร้อม กรุณาโหลดหน้าใหม่'); return; }
     try {
@@ -296,20 +299,23 @@
     } catch (err) { if (loadId === usersLoadId && profile?.role === 'admin') message.textContent = err.message; }
   }
   form.addEventListener('submit', async event => {
-    event.preventDefault(); showError('');
+    event.preventDefault();if(loginBusy||signingOut)return;loginBusy=true;const attempt=++loginAttempt;showError('');
     const submit = $('authSubmit'); submit.disabled = true;
     submit.textContent = 'กำลังเข้าสู่ระบบ…';
     try {
       const username = $('authUsername').value.trim();
       const password = $('authPassword').value;
       const tokens = await call('login', { username, password });
+      if(attempt!==loginAttempt)return;
+      $('authChangeDepartment').disabled=true;
+      if(!client)throw new Error('ระบบเข้าสู่ระบบยังไม่พร้อม กรุณาโหลดหน้าใหม่');
       const { error: sessionError } = await client.auth.setSession(tokens);
       if (sessionError) throw sessionError;
       $('authPassword').value = '';
       saveDepartment('pk');
       location.reload();
-    } catch (err) { showError(err.message || 'เข้าสู่ระบบไม่สำเร็จ'); }
-    finally { submit.disabled = false; submit.textContent = 'เข้าสู่ระบบ'; }
+    } catch (err) { if(attempt===loginAttempt)showError(err.message || 'เข้าสู่ระบบไม่สำเร็จ'); }
+    finally { if(attempt===loginAttempt){loginBusy=false;submit.disabled=false;submit.textContent='เข้าสู่ระบบ';$('authChangeDepartment').disabled=false;} }
   });
   function updateCreateForm() {
     const admin = $('accountCreateRole').value === 'admin';
@@ -340,9 +346,18 @@
     finally { submit.disabled = false; }
   });
   async function signOut() {
-    panel.hidden = true; button.setAttribute('aria-expanded', 'false');
-    saveDepartment(null);
-    await client.auth.signOut({ scope: 'local' }); profile = null; location.reload();
+    if(signingOut)return;signingOut=true;++loginAttempt;++refreshId;loginBusy=false;
+    const logout=$('accountLogout'),departmentLogout=$('departmentSignout');logout.disabled=true;departmentLogout.disabled=true;
+    try {
+      if(!client)throw new Error('ระบบบัญชียังไม่พร้อม');
+      const {error} = await client.auth.signOut({scope:'local'}) || {};
+      if(error)throw error;
+      saveDepartment(null);clearAccount();location.reload();
+    } catch(err) {
+      const message='ออกจากระบบไม่สำเร็จ กรุณาลองใหม่';
+      if(document.body.classList.contains('department-choosing')){$('departmentError').textContent=message;$('departmentError').hidden=false;}
+      else{panel.hidden=false;button.setAttribute('aria-expanded','true');status.textContent=message;}
+    } finally{signingOut=false;logout.disabled=false;departmentLogout.disabled=false;}
   }
   $('accountLogout').addEventListener('click', signOut);
   $('departmentSignout').addEventListener('click', signOut);
@@ -351,13 +366,14 @@
     saveDepartment(null); showDepartment();
   });
   $('authChangeDepartment').addEventListener('click', () => {
+    ++loginAttempt;loginBusy=false;$('authSubmit').disabled=false;$('authSubmit').textContent='เข้าสู่ระบบ';
     saveDepartment(null); showError(''); $('authPassword').value = '';
     $('authPassword').type = 'password'; $('authTogglePassword').textContent = 'แสดง';
     $('authTogglePassword').setAttribute('aria-label', 'แสดงรหัสผ่าน');
     $('authTogglePassword').setAttribute('aria-pressed', 'false'); showDepartment();
   });
   document.querySelectorAll('button.department-option').forEach(option => option.addEventListener('click', () => {
-    saveDepartment(option.dataset.department); showDepartment();
+    $('departmentError').hidden=true;saveDepartment(option.dataset.department); showDepartment();
   }));
   button.addEventListener('click', () => {
     const opening = panel.hidden; panel.hidden = !opening;
@@ -374,7 +390,7 @@
     if (event.key !== 'Escape' || panel.hidden) return;
     panel.hidden = true; button.setAttribute('aria-expanded', 'false'); button.focus();
   });
-  client?.auth.onAuthStateChange(() => setTimeout(refresh, 0));
+  client?.auth.onAuthStateChange(() => {if(!signingOut)setTimeout(refresh,0);});
   setInterval(() => { if (!document.hidden && profile) refresh(); }, 60_000);
   refresh();
 })();
