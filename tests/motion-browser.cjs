@@ -18,10 +18,15 @@ const root=path.resolve(__dirname,'..');
    });
    await page.goto('http://localhost/');
 
- await page.waitForTimeout(800);
+ await page.waitForTimeout(1700);
+ await page.evaluate(()=>{palletDataReady=true;const original=computeTotalCapacity;computeTotalCapacity=()=>({usedPct:69.6,totalUsed:703,totalPallet:1010});renderSpeedMeter();computeTotalCapacity=original;});
  const before=await page.evaluate(()=>({total:document.querySelector('#stockTotalKpiFixed .value').textContent,styles:[...document.querySelectorAll('#pane-stock .bar-fill')].map(e=>e.getAttribute('style'))}));
  await page.evaluate(()=>PKMotion.enterPane(document.getElementById('pane-stock')));await page.evaluate(()=>new Promise(requestAnimationFrame));
- const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.id==='pk-motion'&&a.playState==='running').length);assert.ok(running>0);await page.waitForTimeout(900);
+ const running=await page.evaluate(()=>document.getAnimations().filter(a=>a.id==='pk-motion'&&a.playState==='running').length);assert.ok(running>0);
+ const sweep=await page.evaluate(()=>{const n=document.querySelector('.sm-needle');const a=n.getAnimations()[0];return {pct:Number(n.dataset.percent),frames:a?.effect.getKeyframes().map(f=>f.transform),duration:a?.effect.getTiming().duration,origin:getComputedStyle(n).transformOrigin};});
+ assert.ok(sweep.frames,'needle sweep starts');assert.ok(Math.abs(parseFloat(sweep.frames[0].slice(7))+1.8*sweep.pct)<.01);assert.ok(Math.abs(parseFloat(sweep.frames[1].slice(7))-(180-1.8*sweep.pct))<.01);assert.equal(sweep.frames.at(-1),'rotate(0deg)');assert.equal(sweep.duration,1500);assert.equal(sweep.origin,'84px 80px');
+ const gaugeBefore=await page.locator('#pkSpeedMeterGauge').innerHTML();await page.evaluate(()=>{const original=computeTotalCapacity;computeTotalCapacity=()=>({usedPct:69.6,totalUsed:703,totalPallet:1010});renderSpeedMeter();computeTotalCapacity=original;});assert.equal(await page.locator('#pkSpeedMeterGauge').innerHTML(),gaugeBefore);
+ await page.waitForTimeout(1700);assert.equal(await page.locator('.sm-needle').evaluate(el=>getComputedStyle(el).transform),'none');
  const after=await page.evaluate(()=>({total:document.querySelector('#stockTotalKpiFixed .value').textContent,styles:[...document.querySelectorAll('#pane-stock .bar-fill')].map(e=>e.getAttribute('style'))}));assert.deepEqual(after,before);assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.id==='pk-motion'&&a.playState==='running').length),0);
  await page.evaluate(()=>activateTab(document.getElementById('tab-floorplan')));assert.equal(await page.locator('#pane-floorplan').evaluate(el=>el.getAnimations({subtree:true}).length),0);
  await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>activateTab(document.getElementById('tab-stock')));await page.evaluate(()=>new Promise(requestAnimationFrame));assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.id==='pk-motion'&&a.playState==='running').length),0);

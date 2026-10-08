@@ -1,7 +1,7 @@
 (() => {
  'use strict';
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)'),live=new Set(),pendingCharts=new Set();
- const stock=document.getElementById('pane-stock');let chartFrame=0,entryFrame=0,activePane=null;
+ const stock=document.getElementById('pane-stock');let chartFrame=0,entryFrame=0,activePane=null,gaugePending=true;
  const enabled=()=>!reduced.matches&&!document.hidden;
  function visible(el){return !!el&&!el.hidden&&!!el.getClientRects().length;}
  function animate(el,keyframes,duration,delay=0){
@@ -19,6 +19,19 @@
    animate(el,[{transform:vertical?'scaleY(0)':'scaleX(0)',transformOrigin:vertical?'center bottom':'left center'},{transform:'scale(1)',transformOrigin:vertical?'center bottom':'left center'}],520,Math.min(index*24,180));
   });
  }
+ function gauge(replay=false){
+  if(replay)gaugePending=true;
+  const needle=document.querySelector('#pkSpeedMeterGauge .sm-needle');
+  if(!gaugePending||!enabled()||!visible(stock)||!needle)return;
+  const percent=Number(needle.dataset.percent);if(!Number.isFinite(percent))return;
+  gaugePending=false;
+  animate(needle,[
+   {transform:'rotate('+(-1.8*percent)+'deg)',offset:0,easing:'cubic-bezier(.45,0,.55,1)'},
+   {transform:'rotate('+(180-1.8*percent)+'deg)',offset:.52},
+   {transform:'rotate('+(180-1.8*percent)+'deg)',offset:.62,easing:'cubic-bezier(.22,1,.36,1)'},
+   {transform:'rotate(0deg)',offset:1}
+  ],1500);
+ }
  function enterPane(pane){
   if(entryFrame)cancelAnimationFrame(entryFrame);
   if(activePane&&activePane!==pane)for(const entry of live)if(activePane.contains(entry.el)){entry.animation.cancel();live.delete(entry);}
@@ -28,7 +41,7 @@
    entryFrame=0;if(!visible(pane))return;
    const cards=[...pane.querySelectorAll('.filter-bar,.panel,.packaging-age-card,.speed-meter-card,.kpi-total-fixed')].filter(el=>{const r=el.getBoundingClientRect();return r.height&&r.top<innerHeight+80&&r.bottom>0;}).slice(0,8);
    for(const [index,card] of cards.entries())animate(card,[{opacity:.45,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],340,index*35);
-   if(pane===stock)charts(stock);
+   if(pane===stock){charts(stock);gauge(true);}
   });
  }
  if(stock)new MutationObserver(records=>{
@@ -43,7 +56,7 @@
  function cancelAll(){for(const entry of live)entry.animation.cancel();live.clear();if(chartFrame)cancelAnimationFrame(chartFrame);if(entryFrame)cancelAnimationFrame(entryFrame);chartFrame=0;entryFrame=0;pendingCharts.clear();}
  function preference(){document.body.classList.toggle('pk-motion-enabled',!reduced.matches);if(reduced.matches)cancelAll();}
  reduced.addEventListener('change',preference);document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAll();});
- window.PKMotion={enterPane};
+ window.PKMotion={enterPane,gauge};
  let ready=false;
  function readyState(){const now=document.body.classList.contains('auth-ready')&&!document.body.classList.contains('department-choosing');if(now&&!ready)enterPane(document.querySelector('.tab-pane:not([hidden])'));ready=now;}
  new MutationObserver(readyState).observe(document.body,{attributes:true,attributeFilter:['class']});

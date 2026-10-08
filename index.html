@@ -4357,7 +4357,7 @@ function renderSpeedMeter() {
   const gaugeWrap = document.getElementById('pkSpeedMeterGauge');
   if (!gaugeWrap) return;
   if (!palletDataReady) {
-    gaugeWrap.innerHTML = '';
+    gaugeWrap.innerHTML = '';delete gaugeWrap.dataset.percent;
     document.getElementById('pkSpeedMeterValue').textContent = '—';
     document.getElementById('pkSpeedMeterSub').textContent = 'รอข้อมูลพาเลต';
     return;
@@ -4373,13 +4373,17 @@ function renderSpeedMeter() {
   const needleLen = r - sw / 2 - 4;
   const needlePt = speedMeterPoint(cx, cy, needleLen, pctClamped);
   const needleColor = speedMeterZoneColor(pctClamped);
+  if (gaugeWrap.dataset.percent !== String(pctClamped)) {
+    gaugeWrap.dataset.percent = String(pctClamped);
   gaugeWrap.innerHTML = `
     <svg viewBox="0 0 168 96" xmlns="http://www.w3.org/2000/svg">
       ${bandArcs}
-      <line x1="${cx}" y1="${cy}" x2="${needlePt.x.toFixed(2)}" y2="${needlePt.y.toFixed(2)}" stroke="${needleColor}" stroke-width="3.4" stroke-linecap="round"></line>
+      <line class="sm-needle" data-percent="${pctClamped}" style="transform-box:view-box;transform-origin:${cx}px ${cy}px" x1="${cx}" y1="${cy}" x2="${needlePt.x.toFixed(2)}" y2="${needlePt.y.toFixed(2)}" stroke="${needleColor}" stroke-width="3.4" stroke-linecap="round"></line>
       <circle cx="${cx}" cy="${cy}" r="6" fill="${needleColor}" stroke="var(--surface-1)" stroke-width="1.6"></circle>
     </svg>
   `;
+  }
+  window.PKMotion?.gauge();
   const valueEl = document.getElementById('pkSpeedMeterValue');
   const subEl = document.getElementById('pkSpeedMeterSub');
   if (valueEl) {
@@ -10150,7 +10154,7 @@ window.addEventListener('pageshow', () => {
 <script src="slot-copy-core.js?v=20261006-1"></script>
 <script src="slot-copy.js?v=20261006-1"></script>
 <script src="sidebar-toggle.js?v=20261007-slide2"></script>
-<script src="dashboard-motion.js?v=20261007-slide2"></script>
+<script src="dashboard-motion.js?v=20261008-gauge1"></script>
 
 
 </body></html>
