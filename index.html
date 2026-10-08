@@ -1998,6 +1998,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="settings.css?v=20261008-rename1">
 <link rel="stylesheet" href="floorplan-mobile-controls.css?v=20261007-1">
 <link rel="stylesheet" href="reference-wms.css?v=20261008-stockcard-dark1">
+<link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2153,7 +2154,7 @@ header.top .header-logo { border-radius: 14px; }
           <div class="packaging-age-chart" id="packagingAgeChart" role="list" aria-label="สัดส่วนพาเลตตามอายุ เทียบกับความจุคลังทั้งหมด"></div>
         </section>
         <div class="speed-meter-card" id="pkSpeedMeterCard" title="สัดส่วนตำแหน่งใช้งานต่อความจุรวมทั้งสองอาคาร">
-          <div class="sm-title">การใช้พื้นที่จัดเก็บ</div>
+          <div class="sm-title">Performance · การใช้พื้นที่</div>
           <div class="sm-gauge-wrap" id="pkSpeedMeterGauge">
     <svg viewBox="0 0 168 96" xmlns="http://www.w3.org/2000/svg">
       <path d="M 22.00 80.00 A 62 62 0 0 1 74.30 18.76" fill="none" stroke="var(--status-good)" stroke-width="15" stroke-linecap="butt" opacity="0.9"></path><path d="M 74.30 18.76 A 62 62 0 0 1 127.84 36.16" fill="none" stroke="var(--status-warning)" stroke-width="15" stroke-linecap="butt" opacity="0.9"></path><path d="M 127.84 36.16 A 62 62 0 0 1 146.00 80.00" fill="none" stroke="var(--status-critical)" stroke-width="15" stroke-linecap="butt" opacity="0.9"></path>
@@ -2173,6 +2174,7 @@ header.top .header-logo { border-radius: 14px; }
       </div>
     </div>
 
+<section id="dashboardInsights" aria-labelledby="diTitle"><div class="di-head"><h2 id="diTitle">แนวโน้มการเคลื่อนไหวสินค้า</h2><div class="di-controls"><label>ช่วงเวลา<select><option value="7">7 วัน</option><option value="30" selected>30 วัน</option></select></label><label>ถึงวันที่<input type="date" required></label></div></div><div class="di-stats" aria-live="polite"></div><div class="di-charts"><div><h3>Trend Chart · จำนวนรายการต่อวัน</h3><div class="di-trend"></div></div><div><h3>สัดส่วนกิจกรรม</h3><div class="di-mix"></div></div></div><p class="di-note"></p><details class="di-detail"><summary>ดูข้อมูลรายวัน</summary><div><table><thead><tr><th>วันที่</th><th>รับเข้า</th><th>เบิกออก</th><th>รับคืน</th></tr></thead><tbody></tbody></table></div></details></section>
     <div class="two-col">
       <div class="panel">
         <h2>มูลค่าคงเหลือตามคลัง</h2>
@@ -4154,6 +4156,7 @@ function refreshAfterRemoteChange(zoneCode, slotCode) {
   window.PKProductHistory?.refresh();
   window.PKNotifications?.refreshStock();
   window.PKTopWithdrawals?.refresh();
+  window.PKDashboardInsights?.refresh();
   if (!document.getElementById('pane-scrap')?.hidden) window.PKScrapInventory?.refresh();
 }
 
@@ -5939,6 +5942,7 @@ function syncAfterSlotEdit() {
   window.PKDaily?.refresh();
   window.PKNotifications?.refreshStock();
   window.PKTopWithdrawals?.refresh();
+  window.PKDashboardInsights?.refresh();
 }
 
 function openSlotEdit(zoneCode, slotCode) {
@@ -10133,6 +10137,7 @@ window.addEventListener('pageshow', () => {
 <script src="latest-suppliers.js?v=20260924-1"></script>
 <script src="product-history.js?v=20260925-4"></script>
 <script src="top-withdrawals.js?v=20260925-2"></script>
+<script src="dashboard-insights.js?v=20261008-1"></script>
 <script src="reorder-points-data.js?v=20260924-1"></script>
 <script src="reorder-points.js?v=20260924-1"></script>
 <link rel="stylesheet" href="action-confirmation.css?v=20261008-2">

@@ -1,0 +1,4 @@
+const assert=require('node:assert/strict');const {summarize,dateKey}=require('../dashboard-insights.js');
+assert.equal(dateKey('08/10/2569'),'2026-10-08');assert.equal(dateKey('31/02/2026'),null);
+const data={A:{'A-1':[{qty:10,unit:'ใบ',receiveDate:'2026-10-02',withdrawals:[{date:'2026-10-08',qty:3},{date:'2026-10-09',qty:2},{date:'bad',qty:1},{date:'2026-10-08',qty:0}],returns:[{date:'2026-10-07',qty:1}],transfersIn:[{date:'2026-10-08',qty:10}]},{qty:100,unit:'ม้วน',receiveDate:'2026-10-08'}]}};
+const before=JSON.stringify(data),s=summarize(data,'2026-10-08',7);assert.deepEqual(s.total,{receive:2,issue:1,returns:1});assert.equal(s.transactions,4);assert.equal(s.undated,1);assert.equal(s.points[0].date,'2026-10-02');assert.equal(s.points.at(-1).issue,1);assert.equal(JSON.stringify(data),before);assert.equal(summarize({},'2026-10-08').transactions,0);console.log('PASS insights counts dates, mixed units, future dates, missing dates and transfer exclusions');
