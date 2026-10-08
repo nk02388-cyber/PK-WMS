@@ -23,7 +23,7 @@ const root=path.resolve(__dirname,'..');
 
  const button=page.locator('#stockUpdateBtn');assert.equal(await button.count(),1);assert.equal(await page.locator('#pane-stock .stock-update-box').count(),0);assert.equal(await page.locator('#pane-stock > .filter-bar').count(),0);
  assert.equal(await button.evaluate(el=>el.parentElement===document.getElementById('eventCalendarToggle').parentElement),true);
- let chooser=false;page.on('filechooser',()=>chooser=true);await button.click();assert.equal(chooser,true);
+ const chooser=page.waitForEvent('filechooser');await button.click();assert.ok(await chooser);
  for(const theme of ['light','dark']){await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);const rects=await page.evaluate(()=>['stockUpdateBtn','eventCalendarToggle'].map(id=>document.getElementById(id).getBoundingClientRect().toJSON()));assert.ok(rects[0].right<=rects[1].left+1);await page.screenshot({path:'work/header-stock-'+theme+'-'+viewport.width+'.png'});}
  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS header stock update '+viewport.width);await page.close();
  } }finally{await browser.close()}})();

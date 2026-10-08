@@ -109,3 +109,6 @@
 .viz-root header.top .header-stock-meta #reportDate{min-height:0;padding:0;background:transparent;border:0;box-shadow:none;font-size:12px}
 .viz-root header.top #stockUpdateBtn{min-height:44px;border-radius:10px!important;white-space:nowrap;padding:8px 12px;box-shadow:none}
 @media(max-width:700px){.viz-root header.top .header-stock-meta{order:10;flex-basis:100%;max-width:none;justify-content:flex-start;font-size:12px}.viz-root header.top #stockUpdateBtn{width:44px;height:44px;padding:0;font-size:0}.viz-root header.top #stockUpdateBtn::before{content:'↥';font-size:22px}.viz-root header.top .header-stock-meta #stockUpdateStatus{font-size:11px}}
+
+.viz-root header.top #stockUpdateBtn svg{display:none;width:20px;height:20px}
+@media(max-width:700px){.viz-root header.top{height:auto}.viz-root header.top #stockUpdateBtn{display:inline-flex;justify-content:center;align-items:center}.viz-root header.top #stockUpdateBtn span{display:none}.viz-root header.top #stockUpdateBtn svg{display:block}.viz-root header.top #stockUpdateBtn::before{content:none}}
