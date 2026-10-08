@@ -1997,7 +1997,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="profile-avatar.css?v=20261008-1">
 <link rel="stylesheet" href="settings.css?v=20261008-rename1">
 <link rel="stylesheet" href="floorplan-mobile-controls.css?v=20261007-1">
-<link rel="stylesheet" href="reference-wms.css?v=20261008-stockicon1">
+<link rel="stylesheet" href="reference-wms.css?v=20261008-minimalgauge1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
 </head>
@@ -2150,14 +2150,8 @@ header.top .header-logo { border-radius: 14px; }
           <div class="packaging-age-chart" id="packagingAgeChart" role="list" aria-label="สัดส่วนพาเลตตามอายุ เทียบกับความจุคลังทั้งหมด"></div>
         </section>
         <div class="speed-meter-card" id="pkSpeedMeterCard" title="สัดส่วนตำแหน่งใช้งานต่อความจุรวมทั้งสองอาคาร">
-          <div class="sm-title">Performance · การใช้พื้นที่</div>
-          <div class="sm-gauge-wrap" id="pkSpeedMeterGauge">
-    <svg viewBox="0 0 168 96" xmlns="http://www.w3.org/2000/svg">
-      <path d="M 22.00 80.00 A 62 62 0 0 1 74.30 18.76" fill="none" stroke="var(--status-good)" stroke-width="15" stroke-linecap="butt" opacity="0.9"></path><path d="M 74.30 18.76 A 62 62 0 0 1 127.84 36.16" fill="none" stroke="var(--status-warning)" stroke-width="15" stroke-linecap="butt" opacity="0.9"></path><path d="M 127.84 36.16 A 62 62 0 0 1 146.00 80.00" fill="none" stroke="var(--status-critical)" stroke-width="15" stroke-linecap="butt" opacity="0.9"></path>
-      <line x1="84" y1="80" x2="35.77" y2="65.03" stroke="var(--status-good)" stroke-width="3.4" stroke-linecap="round"></line>
-      <circle cx="84" cy="80" r="6" fill="var(--status-good)" stroke="var(--surface-1)" stroke-width="1.6"></circle>
-    </svg>
-  </div>
+          <div class="sm-title">Storage capacity<small>ความจุในการจัดเก็บ</small></div>
+          <div class="sm-gauge-wrap" id="pkSpeedMeterGauge"></div>
           <div class="sm-value" id="pkSpeedMeterValue" style="color: var(--status-good);">—</div>
           <div class="sm-sub" id="pkSpeedMeterSub">95/992 ช่อง</div>
         </div>
@@ -4364,22 +4358,18 @@ function renderSpeedMeter() {
   }
   const cap = computeTotalCapacity();
   const pctClamped = Math.min(100, Math.max(0, cap.usedPct));
-  const cx = 84, cy = 80, r = 62, sw = 15;
-  const bandArcs = SPEED_METER_BANDS.map(b => {
-    const p1 = speedMeterPoint(cx, cy, r, b.from);
-    const p2 = speedMeterPoint(cx, cy, r, b.to);
-    return `<path d="M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${r} ${r} 0 0 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}" fill="none" stroke="${b.color}" stroke-width="${sw}" stroke-linecap="butt" opacity="0.9"></path>`;
-  }).join('');
-  const needleLen = r - sw / 2 - 4;
-  const needlePt = speedMeterPoint(cx, cy, needleLen, pctClamped);
-  const needleColor = speedMeterZoneColor(pctClamped);
+  const cx=84, cy=80, r=62;
+  const arc='M 22 80 A 62 62 0 0 1 146 80';
+  const needlePt=speedMeterPoint(cx,cy,r-12,pctClamped);
+  const needleColor='var(--series-1)';
   if (gaugeWrap.dataset.percent !== String(pctClamped)) {
     gaugeWrap.dataset.percent = String(pctClamped);
   gaugeWrap.innerHTML = `
     <svg viewBox="0 0 168 96" xmlns="http://www.w3.org/2000/svg">
-      ${bandArcs}
-      <line class="sm-needle" data-percent="${pctClamped}" style="transform-box:view-box;transform-origin:${cx}px ${cy}px" x1="${cx}" y1="${cy}" x2="${needlePt.x.toFixed(2)}" y2="${needlePt.y.toFixed(2)}" stroke="${needleColor}" stroke-width="3.4" stroke-linecap="round"></line>
-      <circle cx="${cx}" cy="${cy}" r="6" fill="${needleColor}" stroke="var(--surface-1)" stroke-width="1.6"></circle>
+      <path class="sm-track" d="${arc}" fill="none" stroke="var(--gridline)" stroke-width="8" stroke-linecap="round"/>
+      <path class="sm-progress" d="${arc}" fill="none" stroke="var(--series-1)" stroke-width="8" stroke-linecap="round" pathLength="100" stroke-dasharray="${pctClamped} 100"/>
+      <line class="sm-needle" data-percent="${pctClamped}" style="transform-box:view-box;transform-origin:${cx}px ${cy}px" x1="${cx}" y1="${cy}" x2="${needlePt.x.toFixed(2)}" y2="${needlePt.y.toFixed(2)}" stroke="${needleColor}" stroke-width="1.8" stroke-linecap="round"></line>
+      <circle cx="${cx}" cy="${cy}" r="3" fill="${needleColor}"></circle>
     </svg>
   `;
   }
@@ -4388,7 +4378,7 @@ function renderSpeedMeter() {
   const subEl = document.getElementById('pkSpeedMeterSub');
   if (valueEl) {
     valueEl.textContent = cap.usedPct.toFixed(1) + '%';
-    valueEl.style.color = needleColor;
+    valueEl.style.color = 'var(--text-primary)';
   }
   if (subEl) subEl.textContent = `${fmt0(cap.totalUsed)}/${fmt0(cap.totalPallet)} ช่อง`;
 }
