@@ -4,7 +4,7 @@
  --page-plane:#f1f3f5;--surface-1:#fff;--surface-2:#f7f9fa;
  --text-primary:#23313a;--text-secondary:#52616a;--text-muted:#6d7b84;
  --border:#e0e6ea;--gridline:#edf1f4;--series-1:#267457;--series-1-wash:#eaf5ef;
- --brand-blue:#267457;--brand-blue-hover:#1c6147;--series-1-light:#e2f2eb;--focus-ring:#4b9e80;
+ --on-accent:#fff;--brand-blue:#267457;--brand-blue-hover:#1c6147;--series-1-light:#e2f2eb;--focus-ring:#4b9e80;
  --radius-card:14px;--radius-panel:14px;--radius-control:10px;
 }
 :root[data-theme="dark"] .viz-root{
@@ -12,7 +12,7 @@
  --page-plane:#15242b;--surface-1:#1e3038;--surface-2:#253b44;
  --text-primary:#edf4f7;--text-secondary:#bdd0d9;--text-muted:#a0b6c1;
  --border:#354b57;--gridline:#2d424c;--series-1:#9ed5ba;--series-1-wash:#29493e;
- --brand-blue:#9ed5ba;--focus-ring:#9ed5ba;
+ --on-accent:#15242b;--brand-blue:#9ed5ba;--focus-ring:#9ed5ba;
 }
 .viz-root #tabs{background:var(--nav-ink);color:var(--nav-text);border-right:1px solid var(--border)}
 .viz-root #tabs .dashboard-nav-brand{color:var(--text-primary);border-bottom:1px solid var(--border)}

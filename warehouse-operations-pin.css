@@ -1,11 +1,12 @@
-.warehouse-pin-dialog{width:min(380px,calc(100vw - 32px));box-sizing:border-box;padding:24px;border:1px solid #929c87;border-radius:20px;background:var(--surface-1,#fff);color:var(--text-primary,#182016);box-shadow:0 24px 80px #0005}
-.warehouse-pin-dialog::backdrop{background:#17201699}
+.warehouse-pin-dialog{width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:24px;border:1px solid var(--border,#e0e6ea);border-radius:16px;background:var(--surface-1,#fff);color:var(--text-primary,#23313a);box-shadow:0 18px 56px #162d3c26}
+.warehouse-pin-dialog::backdrop{background:#15242b99}
 .warehouse-pin-dialog h2{margin:0 0 8px;font-size:20px}
-.warehouse-pin-dialog p{margin:8px 0 16px}
+.warehouse-pin-dialog p{margin:8px 0 16px;color:var(--text-secondary,#52616a)}
 .warehouse-pin-dialog label{display:block;margin-bottom:6px}
-.warehouse-pin-dialog input{box-sizing:border-box;width:100%;min-height:48px;padding:10px 14px;border:1px solid #929c87;border-radius:12px;background:var(--surface-1,#fff);color:inherit;font-size:22px;letter-spacing:8px}
-.warehouse-pin-dialog input:focus-visible{outline:3px solid #cddd5b;outline-offset:2px}
+.warehouse-pin-dialog input{box-sizing:border-box;width:100%;min-height:48px;padding:10px 14px;border:1px solid var(--border,#e0e6ea);border-radius:10px;background:var(--surface-2,#f7f9fa);color:inherit;font-size:22px;letter-spacing:8px}
+.warehouse-pin-dialog input:focus-visible{outline:2px solid var(--focus-ring,#4b9e80);outline-offset:2px}
 .warehouse-pin-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
-.warehouse-pin-actions button{min-height:44px;padding:10px 18px;border:1px solid #929c87;border-radius:12px;cursor:pointer;background:var(--surface-1,#fff);color:inherit;font:inherit}
-.warehouse-pin-actions button[type=submit]{background:#d4e366;color:#182016;font-weight:700}
+.warehouse-pin-actions button{min-height:44px;padding:10px 18px;border:1px solid var(--border,#e0e6ea);border-radius:10px;cursor:pointer;background:var(--surface-1,#fff);color:inherit;font:inherit}
+.warehouse-pin-actions button[type=submit]{background:var(--series-1,#267457);border-color:var(--series-1,#267457);color:var(--on-accent,#fff);font-weight:600}
+.warehouse-pin-actions button:focus-visible{outline:2px solid var(--focus-ring,#4b9e80);outline-offset:2px}
 .warehouse-pin-error{color:#d83434;font-size:14px}
