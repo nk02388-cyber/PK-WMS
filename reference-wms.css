@@ -121,7 +121,7 @@
 .viz-root header.top #stockUpdateBtn:hover{background:var(--series-1-wash)!important;border-color:var(--series-1)!important;filter:none}
 .viz-root header.top #stockUpdateBtn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 
-.viz-root #pkSpeedMeterCard{height:180px;padding:12px 10px;box-shadow:none}
+.viz-root #pkSpeedMeterCard{height:200px;padding:12px 10px;box-shadow:none}
 .viz-root #pkSpeedMeterCard .sm-title{font-size:13px;font-weight:600;color:var(--text-primary);line-height:1.4}
 .viz-root #pkSpeedMeterCard .sm-title small{display:block;font-size:11px;font-weight:400;color:var(--text-secondary);margin-top:2px}
 .viz-root #pkSpeedMeterCard .sm-gauge-wrap{width:142px;max-width:95%;height:79px;margin-top:2px}
