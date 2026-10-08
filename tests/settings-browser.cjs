@@ -1,6 +1,8 @@
 const fs=require('fs'),path=require('path'),assert=require('node:assert/strict');
 const {chromium,webkit}=require('C:/Users/ADMIN/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const root=path.resolve(__dirname,'..');
+const paeMenus=['stock','incoming','floorplan','product-history','bompk','daily-receive','daily-issue','receipt-plan'].sort();
+const selectedMenus=page=>page.locator('#accountCreateForm input[name=menu_access]:checked').evaluateAll(inputs=>inputs.map(input=>input.value).sort());
 (async()=>{
  const browser=await (process.env.PK_SETTINGS_BROWSER!=='edge'?webkit.launch({headless:true}):chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}));
  try {for(const role of ['admin','user'])for(const width of (process.env.PK_SETTINGS_BROWSER==='edge'?[1440]:[1440,390])){
@@ -21,6 +23,8 @@ const root=path.resolve(__dirname,'..');
  assert.equal(await page.locator('#pane-settings').isVisible(),true);assert.equal(await page.locator('#accountAdmin').isVisible(),true);
  assert.equal(await page.locator('#accountCreateForm input[value="settings"]').count(),0);assert.equal(await page.locator('#accountCreateForm input[value="warehouse-operations"]').count(),0);
  assert.equal(await page.locator('#accountCreateForm input[name="credential"]').isVisible(),true);
+ assert.deepEqual(await selectedMenus(page),paeMenus);
+ assert.deepEqual(await page.locator('.account-user').filter({has:page.getByText('Worker',{exact:true})}).locator('input[name=menu_access]:checked').evaluateAll(inputs=>inputs.map(input=>input.value)),['stock']);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);
  if(width<1024)await page.waitForFunction(()=>document.getElementById('tabs').getBoundingClientRect().right<=1);
  await page.evaluate(()=>window.scrollTo(0,0));
@@ -39,6 +43,10 @@ const root=path.resolve(__dirname,'..');
  await page.waitForFunction(()=>!document.querySelector('#accountCreateForm button[type="submit"]').disabled);
  const created=actions.find(a=>a.action==='create');assert.equal(created.role,'admin');assert.equal(created.login_kind,'password');assert.equal(created.password,'QA-password-only');assert.deepEqual(created.menu_access,[]);
  assert.equal(await page.locator('#accountCreateRole').inputValue(),'user');
+ assert.deepEqual(await selectedMenus(page),paeMenus);
+ await page.locator('#accountCreateForm input[name="username"]').fill('new-worker');await page.locator('#accountCreateCredential').fill('123456');await page.locator('#accountCreateForm button[type="submit"]').click();
+ await page.waitForFunction(()=>!document.querySelector('#accountCreateForm button[type=submit]').disabled);
+ assert.deepEqual(actions.filter(a=>a.action==='create').at(-1).menu_access.sort(),paeMenus);assert.deepEqual(await selectedMenus(page),paeMenus);
  }else{assert.equal(await page.locator('#tab-settings').isHidden(),true);assert.equal(await page.evaluate(()=>window.getWmsCanAccess('settings')),false);assert.equal(await page.locator('#accountAdmin').isHidden(),true);assert.equal(lists,0);}
  assert.deepEqual(errors,[]);console.log('PASS settings '+role+' '+width);await page.close();
  }}finally{await browser.close()}

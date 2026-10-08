@@ -20,7 +20,9 @@
     : Array.isArray(profile?.menu_access) ? profile.menu_access.filter(key => publicMenuKeys.has(key)) : [];
   window.getWmsCanAccess = key => allowedMenus().includes(key);
 
-  function menuFieldset(selected = ['stock']) {
+  // Default for new users matches pae's menu permissions verified on 2026-10-08.
+  const defaultUserMenus = ['stock', 'incoming', 'floorplan', 'product-history', 'bompk', 'daily-receive', 'daily-issue', 'receipt-plan'];
+  function menuFieldset(selected = defaultUserMenus) {
     const fields = document.createElement('fieldset');
     fields.className = 'account-permissions';
     const legend = document.createElement('legend'); legend.textContent = 'เมนูที่เข้าได้';
@@ -29,7 +31,8 @@
       const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox'; checkbox.name = 'menu_access'; checkbox.value = item.key;
-      checkbox.checked = selected.includes(item.key);
+      checkbox.defaultChecked = selected.includes(item.key);
+      checkbox.checked = checkbox.defaultChecked;
       label.append(checkbox, document.createTextNode(item.label)); grid.append(label);
     }
     fields.append(legend, grid);
