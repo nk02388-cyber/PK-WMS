@@ -16,7 +16,7 @@
     for(const [key,label,max,type] of [['pk_code','รหัสบรรจุภัณฑ์ *',120],['pk_name','ชื่อบรรจุภัณฑ์ *',500],['qty','จำนวนใช้รวม *',0,'number'],['unit','หน่วย *',40]]) {
       const wrap=document.createElement('label');wrap.textContent=label;
       const field=input(line[key],max,type);field.dataset.field=key;
-      if(key==='pk_code') {field.setAttribute('list','pkRecipeProducts');field.addEventListener('change',()=>{
+      if(key==='pk_code') {field.setAttribute('list','pkRecipeProducts');window.PKKeywordPicker?.attach(field,()=>[...products().values()].map(item=>({...item,searchName:item.search_name||item.searchName||''})));field.addEventListener('change',()=>{
         const item=products().get(field.value.trim().toUpperCase());
         if(item){row.querySelector('[data-field="pk_name"]').value=item.name||'';row.querySelector('[data-field="unit"]').value=item.unit||'';}
       });}
@@ -104,7 +104,12 @@
     finally{saving=false;$('pkRecipeForm').inert=false;$('pkRecipeSave').disabled=!ready;}
   });
   $('pkRecipeAddLine').onclick=()=>addLine();$('pkRecipeNew').onclick=newRecipe;
-  $('pkRecipeLoad').onclick=()=>edit($('pkRecipeCode').value.trim().toUpperCase());
+  $('pkRecipeLoad').onclick=()=>{
+    const raw=$('pkRecipeCode').value.trim(),exact=Object.keys(BOMPK.bom_detail).find(code=>code.toUpperCase()===raw.toUpperCase());
+    if(exact)return edit(exact);
+    const results=getFgSearchResults(raw);if(results.length===1)return edit(results[0].fg);
+    feedback(results.length?'พบหลายสูตร กรุณาเลือกสินค้าจากผลค้นหา':'ไม่พบสูตรตาม Keyword หากเป็นสินค้าใหม่ให้กรอกรหัสและสร้างสูตรใหม่',true);
+  };
   $('pkRecipesRefresh').onclick=refresh;
   $('pkRecipeHistoryLoad').onclick=async()=>{
     if(!editingCode)return feedback('เลือกสูตรที่บันทึกในฐานข้อมูลก่อน',true);

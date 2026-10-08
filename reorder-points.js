@@ -34,9 +34,9 @@
 
   const counts = rows => rows.reduce((result,row) => (result[row.status]++,result),{alert:0,review:0,normal:0,unmatched:0});
   const searchRows = (rows, query, status) => {
-    const terms = String(query ?? '').trim().toLocaleLowerCase('th-TH').split(/\s+/).filter(Boolean);
+    const terms = String(query ?? '').normalize('NFKC').trim().toLocaleLowerCase('th-TH').split(/\s+/).filter(Boolean);
     return (rows || []).filter(row => (!status || status === 'all' || row.status === status)
-      && terms.every(term => `${row.code} ${row.name} ${row.supplier}`.toLocaleLowerCase('th-TH').includes(term)));
+      && terms.every(term => `${row.code} ${row.name} ${row.supplier}`.normalize('NFKC').toLocaleLowerCase('th-TH').includes(term)));
   };
 
   const api = {evaluate,counts,searchRows};
