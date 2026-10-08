@@ -35,7 +35,7 @@
  function enterPane(pane){
   if(entryFrame)cancelAnimationFrame(entryFrame);
   if(activePane&&activePane!==pane)for(const entry of live)if(activePane.contains(entry.el)){entry.animation.cancel();live.delete(entry);}
-  activePane=pane;
+  activePane=pane;if(pane!==stock)window.PKDashboardInsights?.cancel();
   if(!enabled()||!pane||pane.id==='pane-floorplan'||pane.id==='pane-warehouse-operations')return;
   entryFrame=requestAnimationFrame(()=>{
    entryFrame=0;if(!visible(pane))return;
@@ -43,7 +43,7 @@
    for(const [index,card] of cards.entries())animate(card,[{opacity:.45,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],340,index*35);
    const selectedIcon=document.querySelector('#tabs .tab-btn.active .tab-icon');
    animate(selectedIcon,[{opacity:.5,transform:'scale(.86)'},{opacity:1,transform:'scale(1)'}],220);
-   if(pane===stock){charts(stock);gauge(true);}
+   if(pane===stock){charts(stock);gauge(true);window.PKDashboardInsights?.animate();}
   });
  }
  if(stock)new MutationObserver(records=>{
