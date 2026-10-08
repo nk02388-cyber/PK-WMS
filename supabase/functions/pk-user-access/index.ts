@@ -66,7 +66,7 @@ Deno.serve(async (request) => {
   try {
     if (Number(request.headers.get('content-length') || 0) > 140000) throw new Error('Too large');
     const body = await request.text();
-    if (new TextEncoder().encode(body).length > 8192) throw new Error('Too large');
+    if (new TextEncoder().encode(body).length > 140000) throw new Error('Too large');
     input = JSON.parse(body);
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Invalid body');
   } catch {

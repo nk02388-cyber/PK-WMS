@@ -23,6 +23,13 @@ assert.equal((await invoke({image:'data:image/jpeg;base64,'+Buffer.alloc(98305).
 active=false;assert.equal((await invoke({image})).status,403);active=true;
 const result=await invoke({image});assert.equal(result.status,200);assert.match((await result.json()).avatar_url,new RegExp(self+'/avatar.jpg'));
 assert.equal(calls.find(c=>c.url.includes('/storage/')).init.headers['x-upsert'],'true');
+const photo=Buffer.alloc(20000,42);photo[0]=255;photo[1]=216;photo[2]=255;photo[photo.length-2]=255;photo[photo.length-1]=217;
+const largerImage='data:image/jpeg;base64,'+photo.toString('base64');
+assert.ok(largerImage.length>8192);assert.equal((await invoke({image:largerImage})).status,200);
+const maxPhoto=Buffer.alloc(98304,42);maxPhoto[0]=255;maxPhoto[1]=216;maxPhoto[2]=255;maxPhoto[maxPhoto.length-2]=255;maxPhoto[maxPhoto.length-1]=217;
+assert.equal((await invoke({image:'data:image/jpeg;base64,'+maxPhoto.toString('base64')})).status,200);
+assert.equal((await invoke({action:'list',padding:'x'.repeat(9000)})).status,400);
+assert.equal((await invoke({image:'x'.repeat(140000)})).status,400);
 role='admin';assert.equal((await invoke({id:other,image})).status,200);
 storageOK=false;const before=calls.filter(c=>c.init.method==='PATCH').length;assert.equal((await invoke({image})).status,503);assert.equal(calls.filter(c=>c.init.method==='PATCH').length,before);
 console.log('PASS avatar authorization, validation, storage failure and persistence');
