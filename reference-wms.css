@@ -75,3 +75,18 @@
 :root[data-theme="dark"] .viz-root .department-option{background:var(--surface-2);color:var(--text-primary);border-color:var(--border)}
 :root[data-theme="dark"] .viz-root .department-option:is(:hover,:focus-visible){background:var(--series-1-wash);border-color:var(--series-1)}
 :root[data-theme="dark"] .viz-root .auth-card input{background:var(--surface-2);border-color:var(--border);color:var(--text-primary)}
+
+/* Stock-card action states must retain readable text on dark surfaces. */
+:root[data-theme="dark"] .viz-root .fse-item-row.withdrawing{background:#383c2c;border-color:#c99c39}
+:root[data-theme="dark"] .viz-root .fse-item-row.returning{background:#29493e;border-color:#74bc95}
+:root[data-theme="dark"] .viz-root .fse-item-row.removing{background:#503239;border-color:#e1939c}
+:root[data-theme="dark"] .viz-root .fse-item-row:is(.withdrawing,.returning,.removing) :is(.fse-item-code,.fse-item-name,.fse-item-lotno,.fse-item-remaining-cell,.fse-item-unit-cell){color:var(--text-primary)}
+:root[data-theme="dark"] .viz-root .fse-item-row:is(.withdrawing,.returning,.removing) :is(.fse-item-meta,.fse-item-history-line){color:var(--text-secondary)}
+:root[data-theme="dark"] .viz-root .fse-item-row:is(.withdrawing,.returning,.removing) .fse-item-remaining-cell.low{color:#ffb4c0}
+:root[data-theme="dark"] .viz-root .stock-movement table{background:var(--surface-1);color:var(--text-primary)}
+:root[data-theme="dark"] .viz-root .stock-movement .sm-in{background:#49432a}
+:root[data-theme="dark"] .viz-root .stock-movement .sm-out{background:#29493e}
+:root[data-theme="dark"] .viz-root .stock-movement .sm-balance{background:#49343b}
+:root[data-theme="dark"] .viz-root .stock-movement :is(.sm-receive,.sm-return){color:#a5ddb6}
+:root[data-theme="dark"] .viz-root .stock-movement .sm-withdraw{color:#ffb4c0}
+:root[data-theme="dark"] .viz-root .fse-item-actions .fse-item-edit-btn.active{color:var(--on-accent)}
