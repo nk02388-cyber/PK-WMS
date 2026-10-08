@@ -87,7 +87,7 @@ Deno.serve(async (request) => {
     const usesPin = profile.email.endsWith('@pin.bcl-wms.local');
     if (usesPin && !validPin(input.password))
       return response(origin, 401, { error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
-    const password = usesPin ? await pinPassword(username, input.password) : input.password;
+    const password = usesPin ? await pinPassword(profile.email.split('@')[0], input.password) : input.password;
     const signIn = await backend('/auth/v1/token?grant_type=password', anonKey, {
       method: 'POST', body: JSON.stringify({ email: profile.email, password }),
     });
@@ -171,6 +171,27 @@ Deno.serve(async (request) => {
     return response(origin, 201, { id, username, role });
   }
 
+  if (action === 'set_username') {
+    const id = typeof input.id === 'string' ? input.id : '';
+    const raw = typeof input.username === 'string' ? input.username.trim() : '';
+    const username = raw.toLowerCase() === 'admin' ? 'Admin' : raw.toLowerCase();
+    if (!/^[0-9a-f-]{36}$/i.test(id) || !validUsername(username))
+      return response(origin,400,{error:'ชื่อผู้ใช้ต้องมี 3–32 ตัวอักษร เริ่มด้วยภาษาอังกฤษ และใช้ตัวเลข . _ - ได้'});
+    const targetResponse = await backend('/rest/v1/app_users?select=username,email,role,active&id=eq.'+encodeURIComponent(id)+'&limit=1',serviceKey);
+    if (!targetResponse.ok) return response(origin,503,{error:'โหลดบัญชีไม่สำเร็จ กรุณาลองใหม่'});
+    const target = (await targetResponse.json())[0];
+    if (!target?.active || !['admin','user'].includes(target.role)) return response(origin,404,{error:'ไม่พบบัญชีที่ใช้งานอยู่'});
+    if (target.username === username) return response(origin,200,{id,username});
+    const exists = await backend('/rest/v1/app_users?select=id&username=eq.'+encodeURIComponent(username)+'&id=neq.'+encodeURIComponent(id)+'&limit=1',serviceKey);
+    if (!exists.ok) return response(origin,503,{error:'ตรวจสอบชื่อไม่สำเร็จ กรุณาลองใหม่'});
+    if ((await exists.json()).length) return response(origin,409,{error:'ชื่อผู้ใช้นี้มีอยู่แล้ว'});
+    // Keep the Auth identity and internal email stable: existing PIN hashes depend on it.
+    const saved = await backend('/rest/v1/app_users?id=eq.'+encodeURIComponent(id)+'&active=eq.true',serviceKey,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({username})});
+    if (!saved.ok) { const error = await saved.json().catch(()=>({})); return response(origin,error.code === '23505'?409:503,{error:error.code === '23505'?'ชื่อผู้ใช้นี้มีอยู่แล้ว':'เปลี่ยนชื่อไม่สำเร็จ กรุณาลองใหม่'}); }
+    const rows = await saved.json();
+    return response(origin,rows.length?200:404,rows.length?{id,username}:{error:'ไม่พบบัญชีที่ใช้งานอยู่'});
+  }
+
   if (action === 'set_credential') {
     const id = typeof input.id === 'string' ? input.id : '';
     if (!/^[0-9a-f-]{36}$/i.test(id)) return response(origin, 400, { error: 'บัญชีไม่ถูกต้อง' });
@@ -181,7 +202,7 @@ Deno.serve(async (request) => {
     const usesPin = target.email.endsWith('@pin.bcl-wms.local');
     if (usesPin ? !validPin(input.credential) : !validPassword(input.credential))
       return response(origin, 400, { error: usesPin ? 'กรอก PIN ตัวเลข 6 หลัก' : 'กรอกรหัสผ่าน 8–128 ตัวอักษร' });
-    const password = usesPin ? await pinPassword(target.username, input.credential) : input.credential;
+    const password = usesPin ? await pinPassword(target.email.split('@')[0], input.credential) : input.credential;
     const updated = await backend(`/auth/v1/admin/users/${encodeURIComponent(id)}`, serviceKey, {
       method: 'PUT', body: JSON.stringify({ password }),
     });

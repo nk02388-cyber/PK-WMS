@@ -268,9 +268,29 @@
           finally { submitCredential.disabled = false; cancel.disabled = false; editCredential.disabled = false; }
         });
         buttons.append(cancel,submitCredential); editor.append(feedback,buttons);
+        const rename = document.createElement('button'); rename.type='button'; rename.textContent='เปลี่ยนชื่อ'; rename.setAttribute('aria-expanded','false');
+        const nameEditor=document.createElement('form');nameEditor.className='account-name-editor';nameEditor.hidden=true;
+        const nameLabel=document.createElement('label');nameLabel.textContent='ชื่อผู้ใช้ใหม่';
+        const nameInput=document.createElement('input');nameInput.required=true;nameInput.minLength=3;nameInput.maxLength=32;nameInput.pattern='[a-zA-Z][a-zA-Z0-9._-]{2,31}';nameInput.autocomplete='off';nameInput.value=user.username;nameInput.defaultValue=user.username;
+        nameLabel.append(nameInput);
+        const nameHint=document.createElement('p');nameHint.textContent='ใช้ชื่อใหม่เข้าสู่ระบบได้ทันที โดยใช้ PIN / รหัสผ่านเดิม · ภาษาอังกฤษ 3–32 ตัวอักษร ใช้ตัวเลข . _ - ได้';
+        const nameError=document.createElement('p');nameError.setAttribute('role','status');
+        const nameActions=document.createElement('div');nameActions.className='account-actions';
+        const nameCancel=document.createElement('button');nameCancel.type='button';nameCancel.textContent='ยกเลิก';
+        const nameSave=document.createElement('button');nameSave.type='submit';nameSave.textContent='บันทึกชื่อ';
+        const closeName=()=>{nameEditor.hidden=true;nameEditor.reset();nameError.textContent='';rename.setAttribute('aria-expanded','false');rename.focus();};
+        nameCancel.addEventListener('click',closeName);
+        rename.addEventListener('click',()=>{if(!nameEditor.hidden)closeName();else{nameEditor.hidden=false;rename.setAttribute('aria-expanded','true');nameInput.focus();nameInput.select();}});
+        nameEditor.addEventListener('submit',async event=>{
+          event.preventDefault();nameSave.disabled=true;nameCancel.disabled=true;rename.disabled=true;
+          try{await adminCall('set_username',{id:user.id,username:nameInput.value.trim()});await refresh();await loadUsers();message.textContent='เปลี่ยนชื่อผู้ใช้แล้ว';}
+          catch(err){nameError.textContent=err.message;}
+          finally{nameSave.disabled=false;nameCancel.disabled=false;rename.disabled=false;}
+        });
+        nameActions.append(nameCancel,nameSave);nameEditor.append(nameLabel,nameHint,nameError,nameActions);
         if (user.role === 'user') actions.append(manage,remove);
-        actions.append(editCredential,photoControl(user.username,user.id,message));
-        row.append(info, actions); if (user.role === 'user') row.append(permissions); row.append(editor); userList.append(row);
+        actions.append(rename,editCredential,photoControl(user.username,user.id,message));
+        row.append(info, actions); if (user.role === 'user') row.append(permissions); row.append(nameEditor,editor); userList.append(row);
       }
       message.textContent = userList.children.length ? '' : 'ยังไม่มีผู้ใช้';
     } catch (err) { if (loadId === usersLoadId && profile?.role === 'admin') message.textContent = err.message; }

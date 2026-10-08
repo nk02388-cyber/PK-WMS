@@ -31,7 +31,7 @@ vm.runInNewContext(source, {
     if (path === '/auth/v1/token') return body.password === createdPassword
       ? json({ access_token: 'access', refresh_token: 'refresh' }) : json({}, 401);
     if (path === '/rest/v1/app_users' && init.method === 'POST') return json({}, 201);
-    if (path === '/rest/v1/app_users' && init.method === 'PATCH') return json({});
+    if (path === '/rest/v1/app_users' && init.method === 'PATCH') {if(body.username)targetProfile.username=body.username;return json(body.username?[{id,...targetProfile}]:{});}
     throw new Error(`Unexpected request: ${init.method || 'GET'} ${url}`);
   },
 });
@@ -113,3 +113,16 @@ for(const value of [null,[], 'invalid']) {
 const oversized=new Request('https://example.test/',{method:'POST',headers:{origin:'https://bcl-wms.vercel.app'},body:JSON.stringify({action:'login',password:'x'.repeat(9000)})});
 assert.equal((await handler(oversized)).status,400);
 console.log('PASS: invalid and oversized request bodies are rejected');
+
+callerRole='admin';duplicate=false;targetProfile={username:'worker.01',email:'worker.01@pin.bcl-wms.local',role:'user',active:true};
+await handler(request('set_credential',{id,credential:'000789'}));const passwordBeforeRename=createdPassword;
+assert.equal((await handler(request('set_username',{id,username:'Worker.New'}))).status,200);
+assert.equal(targetProfile.username,'worker.new');assert.equal(createdPassword,passwordBeforeRename);
+const patch=calls.filter(c=>c.method==='PATCH'&&c.body.username).at(-1);assert.deepEqual(patch.body,{username:'worker.new'});
+loginProfile={email:targetProfile.email,active:true};assert.equal((await handler(request('login',{username:'worker.new',password:'000789'}))).status,200);
+await handler(request('set_credential',{id,credential:'000790'}));assert.equal((await handler(request('login',{username:'worker.new',password:'000790'}))).status,200);
+duplicate=true;assert.equal((await handler(request('set_username',{id,username:'existing'}))).status,409);duplicate=false;
+assert.equal((await handler(request('set_username',{id,username:'bad name'}))).status,400);
+assert.equal((await handler(request('set_username',{id:'bad',username:'valid'}))).status,400);
+callerRole='user';assert.equal((await handler(request('set_username',{id,username:'valid'}))).status,403);
+console.log('PASS rename: unchanged PIN, reset after rename, duplicates, invalid name/id and non-admin denied');

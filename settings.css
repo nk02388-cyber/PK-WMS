@@ -36,3 +36,9 @@
   #pane-settings .account-credential-editor { grid-template-columns: minmax(0, 1fr); }
   #pane-settings .account-credential-editor input { font-size: 16px; }
 }
+
+#pane-settings .account-name-editor{flex:0 0 100%;display:grid;gap:12px;padding-top:16px;border-top:1px solid var(--border)}
+#pane-settings .account-name-editor label{display:grid;gap:8px}
+#pane-settings .account-name-editor input{box-sizing:border-box;width:100%;min-height:44px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text-primary);font:inherit}
+#pane-settings .account-name-editor p{margin:0;color:var(--text-secondary);font-size:14px}
+@media(max-width:700px){#pane-settings .account-name-editor input{font-size:16px}}

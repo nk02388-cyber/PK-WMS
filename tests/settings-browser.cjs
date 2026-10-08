@@ -6,11 +6,11 @@ const selectedMenus=page=>page.locator('#accountCreateForm input[name=menu_acces
 (async()=>{
  const browser=await (process.env.PK_SETTINGS_BROWSER!=='edge'?webkit.launch({headless:true}):chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}));
  try {for(const role of ['admin','user'])for(const width of (process.env.PK_SETTINGS_BROWSER==='edge'?[1440]:[1440,390])){
- const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});const errors=[];let lists=0,avatarUrl='';const actions=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});const errors=[];let lists=0,workerName='Worker',avatarUrl='';const actions=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{sessionStorage.setItem('bcl-wms-selected-department','pk');localStorage.setItem('pk-dashboard-theme-haulix','light');});
  await page.route('**/*',route=>{
  const u=new URL(route.request().url());if(u.protocol==='blob:')return route.continue();
- if(u.pathname.endsWith('/functions/v1/pk-user-access')){const input=route.request().postDataJSON(); actions.push(input); if(input.action==='set_avatar'){avatarUrl='/storage/v1/object/public/profile-avatars/qa/avatar.jpg?v=1';return page.evaluate(url=>window.qaAvatar=url,avatarUrl).then(()=>route.fulfill({json:{avatar_url:avatarUrl}}));} if(input.action==='list') {lists++;return route.fulfill({json:{users:[{id:'qa-admin',username:'Admin',role:'admin',login_kind:'password',menu_access:[]},{id:'qa-user',username:'Worker',avatar_url:avatarUrl,role:'user',login_kind:'pin',menu_access:['stock']}]}});}return route.fulfill({json:{updated:true}});}
+ if(u.pathname.endsWith('/functions/v1/pk-user-access')){const input=route.request().postDataJSON(); actions.push(input); if(input.action==='set_username'){if(input.username==='existing')return route.fulfill({status:409,json:{error:'ชื่อผู้ใช้นี้มีอยู่แล้ว'}});workerName=input.username;return route.fulfill({json:{id:input.id,username:workerName}});} if(input.action==='set_avatar'){avatarUrl='/storage/v1/object/public/profile-avatars/qa/avatar.jpg?v=1';return page.evaluate(url=>window.qaAvatar=url,avatarUrl).then(()=>route.fulfill({json:{avatar_url:avatarUrl}}));} if(input.action==='list') {lists++;return route.fulfill({json:{users:[{id:'qa-admin',username:'Admin',role:'admin',login_kind:'password',menu_access:[]},{id:'qa-user',username:workerName,avatar_url:avatarUrl,role:'user',login_kind:'pin',menu_access:['stock']}]}});}return route.fulfill({json:{updated:true}});}
  if(u.pathname.startsWith('/storage/v1/object/public/profile-avatars/'))return route.fulfill({body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aT1cAAAAASUVORK5CYII=','base64'),contentType:'image/png'});if(u.hostname!=='localhost')return route.abort();const file=path.join(root,u.pathname==='/'?'index.html':u.pathname);if(!fs.existsSync(file))return route.abort();let body=fs.readFileSync(file);
  if(file.endsWith('index.html'))body=body.toString().replace(/const (SUPABASE_URL|STOCK_SUPABASE_URL) = '[^']*';/g,"const $1 = '';").replace(/<script src="account-status.js/,`<script>window.qaAvatar=${JSON.stringify(avatarUrl)};supabaseClient={auth:{getUser:async()=>({data:{user:{id:'qa'}}}),getSession:async()=>({data:{session:{access_token:'test'}}}),onAuthStateChange:()=>{},signOut:async()=>({})},from:()=>({select:()=>({eq:()=>({single:async()=>({data:{username:'QA',avatar_url:window.qaAvatar,role:'${role}',active:true,menu_access:['stock','settings']}})})})}),rpc:async()=>({data:[]})};</script><script src="account-status.js`);
  route.fulfill({body,contentType:file.endsWith('.html')?'text/html':file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':'image/png'});
@@ -61,6 +61,19 @@ const selectedMenus=page=>page.locator('#accountCreateForm input[name=menu_acces
  assert.equal(actions.filter(a=>a.action==='set_avatar').length,uploads);
  await page.reload();await page.waitForFunction(()=>document.querySelector('#accountToggle .profile-avatar img'));
  assert.equal(await page.locator('#accountToggle .profile-avatar img').getAttribute('src'),avatarUrl);
+ if(role==='admin'){
+  await page.locator('#accountToggle').click();
+  if(width<1024)await page.locator('#sidebarToggle').click();await page.locator('#tab-settings').click();
+  let row=page.locator('.account-user').filter({has:page.getByText('Worker',{exact:true})});
+  await row.getByRole('button',{name:'เปลี่ยนชื่อ',exact:true}).click();
+  const input=row.locator('.account-name-editor input');await input.fill('unsaved');await row.locator('.account-name-editor').getByRole('button',{name:'ยกเลิก',exact:true}).click();
+  assert.equal(actions.filter(a=>a.action==='set_username').length,0);
+  await row.getByRole('button',{name:'เปลี่ยนชื่อ',exact:true}).click();await input.fill('existing');await row.getByRole('button',{name:'บันทึกชื่อ',exact:true}).click();await row.getByText('ชื่อผู้ใช้นี้มีอยู่แล้ว',{exact:true}).waitFor();assert.equal(await input.inputValue(),'existing');
+  await input.fill('worker.new');await row.getByRole('button',{name:'บันทึกชื่อ',exact:true}).click();
+  await page.locator('.account-user strong').filter({hasText:'worker.new'}).waitFor();assert.equal(actions.filter(a=>a.action==='set_username').at(-1).id,'qa-user');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);
+  await page.screenshot({path:'work/rename-user-'+width+'.png'});
+ }
  assert.deepEqual(errors,[]);console.log('PASS settings '+role+' '+width);await page.close();
  }}finally{await browser.close()}
 })();
