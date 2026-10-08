@@ -49,6 +49,58 @@
   }
   $('accountCreateMenus').parentElement.replaceWith(menuFieldset());
 
+  function avatarPicture(username, source) {
+    const circle = document.createElement('span'); circle.className='profile-avatar';
+    circle.textContent=(username || '?').slice(0,2).toUpperCase(); circle.setAttribute('aria-hidden','true');
+    if (typeof source === 'string' && source.startsWith(SUPABASE_URL+'/storage/v1/object/public/profile-avatars/')) {
+      const image=document.createElement('img');image.alt='';image.decoding='async';
+      image.addEventListener('error',()=>image.remove(),{once:true});image.src=source;circle.append(image);
+    }
+    return circle;
+  }
+  function showAccountAvatar() {
+    button.querySelector('.profile-avatar')?.remove();button.classList.toggle('with-avatar',!!profile);
+    if (profile) button.prepend(avatarPicture(profile.username,profile.avatar_url));
+    ownPhoto.hidden=!profile;
+  }
+  async function resizeAvatar(file) {
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('เลือกรูป JPG, PNG หรือ WebP');
+    if (file.size>10*1024*1024) throw new Error('เลือกรูปขนาดไม่เกิน 10 MB');
+    const image=new Image(), objectUrl=URL.createObjectURL(file);
+    try {
+      image.src=objectUrl;try{await image.decode();}catch{throw new Error('อ่านรูปไม่สำเร็จ กรุณาเลือกรูป JPG, PNG หรือ WebP ใหม่');}
+      const canvas=document.createElement('canvas');canvas.width=canvas.height=256;
+      const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,256,256);
+      const size=Math.min(image.naturalWidth,image.naturalHeight);
+      if (!size) throw new Error('ไม่สามารถอ่านรูปนี้ได้');
+      ctx.drawImage(image,(image.naturalWidth-size)/2,(image.naturalHeight-size)/2,size,size,0,0,256,256);
+      return canvas.toDataURL('image/jpeg',.85);
+    } finally {URL.revokeObjectURL(objectUrl);}
+  }
+  function photoControl(username, id, feedback) {
+    const wrap=document.createElement('div');wrap.className='profile-photo-control';
+    const picker=document.createElement('input');picker.type='file';picker.accept='image/jpeg,image/png,image/webp';picker.hidden=true;
+    const choose=document.createElement('button');choose.type='button';choose.textContent='เปลี่ยนรูปโปรไฟล์';
+    choose.setAttribute('aria-label','เปลี่ยนรูปโปรไฟล์ '+username);
+    choose.addEventListener('click',()=>picker.click());
+    picker.addEventListener('change',async()=>{
+      const file=picker.files[0];if(!file)return;
+      const actor=profile?.username;choose.disabled=true;feedback.textContent='กำลังอัปโหลดรูป…';
+      try {
+        const image=await resizeAvatar(file);
+        if (!actor || profile?.username!==actor) throw new Error('กรุณาเข้าสู่ระบบใหม่');
+        await adminCall('set_avatar',{...(id?{id}:{}),image});
+        if(profile?.username!==actor)return;
+        await refresh();if(profile?.role==='admin'&&!$('pane-settings').hidden)await loadUsers();
+        feedback.textContent='บันทึกรูปโปรไฟล์แล้ว';
+      } catch(err){feedback.textContent=err.message||'อ่านรูปไม่สำเร็จ กรุณาเลือกรูปใหม่';}
+      finally{choose.disabled=false;picker.value='';}
+    });wrap.append(choose,picker);return wrap;
+  }
+  const photoMessage=document.createElement('span');photoMessage.className='profile-photo-message';photoMessage.setAttribute('role','status');
+  const ownPhoto=photoControl('ของฉัน',null,photoMessage);ownPhoto.hidden=true;
+  panel.insertBefore(ownPhoto,$('accountChangeDepartment'));panel.insertBefore(photoMessage,$('accountChangeDepartment'));
+
   function showError(text) { error.textContent = text || ''; error.hidden = !text; }
   $('authTogglePassword').addEventListener('click', () => {
     const visible = $('authPassword').type === 'password';
@@ -102,7 +154,7 @@
     } finally { clearTimeout(timeout); }
   }
   function clearAccount() {
-    const changed = !!profile; profile = null; usersLoadId++;
+    const changed = !!profile; profile = null; usersLoadId++;showAccountAvatar();photoMessage.textContent='';
     adminPanel.hidden = true; userList.replaceChildren(); createForm.reset(); updateCreateForm();
     message.textContent = ''; panel.hidden = true; button.setAttribute('aria-expanded','false');
     button.classList.remove('is-logged-in'); status.textContent = 'ยังไม่ได้เข้าสู่ระบบ';
@@ -121,7 +173,7 @@
       const { data: { user }, error: userError } = await client.auth.getUser();
       if (id !== refreshId) return;
       if (userError || !user) { clearAccount(); showDepartment(); return; }
-      const { data, error: profileError } = await client.from('app_users').select('username,role,active,menu_access').eq('id', user.id).single();
+      const { data, error: profileError } = await client.from('app_users').select('username,role,active,menu_access,avatar_url').eq('id', user.id).single();
       if (id !== refreshId) return;
       if (profileError || !data?.active || !['admin', 'user'].includes(data.role)) {
         await client.auth.signOut({ scope: 'local' });
@@ -131,7 +183,7 @@
       if (profile && (profile.username !== data.username || profile.role !== data.role)) {
         usersLoadId++; userList.replaceChildren(); createForm.reset(); updateCreateForm();
       }
-      profile = data;
+      profile = data;showAccountAvatar();
       if (changed) window.dispatchEvent(new Event('wms:account-changed'));
       status.textContent = `${data.username} · ${data.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้'}`;
       button.classList.add('is-logged-in');
@@ -151,10 +203,11 @@
       userList.replaceChildren();
       for (const user of users.filter(item => ['admin','user'].includes(item.role) && !item.username.startsWith('legacy-disabled-'))) {
         const row = document.createElement('div'); row.className = 'account-user';
-        const info = document.createElement('div');
+        const info = document.createElement('div');info.className='account-user-info';
+        const copy = document.createElement('div');
         const name = document.createElement('strong'); name.textContent = user.username;
         const badge = document.createElement('span'); badge.className = 'account-role-badge'; badge.textContent = user.role === 'admin' ? 'Admin · ทุกเมนู' : 'ผู้ใช้';
-        info.append(name, badge);
+        copy.append(name,badge);info.append(avatarPicture(user.username,user.avatar_url),copy);
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'ลบ';
         remove.dataset.confirmDestructive = `ลบผู้ใช้ ${user.username}`;
         remove.setAttribute('aria-label', `ลบผู้ใช้ ${user.username}`);
@@ -216,7 +269,7 @@
         });
         buttons.append(cancel,submitCredential); editor.append(feedback,buttons);
         if (user.role === 'user') actions.append(manage,remove);
-        actions.append(editCredential);
+        actions.append(editCredential,photoControl(user.username,user.id,message));
         row.append(info, actions); if (user.role === 'user') row.append(permissions); row.append(editor); userList.append(row);
       }
       message.textContent = userList.children.length ? '' : 'ยังไม่มีผู้ใช้';

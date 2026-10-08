@@ -64,7 +64,7 @@ Deno.serve(async (request) => {
   if (!allowedOrigins.has(origin)) return response(origin, 403, { error: 'Origin not allowed' });
   let input;
   try {
-    if (Number(request.headers.get('content-length') || 0) > 8192) throw new Error('Too large');
+    if (Number(request.headers.get('content-length') || 0) > 140000) throw new Error('Too large');
     const body = await request.text();
     if (new TextEncoder().encode(body).length > 8192) throw new Error('Too large');
     input = JSON.parse(body);
@@ -73,6 +73,7 @@ Deno.serve(async (request) => {
     return response(origin, 400, { error: 'Invalid request' });
   }
   const action = input.action;
+  if (action !== 'set_avatar' && new TextEncoder().encode(JSON.stringify(input)).length > 8192) return response(origin, 400, { error: 'Invalid request' });
 
 
   if (action === 'login') {
@@ -105,12 +106,31 @@ Deno.serve(async (request) => {
   const caller = await verified.json();
   const roleResponse = await backend(`/rest/v1/app_users?select=role,active&id=eq.${encodeURIComponent(caller.id)}&limit=1`, serviceKey);
   const adminProfile = roleResponse.ok ? (await roleResponse.json())[0] : null;
+  if (action === 'set_avatar') {
+    if (!adminProfile?.active) return response(origin, 403, {error:'บัญชีไม่ได้รับสิทธิ์'});
+    const id = input.id === undefined ? caller.id : input.id;
+    if (typeof id !== 'string' || !/^[0-9a-f-]{36}$/i.test(id)) return response(origin,400,{error:'ผู้ใช้ไม่ถูกต้อง'});
+    if (id !== caller.id && adminProfile.role !== 'admin') return response(origin,403,{error:'เปลี่ยนได้เฉพาะรูปของตัวเอง'});
+    const target = await backend('/rest/v1/app_users?select=active&id=eq.'+encodeURIComponent(id)+'&limit=1',serviceKey);
+    if (!target.ok || !(await target.json())[0]?.active) return response(origin,404,{error:'ไม่พบผู้ใช้'});
+    let bytes;
+    try {
+      if (typeof input.image !== 'string' || !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(input.image)) throw new Error();
+      const raw = atob(input.image.split(',')[1]); bytes = Uint8Array.from(raw, c=>c.charCodeAt(0));
+      if (bytes.length > 98304 || bytes.length < 4 || bytes[0] !== 255 || bytes[1] !== 216 || bytes[2] !== 255 || bytes.at(-2) !== 255 || bytes.at(-1) !== 217) throw new Error();
+    } catch { return response(origin,400,{error:'รูปไม่ถูกต้องหรือมีขนาดใหญ่เกินไป'}); }
+    const upload = await backend('/storage/v1/object/profile-avatars/'+id+'/avatar.jpg',serviceKey,{method:'POST',headers:{'content-type':'image/jpeg','x-upsert':'true','cache-control':'max-age=0'},body:bytes});
+    if (!upload.ok) return response(origin,503,{error:'อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่'});
+    const avatar_url = url+'/storage/v1/object/public/profile-avatars/'+id+'/avatar.jpg?v='+Date.now();
+    const saved = await backend('/rest/v1/app_users?id=eq.'+encodeURIComponent(id),serviceKey,{method:'PATCH',body:JSON.stringify({avatar_url})});
+    return response(origin,saved.ok?200:503,saved.ok?{avatar_url}:{error:'บันทึกรูปไม่สำเร็จ กรุณาลองใหม่'});
+  }
   if (!adminProfile?.active || adminProfile.role !== 'admin')
     return response(origin, 403, { error: 'เฉพาะผู้ดูแลระบบ' });
 
 
   if (action === 'list') {
-    const result = await backend('/rest/v1/app_users?select=id,username,email,role,menu_access,created_at&active=eq.true&order=created_at.asc', serviceKey);
+    const result = await backend('/rest/v1/app_users?select=id,username,email,role,menu_access,created_at,avatar_url&active=eq.true&order=created_at.asc', serviceKey);
     return response(origin, result.ok ? 200 : 503, result.ok ? { users: (await result.json()).map(({email, ...user}) => ({...user, login_kind: email.endsWith('@pin.bcl-wms.local') ? 'pin' : 'password'})) } : { error: 'โหลดรายชื่อไม่สำเร็จ' });
   }
 

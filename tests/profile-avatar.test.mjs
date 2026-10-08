@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import vm from 'node:vm';
+let handler, role='user',active=true,storageOK=true;const calls=[];
+const self='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
+const json=(data,status=200)=>new Response(JSON.stringify(data),{status});
+vm.runInNewContext(await fs.readFile('supabase/functions/pk-user-access/index.ts','utf8'),{Deno:{env:{get:name=>({SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service'})[name]},serve:fn=>handler=fn},Response,TextEncoder,Uint8Array,atob,Date,crypto:globalThis.crypto,fetch:async(url,init)=>{
+ calls.push({url,init});
+ if(url.includes('/auth/v1/user'))return json({id:self});
+ if(url.includes('select=role,active'))return json([{role,active}]);
+ if(url.includes('select=active'))return json([{active:true}]);
+ if(url.includes('/storage/v1/object/'))return json({},storageOK?200:503);
+ if(init.method==='PATCH')return json({});
+ throw Error('Unexpected '+url);
+}});
+const invoke=(data,auth=true)=>handler(new Request('https://example.test',{method:'POST',headers:{origin:'https://bcl-wms.vercel.app',...(auth?{authorization:'Bearer test'}:{})},body:JSON.stringify({action:'set_avatar',...data})}));
+const image='data:image/jpeg;base64,'+Buffer.from([255,216,255,1,255,217]).toString('base64');
+assert.equal((await invoke({image},false)).status,401);
+assert.equal((await invoke({id:other,image})).status,403);assert.equal(calls.filter(c=>c.url.includes('/storage/')).length,0);
+assert.equal((await invoke({image:'data:image/svg+xml;base64,AAAA'})).status,400);
+assert.equal((await invoke({image:'data:image/jpeg;base64,AAAA'})).status,400);
+assert.equal((await invoke({image:'data:image/jpeg;base64,'+Buffer.alloc(98305).toString('base64')})).status,400);
+active=false;assert.equal((await invoke({image})).status,403);active=true;
+const result=await invoke({image});assert.equal(result.status,200);assert.match((await result.json()).avatar_url,new RegExp(self+'/avatar.jpg'));
+assert.equal(calls.find(c=>c.url.includes('/storage/')).init.headers['x-upsert'],'true');
+role='admin';assert.equal((await invoke({id:other,image})).status,200);
+storageOK=false;const before=calls.filter(c=>c.init.method==='PATCH').length;assert.equal((await invoke({image})).status,503);assert.equal(calls.filter(c=>c.init.method==='PATCH').length,before);
+console.log('PASS avatar authorization, validation, storage failure and persistence');
