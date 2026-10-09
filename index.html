@@ -2000,7 +2000,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="reference-wms.css?v=20261009-department-noarrows1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
-<link rel="stylesheet" href="dashboard-layout.css?v=20261009-buildinggauges1">
+<link rel="stylesheet" href="dashboard-layout.css?v=20261009-professional1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2151,12 +2151,15 @@ header.top .header-logo { border-radius: 14px; }
         </section>
     </div>
     <div class="dashboard-main-grid">
-<section id="dashboardInsights" aria-labelledby="diTitle"><div class="di-head"><h2 id="diTitle">แนวโน้มการเคลื่อนไหวสินค้า</h2><div class="di-controls"><label>ช่วงเวลา<select><option value="7">7 วัน</option><option value="30" selected>30 วัน</option></select></label><label>ถึงวันที่<input type="date" required></label></div></div><div class="di-stats" aria-live="polite"></div><div class="di-charts"><div><h3>Trend Chart · จำนวนรายการต่อวัน</h3><div class="di-trend"></div></div><div><h3>สัดส่วนกิจกรรม</h3><div class="di-mix"></div></div></div><p class="di-note" hidden></p><details class="di-detail"><summary>ดูข้อมูลรายวัน</summary><div><table><thead><tr><th>วันที่</th><th>รับเข้า</th><th>เบิกออก</th><th>รับคืน</th></tr></thead><tbody></tbody></table></div></details></section>
+<section id="dashboardInsights" aria-labelledby="diTitle"><div class="di-head"><h2 id="diTitle">แนวโน้มการเคลื่อนไหวสินค้า</h2><div class="di-controls"><label>ช่วงเวลา<select><option value="7">7 วัน</option><option value="30" selected>30 วัน</option></select></label><label>ถึงวันที่<input type="date" required></label></div></div><div class="di-stats" aria-live="polite"></div><div class="di-charts"><div><h3>Trend Chart · จำนวนรายการต่อวัน</h3><div class="di-trend"></div></div></div><p class="di-note" hidden></p><details class="di-detail"><summary>ดูข้อมูลรายวัน</summary><div><table><thead><tr><th>วันที่</th><th>รับเข้า</th><th>เบิกออก</th><th>รับคืน</th></tr></thead><tbody></tbody></table></div></details></section>
+<div class="dashboard-side-stack">
 <section class="panel dashboard-building" aria-labelledby="buildingUsageTitle">
         <h2 id="buildingUsageTitle">พื้นที่จัดเก็บตามอาคาร</h2>
         <div class="building-usage-list" id="buildingUsageList"></div>
         <div class="building-usage-total" id="buildingUsageTotal"></div>
       </section>
+<section class="panel dashboard-activity" id="dashboardActivity" aria-labelledby="activityTitle"><div class="dashboard-widget-head"><h2 id="activityTitle">สัดส่วนกิจกรรม</h2><span id="dashboardActivityScope"></span></div><div class="di-mix"></div></section>
+</div>
     </div>
 
     <div class="two-col">
@@ -2363,7 +2366,8 @@ header.top .header-logo { border-radius: 14px; }
     <div class="panel">
       <h2>รายการที่มีมูลค่าคงเหลือสูงสุด 15 อันดับ</h2>
       <div class="panel-sub" id="topItemsSub">รวมรหัสและหน่วยเดียวกัน</div>
-      <table id="topTable">
+      <div class="dashboard-table-scroll" role="region" aria-label="รายการสินค้าใน Dashboard" tabindex="0">
+<table id="topTable">
         <thead>
           <tr>
             <th>สินค้า / รหัส</th>
@@ -2479,6 +2483,7 @@ header.top .header-logo { border-radius: 14px; }
     </tr>
   </tbody>
       </table>
+</div>
     </div>
 
   </div>
@@ -10136,7 +10141,7 @@ window.addEventListener('pageshow', () => {
 <script src="latest-suppliers.js?v=20260924-1"></script>
 <script src="product-history.js?v=20261008-chronology1"></script>
 <script src="top-withdrawals.js?v=20260925-2"></script>
-<script src="dashboard-insights.js?v=20261008-trendmotion1"></script>
+<script src="dashboard-insights.js?v=20261009-professional1"></script>
 <script src="reorder-points-data.js?v=20260924-1"></script>
 <script src="reorder-points.js?v=20261008-keywords2"></script>
 <link rel="stylesheet" href="action-confirmation.css?v=20261008-2">
@@ -10160,7 +10165,7 @@ window.addEventListener('pageshow', () => {
 <script src="slot-copy-core.js?v=20261006-1"></script>
 <script src="slot-copy.js?v=20261006-1"></script>
 <script src="sidebar-toggle.js?v=20261009-singlelabel1"></script>
-<script src="dashboard-motion.js?v=20261009-allbands1"></script>
+<script src="dashboard-motion.js?v=20261009-professional1"></script>
 
 
 </body></html>

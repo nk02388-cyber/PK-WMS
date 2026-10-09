@@ -2,7 +2,7 @@
  'use strict';
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)'),live=new Set(),pendingCharts=new Set();
  const stock=document.getElementById('pane-stock');let chartFrame=0,entryFrame=0,activePane=null,gaugePending=true;
- const enabled=()=>!reduced.matches&&!document.hidden;
+ const enabled=()=>!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&!document.hidden;
  function visible(el){return !!el&&!el.hidden&&!!el.getClientRects().length;}
  function animate(el,keyframes,duration,delay=0){
   if(!enabled()||!visible(el)||typeof el.animate!=='function')return;

@@ -23,7 +23,7 @@ const root=path.resolve(__dirname,'..');
 
  await page.evaluate(()=>{palletDataReady=true;Object.keys(SLOT_ITEMS).forEach(k=>delete SLOT_ITEMS[k]);Object.assign(SLOT_ITEMS,{A:{'A-1':[{qty:10,receiveDate:'2026-10-02',withdrawals:[{date:'2026-10-08',qty:3}],returns:[{date:'2026-10-07',qty:1}]}]}});PKDashboardInsights.refresh();});
  const host=page.locator('#dashboardInsights');await host.locator('input').fill('2026-10-08');await host.locator('input').dispatchEvent('change');
- assert.equal(await host.locator('.di-stats strong').first().textContent(),'1 รายการ');assert.equal(await host.locator('svg').count(),2);
+ assert.equal(await host.locator('.di-stats strong').first().textContent(),'1 รายการ');assert.equal(await host.locator('svg').count(),1);
  await host.locator('select').selectOption('7');assert.equal(await host.locator('tbody tr').count(),7);
 
  const before=await host.locator('.di-stats').textContent();

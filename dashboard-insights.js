@@ -13,7 +13,7 @@ function summarize(source,asOf,days=30){
 }
 if(typeof module!=='undefined'&&module.exports){module.exports={dateKey,summarize};return;}
 const host=document.getElementById('dashboardInsights');if(!host)return;
-const period=host.querySelector('select'),date=host.querySelector('input[type=date]'),chart=host.querySelector('.di-trend'),mix=host.querySelector('.di-mix'),stats=host.querySelector('.di-stats'),note=host.querySelector('.di-note');
+const period=host.querySelector('select'),date=host.querySelector('input[type=date]'),chart=host.querySelector('.di-trend'),mix=document.querySelector('#dashboardActivity .di-mix') || host.querySelector('.di-mix'),stats=host.querySelector('.di-stats'),note=host.querySelector('.di-note');
 const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const part=t=>parts.find(p=>p.type===t).value;date.value=part('year')+'-'+part('month')+'-'+part('day');
 const series=[['receive','รับเข้า','#6ba6c0'],['issue','เบิกออก','#c99c39'],['returns','รับคืน','#74bc95']];let last='', pendingMotion=false;const reduced=matchMedia('(prefers-reduced-motion: reduce)'),motions=new Set();
 function cancelMotion(){for(const a of motions)a.cancel();motions.clear();}
@@ -28,6 +28,7 @@ function render(){
  if(!palletDataReady){stats.textContent='กำลังรอข้อมูลพาเลต';chart.textContent='ยังไม่แสดงกราฟจนกว่าจะโหลดข้อมูลครบ';mix.textContent='—';note.textContent='';last='';return;}
  if(!dateKey(date.value)){date.setCustomValidity('กรุณาเลือกวันที่สิ้นสุด');date.reportValidity();return;}date.setCustomValidity('');
  const s=summarize(SLOT_ITEMS,date.value,Number(period.value)),key=JSON.stringify(s);if(last===key)return;last=key;
+ const scope=document.getElementById('dashboardActivityScope');if(scope)scope.textContent=period.value+' วัน · ถึง '+date.value.split('-').reverse().join('/');
  stats.innerHTML=series.map(([k,label])=>'<div><small>'+label+'</small><strong>'+s.total[k].toLocaleString('en-US')+' <span>รายการ</span></strong></div>').join('');
  const max=Math.max(1,...s.points.flatMap(p=>series.map(([k])=>p[k]))),x=i=>48+i*604/(s.points.length-1),y=n=>190-n/max*154;
  let svg='<svg viewBox="0 0 680 230" role="img" aria-label="แนวโน้มจำนวนรายการรับเข้า เบิกออก และรับคืน"><title>จำนวนรายการต่อวัน สูงสุด '+max+' รายการ</title>';
