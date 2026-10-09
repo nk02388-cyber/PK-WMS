@@ -128,7 +128,6 @@
     } else {
       const changed = !document.body.classList.contains('department-choosing');
       $('departmentWelcome').textContent = 'เลือกแผนกก่อนเข้าสู่ระบบเพื่อดำเนินการต่อ';
-      $('departmentSignout').hidden = !profile;
       showStage('department-choosing');
       if (changed) document.querySelector('.department-option').focus();
     }
@@ -344,7 +343,7 @@
   });
   async function signOut() {
     if(signingOut)return;signingOut=true;++loginAttempt;++refreshId;loginBusy=false;
-    const logout=$('accountLogout'),departmentLogout=$('departmentSignout');logout.disabled=true;departmentLogout.disabled=true;
+    const logout=$('accountLogout');logout.disabled=true;
     try {
       if(!client)throw new Error('ระบบบัญชียังไม่พร้อม');
       const {error} = await client.auth.signOut({scope:'local'}) || {};
@@ -354,10 +353,9 @@
       const message='ออกจากระบบไม่สำเร็จ กรุณาลองใหม่';
       if(document.body.classList.contains('department-choosing')){$('departmentError').textContent=message;$('departmentError').hidden=false;}
       else{panel.hidden=false;button.setAttribute('aria-expanded','true');status.textContent=message;}
-    } finally{signingOut=false;logout.disabled=false;departmentLogout.disabled=false;}
+    } finally{signingOut=false;logout.disabled=false;}
   }
   $('accountLogout').addEventListener('click', signOut);
-  $('departmentSignout').addEventListener('click', signOut);
   $('accountChangeDepartment').addEventListener('click', () => {
     panel.hidden = true; button.setAttribute('aria-expanded', 'false');
     saveDepartment(null); showDepartment();

@@ -11,7 +11,7 @@ function setup(loggedIn=false){
  return {node,pk,classes,storage,delay(){delayLogin=true},release(){resolveLogin()},failSignout(){signoutError=true},get sessionSets(){return sessionSets},fail(){client.auth.getUser=async()=>{throw new Error('offline')}},expire(){loggedIn=false},async refresh(){interval();await tick()},get events(){return events},get reloads(){return reloads}};
 }
 test('signed-out visitor chooses department before login and can go back',async()=>{
- const s=setup();await tick();assert.ok(s.classes.has('department-choosing'));assert.equal(s.node('departmentSignout').hidden,true);
+ const s=setup();await tick();assert.ok(s.classes.has('department-choosing'));assert.ok(!fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes('id="departmentSignout"'));
  await s.pk.fire('click');assert.ok(s.classes.has('auth-pending'));assert.ok(s.node('authUsername').focused);
  s.node('authPassword').value='draft';await s.node('authChangeDepartment').fire('click');assert.ok(s.classes.has('department-choosing'));assert.equal(s.node('authPassword').value,'');
 });
