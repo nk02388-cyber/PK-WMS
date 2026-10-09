@@ -7,6 +7,20 @@ test('compact rows preserve every pallet code, count, row height and other zones
  vm.runInNewContext(snippet,{ZONE_SLOTS:changed,ZONE_PINS:pins});
  const targets=new Set(['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1']);
  for(const [zone,slots] of Object.entries(original)){
+  if(zone==='U'){
+   assert.equal(changed.U.length,26);
+   assert.deepEqual(changed.U.slice(0,24).map(s=>s.code),slots.map(s=>s.code));
+   const right=['U-02','U-06','U-25','U-17','U-19','U-26'];
+   const left=['U-01','U-03','U-09','U-14','U-18','U-20'];
+   right.forEach((code,i)=>{
+    const slot=changed.U.find(s=>s.code===code);
+    assert.equal(slot.leftPct,slots.find(s=>s.code==='U-02').leftPct);
+    assert.equal(slot.topPct,slots.find(s=>s.code===left[i]).topPct);
+   });
+   for(const slot of slots.filter(s=>!right.includes(s.code)))assert.deepEqual(changed.U.find(s=>s.code===slot.code),slot);
+   assert.equal(new Set(changed.U.map(s=>s.code)).size,26);
+   continue;
+  }
   assert.deepEqual(changed[zone].map(s=>s.code),slots.map(s=>s.code));
   assert.deepEqual(changed[zone].map(s=>s.topPct),slots.map(s=>s.topPct));
   if(!targets.has(zone)){assert.deepEqual(changed[zone],slots);continue}

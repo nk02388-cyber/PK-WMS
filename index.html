@@ -3370,6 +3370,18 @@ ZONE_SLOTS['T-1'] = Array.from({length:18}, (_, index) => ({
 }));
 ZONE_PINS['T-1'] = {leftPct:49.3035, topPct:40.743};
 
+// Zone U's right aisle has six positions, aligned with the six on the left.
+// Retain existing slot identities so their stock and history follow the same codes.
+const uLeftAisle = ['U-01','U-03','U-09','U-14','U-18','U-20'];
+const uRightAisle = ['U-02','U-06','U-25','U-17','U-19','U-26'];
+const uRightLeftPct = ZONE_SLOTS.U.find(slot => slot.code === 'U-02').leftPct;
+uRightAisle.forEach((code, index) => {
+  let slot = ZONE_SLOTS.U.find(slot => slot.code === code);
+  if (!slot) { slot = {code}; ZONE_SLOTS.U.push(slot); }
+  slot.leftPct = uRightLeftPct;
+  slot.topPct = ZONE_SLOTS.U.find(left => left.code === uLeftAisle[index]).topPct;
+});
+
 const pinnedZones = zoneEntries.filter(([z]) => ZONE_PINS[z]);
 const unpinnedZones = zoneEntries.filter(([z]) => !ZONE_PINS[z]);
 
@@ -4264,7 +4276,7 @@ const AREA_BUILDINGS = [
     // in two buildings) and push the total to 548, nowhere near his stated 503 -- confirmed with
     // him this means "J-1" (matching every other "-1"-suffixed zone in this list).
     zones: ['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1','I-1','J-1','K-1','L-1','M-1','N-1','O-1','P-1','Q-1','R-1','S-1','T-1','U'],
-    palletNo: 521, // Original 503 positions plus 18 new positions in T-1.
+    palletNo: 523, // Original 503 + 18 in T-1 + 2 in U's right aisle.
   },
   {
     key: 'new',
