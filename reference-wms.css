@@ -127,3 +127,6 @@
 .viz-root #pkSpeedMeterCard .sm-gauge-wrap{width:142px;max-width:95%;height:79px;margin-top:2px}
 .viz-root #pkSpeedMeterCard .sm-value{font-size:24px;font-weight:600;color:var(--text-primary);letter-spacing:-.025em}
 .viz-root #pkSpeedMeterCard .sm-sub{font-size:11px;font-weight:400;color:var(--text-secondary)}
+
+.viz-root .department-option{grid-template-columns:52px minmax(0,1fr)}
+@media(max-width:480px){.viz-root .department-option{grid-template-columns:44px minmax(0,1fr)}}
