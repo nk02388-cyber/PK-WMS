@@ -55,3 +55,18 @@
 .sidebar-label-peek{position:fixed;z-index:390;max-width:min(300px,calc(100vw - 88px));box-sizing:border-box;min-height:44px;display:flex;align-items:center;padding:10px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface-1);color:var(--text-primary);font:600 14px 'Noto Sans Thai',sans-serif;box-shadow:0 8px 24px #15242b1a;pointer-events:none;opacity:0;visibility:hidden;transform:translateX(-12px);transition:transform .2s cubic-bezier(.22,1,.36,1),opacity .16s ease,visibility 0s linear .2s}
 .sidebar-label-peek.is-open{opacity:1;visibility:visible;transform:translateX(0);transition-delay:0s}
 @media(prefers-reduced-motion:reduce){.sidebar-label-peek{transition:none}}
+
+/* One continuous layout transition; labels fade without display/layout jumps. */
+@media(min-width:1024px){
+ .viz-root .wrap{transition:grid-template-columns .34s cubic-bezier(.4,0,.2,1)}
+ .viz-root #tabs,.viz-root.sidebar-collapsed #tabs{width:100%;max-width:none;overflow-x:hidden;padding:0 8px 24px;gap:4px}
+ .viz-root #tabs .tab-btn,.viz-root.sidebar-collapsed #tabs .tab-btn{display:flex;align-items:center;justify-content:flex-start;box-sizing:border-box;width:100%;min-height:44px;padding:10px 14px;gap:10px;overflow:hidden;transition:background-color .16s ease}
+ .viz-root #tabs .tab-icon{width:20px;height:20px;flex:none}
+ .viz-root #tabs .tab-btn>span{display:block;opacity:1;visibility:visible;transform:translateX(0);transition:opacity .18s ease .08s,transform .26s cubic-bezier(.4,0,.2,1) .05s,visibility 0s}
+ .viz-root #tabs .tab-btn>span:first-of-type{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .viz-root.sidebar-collapsed #tabs .tab-btn>span{display:block;opacity:0;visibility:hidden;transform:translateX(-8px);transition:opacity .12s ease,transform .2s ease,visibility 0s linear .16s}
+ .viz-root #tabs .dashboard-nav-name{display:grid;overflow:hidden;opacity:1;visibility:visible;transition:opacity .18s ease .08s,visibility 0s}
+ .viz-root.sidebar-collapsed #tabs .dashboard-nav-name{display:grid;max-width:0;opacity:0;visibility:hidden;transition:opacity .12s ease,visibility 0s linear .16s}
+}
+@media(max-width:1023px){.viz-root #tabs{transition:transform .32s cubic-bezier(.4,0,.2,1),visibility 0s linear .32s}.viz-root.sidebar-drawer-open #tabs{transition-delay:0s}.sidebar-backdrop,.sidebar-backdrop[hidden]{transition:opacity .24s ease,visibility 0s linear .32s}.sidebar-backdrop:not([hidden]){transition-delay:0s}}
+@media(prefers-reduced-motion:reduce){.viz-root .wrap,.viz-root #tabs,.viz-root #tabs .tab-btn>span,.viz-root #tabs .dashboard-nav-name,.sidebar-backdrop{transition:none!important}}
