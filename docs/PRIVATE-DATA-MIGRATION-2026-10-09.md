@@ -30,7 +30,8 @@ Public `operations/pk-bom.json` is deleted. API failures show an error and clear
 - Grants: anonymous stock/BOM EXECUTE false; authenticated direct baseline SELECT false; baseline RLS true.
 - Node regression suite: 96 passed, 0 failed.
 - Browser fixtures: private API loading, baseline/saved overlay, logout, delayed response, API failure/retry at 1440/390 px; recipe save/version conflict/failed draft; Operations keyword controls; Login/settings/mobile menus; application CSP and local dependencies.
-- Live static delivery checks are recorded after deployment in ignored `work/` evidence. Authenticated behavior is supported by read-only database checks and browser fixtures, rather than changes to real inventory/accounts. Physical iPhone behavior and long-term uptime were not measured.
+- Live release `118be79`: embedded stock items and BOM recipes both 0; `/operations/pk-bom.json` and `/supabase-private-bom.sql` HTTP 404; anonymous baseline and latest stock RPC requests HTTP 401. Department/Login at 1440/390 px and anonymous Operations denial passed with no page errors; all 91 referenced assets HTTP 200. Evidence: ignored `work/private-live-api.json` and `work/live-readonly-audit.json`.
+- Authenticated behavior is supported by read-only database checks and browser fixtures, rather than changes to real inventory/accounts. Physical iPhone behavior and long-term uptime were not measured.
 
 ## Rollback and remaining boundaries
 
