@@ -13,7 +13,7 @@ revoke all on public.action_confirmations from anon,authenticated;
 grant select on public.action_confirmations to authenticated;
 drop policy if exists action_confirmations_read on public.action_confirmations;
 create policy action_confirmations_read on public.action_confirmations for select to authenticated
-using (exists(select 1 from public.app_users p where p.id=auth.uid() and p.active and (p.role='admin' or actor_id=p.id)));
+using (exists(select 1 from public.app_users p where p.id=(select auth.uid()) and p.active and (p.role='admin' or actor_id=p.id)));
 create or replace function public.record_action_confirmation(p_action text,p_target text,p_reason text)
 returns uuid language plpgsql security definer set search_path='' as $$
 declare actor public.app_users; confirmation_id uuid;

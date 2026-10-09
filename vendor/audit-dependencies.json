@@ -1,0 +1,14 @@
+[
+  {
+    "path": "vendor/xlsx-0.20.3.min.js",
+    "source": "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
+    "sha384": "EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT",
+    "bytes": 951904
+  },
+  {
+    "path": "vendor/supabase-2.57.0.min.js",
+    "source": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.js",
+    "sha384": "lDkWTkrzxBtYvBtgQmPcLBhTbJdqB11igYtWVcCIVXO0Lv4+XuKKdd4razodiyzk",
+    "bytes": 129604
+  }
+]
