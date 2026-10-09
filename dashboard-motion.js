@@ -14,7 +14,7 @@
  function buildingGauges(replay=false){
   const needles=[...document.querySelectorAll('.building-gauge-needle')];if(replay)needles.forEach(el=>el.dataset.played='false');
   if(!enabled()||!visible(stock))return;
-  needles.forEach((el,i)=>{const r=el.getBoundingClientRect(),svg=el.closest('svg'),box=svg.getBoundingClientRect();if(el.dataset.played==='true'||!box.height||box.top>=innerHeight||box.bottom<=0)return;el.dataset.played='true';const pct=Number(el.dataset.percent);animate(el,[{transform:'rotate('+(-1.8*pct)+'deg)'},{transform:'rotate(0deg)'}],1100,i*100);animate(svg.querySelector('.building-gauge-progress'),[{strokeDasharray:'0 100'},{strokeDasharray:pct+' 100'}],1100,i*100);});
+  needles.forEach((el,i)=>{const r=el.getBoundingClientRect(),svg=el.closest('svg'),box=svg.getBoundingClientRect();if(el.dataset.played==='true'||!box.height||box.top>=innerHeight||box.bottom<=0)return;el.dataset.played='true';const pct=Number(el.dataset.percent);animate(el,[{transform:'rotate('+(-1.8*pct)+'deg)'},{transform:'rotate(0deg)'}],1100,i*100);animate(svg.querySelector('.building-gauge-progress'),[{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)'}],1100,i*100);});
  }
  function charts(root){
   buildingGauges();

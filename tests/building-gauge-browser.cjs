@@ -23,7 +23,7 @@ const root=path.resolve(__dirname,'..');
 
  await page.evaluate(()=>{palletDataReady=true;const original=computeAreaBuildingUsage;computeAreaBuildingUsage=b=>{const old=AREA_BUILDINGS.indexOf(b)===0,palletNo=old?521:489,used=old?334:377;return {palletNo,used,remaining:palletNo-used};};renderBuildingUsage();computeAreaBuildingUsage=original;});
  const list=page.locator('#buildingUsageList');await page.evaluate(()=>{const el=document.getElementById('buildingUsageList');window.scrollTo({top:scrollY+el.getBoundingClientRect().top-220,behavior:'instant'});PKMotion.buildingGauges(true);});
- assert.equal(await list.locator('svg.building-gauge').count(),2);assert.deepEqual(await list.locator('.building-usage-percent').allTextContents(),['64.1%','77.1%']);
+ assert.equal(await list.locator('svg.building-gauge').count(),2);assert.deepEqual(await list.locator('.building-gauge-band').evaluateAll(paths=>paths.map(p=>p.getAttribute('stroke'))),['#5aa77d','#d9b44a','#df727a','#5aa77d','#d9b44a','#df727a']);assert.deepEqual(await list.locator('.building-usage-percent').allTextContents(),['64.1%','77.1%']);
  await page.waitForFunction(()=>[...document.querySelectorAll('.building-gauge-needle')].some(el=>el.getAnimations().some(a=>a.currentTime>0&&a.currentTime<900)));
  await page.evaluate(async()=>{await Promise.all([...document.querySelectorAll('.building-gauge-needle,.building-gauge-progress')].flatMap(el=>el.getAnimations().map(a=>a.finished)));});
  assert.equal(await list.locator('.building-gauge-needle').first().evaluate(el=>getComputedStyle(el).transform),'none');
