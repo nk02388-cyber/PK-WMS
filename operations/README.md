@@ -7,3 +7,5 @@ Only public.warehouse_ops_rpc(text,jsonb) is exposed. It checks the active Admin
 The original 15 tables, 67 functions, 6 triggers and 3 indexes were migrated and all 270 original records matched exactly after source cutover. Original portraits are served from a private database table through the Admin gateway. Historical profile IDs stay as historical records; authentication is owned by PK WMS.
 
 Private backups and the migration report are stored outside this repository at C:/Users/ADMIN/Documents/Codex/2026-09-29/new-chat/work/warehouse-migration-20261002. SQL source in ../supabase-warehouse-operations.sql contains schema only.
+
+BOM ต้นฉบับโหลดผ่าน get_pk_bom_baseline หลัง PK Auth/Admin; ไม่มี public pk-bom.json แล้ว สูตร production ที่บันทึกยังโหลดผ่าน gateway เดิมและใช้แทนต้นฉบับตามรหัส FG ดู ../docs/PRIVATE-DATA-MIGRATION-2026-10-09.md

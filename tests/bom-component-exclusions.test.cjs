@@ -49,21 +49,12 @@ ctx.STOCK = { items: [{ code: '315-01', unit:'ชิ้น', wh: '200', qty: 6, 
 ctx.recalculateBomFromStock();
 assert.equal(bom.bom_detail.FG.producible, 3, 'A new stock snapshot must recalculate retained components');
 
-// Run the same production code against every embedded BOM, including the KOTA example.
-const data = JSON.parse(html.match(/^const DATA = (.*);$/m)[1]);
-const originalBom = JSON.parse(JSON.stringify(data.bomPk));
-const real = makeContext(data.bomPk, data.stock);
-vm.runInContext(source, real);
-real.recalculateBomFromStock();
-for (const [code, detail] of Object.entries(data.bomPk.bom_detail)) {
-  const expected = originalBom.bom_detail[code].lines.filter(l => !String(l.pk_code).trim().startsWith('5'));
-  assert.deepEqual(Array.from(detail.lines, l => l.pk_code), [...new Set(expected.map(l => String(l.pk_code).trim().toUpperCase()))]);
-  assert.equal(detail.line_count, new Set(expected.map(l => String(l.pk_code).trim().toUpperCase())).size);
-  assert.ok(!String(detail.bottleneck_code || '').startsWith('5'));
-}
-assert.equal(data.bomPk.bom_detail['21-0021-06'].line_count, 6);
-assert.ok(data.bomPk.bom_detail['21-0021-06'].producible > 0);
-assert.equal(data.bomPk.kpis.total_bom_lines, 3371);
-assert.equal(data.bomPk.kpis.unique_components, 1524);
-assert.equal(data.bomPk.kpis.total_fg_with_bom, 756);
-console.log('PASS: migrated component classifications, readiness, counts, empty formulas and stock refresh');
+// BOM is now delivered through authorized API, never embedded in the public page.
+const publicData = JSON.parse(html.match(/^const DATA = (.*);$/m)[1]);
+assert.deepEqual(publicData.bomPk.bom_detail,{});assert.equal(publicData.stock.items.length,0);
+const apiBom={assumptions:{excluded_warehouses:[]},kpis:{},bom_detail:{'QA-FG':{lines:[...Array.from({length:6},(_,i)=>({pk_code:'QA-PK-'+i,unit:'ชิ้น',qty_per_unit:2,component_type:'packaging'})),{pk_code:'QA-WIP',unit:'ชิ้น',qty_per_unit:1,component_type:'non_packaging'}]}}};
+const apiStock={items:Array.from({length:6},(_,i)=>({code:'QA-PK-'+i,unit:'ชิ้น',wh:'200',qty:20,value:100}))};
+const real=makeContext(apiBom,apiStock);vm.runInContext(source,real);real.recalculateBomFromStock();
+assert.equal(apiBom.bom_detail['QA-FG'].line_count,6);assert.equal(apiBom.bom_detail['QA-FG'].producible,10);
+assert.equal(apiBom.kpis.total_bom_lines,6);assert.equal(apiBom.kpis.unique_components,6);
+console.log('PASS: API-shaped component classifications, readiness, repeated refresh and no public fallback');

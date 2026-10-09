@@ -3,6 +3,7 @@
   const $=id=>document.getElementById(id), core=window.PKRecipesCore;
   const client=typeof supabaseClient !== 'undefined' ? supabaseClient : null;
   const baseline=new Map(), recipes=new Map();
+  let baselineCatalog=[];
   let ready=false, saving=false, generation=0, editingCode='', expectedVersion=0;
   const isAdmin=()=>window.getWmsIsAdmin?.()===true;
   const allowed=()=>window.getWmsCanAccess?.('bompk') || window.getWmsCanAccess?.('bom-plan');
@@ -43,7 +44,7 @@
     $('pkRecipeBase').value=recipe?.base_qty||1;$('pkRecipeUnit').value=recipe?.fg_unit||detail.fg_unit||'';
     $('pkRecipeLines').replaceChildren();
     (recipe?.lines||(detail.source_lines||detail.lines).filter(line=>bomComponentType(line)==='packaging').map(line=>({...line,qty:line.qty_per_unit}))).forEach(addLine);
-    $('pkRecipeVersion').textContent=recipe?`กำลังแก้ไขเวอร์ชัน ${expectedVersion} · บันทึกเป็นเวอร์ชัน ${expectedVersion+1}`:'สูตรเดิมจากเว็บ · บันทึกเป็นเวอร์ชัน 1 ในฐานข้อมูล';
+    $('pkRecipeVersion').textContent=recipe?`กำลังแก้ไขเวอร์ชัน ${expectedVersion} · บันทึกเป็นเวอร์ชัน ${expectedVersion+1}`:'สูตรต้นฉบับจากฐานข้อมูล · บันทึกเป็นเวอร์ชัน 1';
     $('pkRecipeEditor').open=true;
   }
   function showList() {
@@ -66,23 +67,38 @@
       recipes.set(recipe.fg_code,recipe);BOMPK.bom_detail[recipe.fg_code]=detail;
       if(previousVersions.get(recipe.fg_code)!==recipe.version)delete fgLineExclusions[recipe.fg_code];
     }
-    BOMPK.fg_list=Object.entries(BOMPK.bom_detail).map(([fg,detail])=>({fg,fg_name:detail.fg_name}));
+    const catalog=new Map(baselineCatalog.map(item=>[item.fg,item]));
+    for(const [fg,detail] of Object.entries(BOMPK.bom_detail))catalog.set(fg,{fg,fg_name:detail.fg_name});
+    BOMPK.fg_list=[...catalog.values()];
+    document.querySelectorAll('.kota-chip[data-fg] .kota-name').forEach(el=>{el.textContent=BOMPK.bom_detail[el.parentElement.dataset.fg]?.fg_name||'(ไม่พบข้อมูล BOM สำหรับรหัสนี้)';});
     $('fgCodeList').replaceChildren(...BOMPK.fg_list.map(item=>{const option=document.createElement('option');option.value=item.fg;option.textContent=item.fg_name;return option;}));
     recalculateBomFromStock();showList();
+  }
+  function clearBaseline() {
+    baseline.clear(); baselineCatalog=[]; recipes.clear();
+    for(const code of Object.keys(BOMPK.bom_detail))delete BOMPK.bom_detail[code];
+    apply([]);
   }
   async function refresh() {
     if(saving)return;
     const id=++generation;
     $('pkRecipeEditor').hidden=!isAdmin();
-    if(!client || !allowed()){ready=false;if(recipes.size)apply([]);return status('เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์ BOM เพื่อโหลดสูตร');}
+    if(!client || !allowed()){ready=false;clearBaseline();newRecipe();return status('เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์ BOM เพื่อโหลดสูตร');}
     try {
-      const {data,error}=await client.rpc('get_pk_recipes');
-      if(id!==generation)return;
-      if(error)throw error;
-      apply(data);ready=true;$('pkRecipeSave').disabled=saving;
-      status(`เชื่อมต่อฐานข้อมูลแล้ว · ${recipes.size} สูตร · สูตรอื่นยังใช้ข้อมูลเดิมจากเว็บ`);
-    }catch(error){if(id!==generation)return;ready=false;$('pkRecipeSave').disabled=true;
-      status(`โหลดสูตรไม่ได้ · ${error.code==='PGRST202'?'ยังไม่ได้ติดตั้งฐานข้อมูลสูตร':error.message||'ตรวจสอบการเชื่อมต่อ'} · กรุณาโหลดใหม่ก่อนตรวจ BOM`,true);}
+      const [original,saved]=await Promise.all([client.rpc('get_pk_bom_baseline'),client.rpc('get_pk_recipes')]);
+      if(id!==generation || !allowed())return;
+      if(original.error)throw original.error;if(saved.error)throw saved.error;
+      const data=original.data;
+      if(!data || !data.bom_detail || typeof data.bom_detail!=='object' || !data.fg_catalog)throw new Error('ยังไม่มีต้นฉบับ BOM ในฐานข้อมูล');
+      if(!Array.isArray(saved.data))throw new Error('ข้อมูลสูตรที่บันทึกไม่ถูกต้อง');
+      for(const detail of Object.values(data.bom_detail))if(!detail || !Array.isArray(detail.lines))throw new Error('ข้อมูลต้นฉบับ BOM ไม่ถูกต้อง');
+      baseline.clear();for(const [code,detail] of Object.entries(data.bom_detail))baseline.set(code,structuredClone(detail));
+      baselineCatalog=Object.values(data.fg_catalog);BOMPK.assumptions=data.metadata?.assumptions||{};
+      for(const code of Object.keys(BOMPK.bom_detail))delete BOMPK.bom_detail[code];
+      apply(saved.data);ready=true;$('pkRecipeSave').disabled=saving;
+      status('โหลด BOM จาก API แล้ว · '+baseline.size+' สูตรต้นฉบับ · '+recipes.size+' สูตรที่บันทึก');
+    }catch(error){if(id!==generation)return;ready=false;clearBaseline();$('pkRecipeSave').disabled=true;
+      status('โหลดสูตรไม่ได้ · '+(error.message||'ตรวจสอบการเชื่อมต่อ')+' · กรุณาโหลดใหม่',true);}
   }
   $('pkRecipeForm').addEventListener('submit',async event=>{
     event.preventDefault();if(saving)return;
@@ -91,16 +107,17 @@
     try {recipe=collect();if(editingCode && recipe.fg_code!==editingCode)throw new Error('กรุณาใช้ปุ่มสูตรใหม่เพื่อเพิ่มรหัส FG อื่น');
       if(!editingCode && recipes.has(recipe.fg_code))throw new Error('รหัสนี้มีสูตรแล้ว กรุณากดโหลดสูตรตามรหัส FG เพื่อแก้ไข');
     }catch(error){return feedback(error.message,true);}
-    saving=true;++generation;$('pkRecipeForm').inert=true;$('pkRecipeSave').disabled=true;feedback('กำลังบันทึกสูตร…');
+    saving=true;const saveGeneration=++generation;$('pkRecipeForm').inert=true;$('pkRecipeSave').disabled=true;feedback('กำลังบันทึกสูตร…');
     try {
       const {data,error}=await client.rpc('save_pk_recipe',{p_recipe:recipe,p_expected_version:expectedVersion});
+      if(saveGeneration!==generation || !allowed() || !isAdmin())return;
       if(error)throw error;
       const rows=[...recipes.values()].filter(row=>row.fg_code!==recipe.fg_code);rows.push(data);apply(rows);
       editingCode=data.fg_code;expectedVersion=data.version;$('pkRecipeCode').readOnly=true;
       $('pkRecipeVersion').textContent=`เวอร์ชัน ${data.version} · บันทึกโดย ${data.updated_username}`;
       $('pkRecipeHistory').replaceChildren();feedback(`บันทึก ${data.fg_code} เวอร์ชัน ${data.version} ลงฐานข้อมูลแล้ว`);
       $('fgBomSearch').value=data.fg_code;renderFgBom(data.fg_code);
-    }catch(error){feedback(error.message||'บันทึกไม่สำเร็จ ข้อมูลที่กรอกยังอยู่',true);}
+    }catch(error){if(saveGeneration===generation)feedback(error.message||'บันทึกไม่สำเร็จ ข้อมูลที่กรอกยังอยู่',true);}
     finally{saving=false;$('pkRecipeForm').inert=false;$('pkRecipeSave').disabled=!ready;}
   });
   $('pkRecipeAddLine').onclick=()=>addLine();$('pkRecipeNew').onclick=newRecipe;
@@ -113,15 +130,20 @@
   $('pkRecipesRefresh').onclick=refresh;
   $('pkRecipeHistoryLoad').onclick=async()=>{
     if(!editingCode)return feedback('เลือกสูตรที่บันทึกในฐานข้อมูลก่อน',true);
-    const code=editingCode;const {data,error}=await client.rpc('get_pk_recipe_versions',{p_fg_code:code});
-    if(code!==editingCode)return;
+    const code=editingCode,historyGeneration=generation;const {data,error}=await client.rpc('get_pk_recipe_versions',{p_fg_code:code});
+    if(code!==editingCode || historyGeneration!==generation || !isAdmin())return;
     if(error)return feedback(error.message,true);
     $('pkRecipeHistory').replaceChildren();
     for(const version of data){const row=document.createElement('div');row.className='pk-recipe-history';
       row.textContent=`v${version.version} · ${version.saved_username} · ${new Date(version.saved_at).toLocaleString('th-TH')} · ${version.recipe.lines.length} ส่วนประกอบ`;
       const details=document.createElement('details'),summary=document.createElement('summary'),pre=document.createElement('pre');summary.textContent='ดูสูตรเวอร์ชันนี้';pre.textContent=JSON.stringify(version.recipe,null,2);pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere';details.append(summary,pre);row.append(details);$('pkRecipeHistory').append(row);}
   };
-  window.addEventListener('wms:account-changed',refresh);
+  window.addEventListener('wms:account-changed',()=>{
+    ++generation;ready=false;clearBaseline();$('pkRecipeHistory').replaceChildren();
+    $('pkRecipeEditor').hidden=!isAdmin();$('pkRecipeSave').disabled=true;
+    if(saving){status('บัญชีเปลี่ยนแล้ว · กรุณาโหลดสูตรใหม่');return;}
+    newRecipe();refresh();
+  });
   document.addEventListener('visibilitychange',()=>{if(!document.hidden && !saving)refresh();});
   setInterval(()=>{if(!document.hidden && !saving && allowed())refresh();},60000);
   $('pkRecipeProducts').replaceChildren(...[...products().values()].map(item=>{const option=document.createElement('option');option.value=item.code;option.textContent=item.name;return option;}));

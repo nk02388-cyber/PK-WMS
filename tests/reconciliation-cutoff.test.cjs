@@ -8,5 +8,5 @@ assert.match(ctx.reconciliationCutoff().cutoffStatus,/แก้หลังบ�
 assert.equal(ctx.reconciliationCutoff().palletLastUpdated,'2026-09-16T09:00:00.000Z');
 ctx.STOCK.snapshot_saved_at='';
 assert.match(ctx.reconciliationCutoff().cutoffStatus,/ไม่มีเวลาบันทึกสต็อก/);
-ctx.stockSnapshotState='fallback';
-assert.match(ctx.reconciliationCutoff().cutoffStatus,/สต็อกสำรอง/);
+ctx.stockSnapshotState='error';
+assert.match(ctx.reconciliationCutoff().cutoffStatus,/API/);

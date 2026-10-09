@@ -120,15 +120,15 @@ async function loadBom(){
   if(state.bom)return true;
   let data=null;
   try{
-    let response;
-    response=await fetch('./pk-bom.json',{cache:'no-cache'});
-    if(!response.ok)throw Error(`HTTP ${response.status}`);
-    data=await response.json();
-    if(!Array.isArray(data.formulas)||!data.formulas.length||!(/^[0-9a-f]{64}$/.test(data.source_sha256)))throw Error('ข้อมูลสูตรไม่ถูกต้อง');
-  }catch(error){data=null;notice(`โหลด BOM จาก PK WMS ไม่สำเร็จ: ${error.message}`,true);}
+    const result=await state.pkClient.rpc('get_pk_bom_baseline');
+    if(result.error)throw result.error;
+    const baseline=result.data;
+    data=baseline?{source_sha256:baseline.source_sha256,formulas:Object.values(baseline.operations_bom_detail||{}),source:baseline.metadata?.operations_source}:null;
+    if(!data || !Array.isArray(data.formulas)||!data.formulas.length||!(/^[0-9a-f]{64}$/.test(data.source_sha256)))throw Error('ข้อมูลสูตรไม่ถูกต้อง');
+  }catch(error){notice('โหลด BOM จาก PK WMS ไม่สำเร็จ: '+error.message,true);return false;}
   const saved=await state.db.rpc('get_saved_production_formulas');
-  if(saved.error)notice('โหลดสูตรที่บันทึกไม่สำเร็จ กรุณาลองใหม่',true);
-  const formulas=mergeFormulas(data?.formulas||[],Array.isArray(saved.data)?saved.data:[]);
+  if(saved.error){notice('โหลดสูตรที่บันทึกไม่สำเร็จ กรุณาลองใหม่',true);return false;}
+  const formulas=mergeFormulas(data.formulas,Array.isArray(saved.data)?saved.data:[]);
   if(!formulas.length)return false;
   state.bom={...data,formulas};return true;
 }

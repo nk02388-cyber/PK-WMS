@@ -12,7 +12,8 @@ const server=http.createServer(async(req,res)=>{
   if(req.url==='/qa/rpc'){
     const chunks=[];for await(const chunk of req)chunks.push(chunk);
     const {name,args}=JSON.parse(Buffer.concat(chunks));let result;
-    if(name==='get_pk_recipes')result={data:[...records.values()]};
+    if(name==='get_pk_bom_baseline')result={data:{bom_detail:{},fg_catalog:{},metadata:{assumptions:{excluded_warehouses:[]}}}};
+    else if(name==='get_pk_recipes')result={data:[...records.values()]};
     else if(name==='get_pk_recipe_versions')result={data:[]};
     else if(name==='save_pk_recipe'){
       const old=records.get(args.p_recipe.fg_code);
@@ -36,7 +37,7 @@ const server=http.createServer(async(req,res)=>{
     const context=await browser.newContext();
     await context.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:8775')?route.continue():route.abort());
     const a=await context.newPage(),b=await context.newPage();const errors=[];a.on('pageerror',error=>errors.push(error.message));
-    for(const page of [a,b]){await page.goto('http://127.0.0.1:8775');await page.locator('#tab-bompk').click();await page.locator('#pkRecipesStatus').filter({hasText:'เชื่อมต่อฐานข้อมูลแล้ว'}).waitFor();}
+    for(const page of [a,b]){await page.goto('http://127.0.0.1:8775');await page.locator('#tab-bompk').click();await page.locator('#pkRecipesStatus').filter({hasText:'โหลด BOM จาก API แล้ว'}).waitFor();}
     await a.locator('#pkRecipeEditor summary').first().click();
     await a.locator('#pkRecipeCode').fill('QA-FG');await a.locator('#pkRecipeName').fill('สูตรทดสอบในเครื่อง');
     await a.locator('#pkRecipeBase').fill('1000');await a.locator('#pkRecipeUnit').fill('ชิ้น');

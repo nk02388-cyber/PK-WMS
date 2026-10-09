@@ -41,12 +41,12 @@ console.log('PASS: repeated BOM capacity/value, unknown units, small quantities,
 (async()=>{
   const note={textContent:'',classList:{toggle(){}}};
   const loading=vm.createContext({STOCK:{report_date:'Test date'},DATA:{},stockSnapshotState:'loading',
-    document:{querySelectorAll:()=>[note]},stockSupabaseClient:null,stockUpdateStatus:{},console:{warn(){}},rebuildStockControls(){}});
-  vm.runInContext(source('renderStockSnapshotNotice')+'\n'+source('loadLatestStockFromSupabase'),loading);
-  await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'fallback');assert.match(note.textContent,/ยังยืนยัน/);
+    window:{getWmsCanAccess:()=>false},structuredClone,stockLoadGeneration:0,EMPTY_STOCK:{items:[],report_date:''},document:{querySelectorAll:()=>[note]},stockSupabaseClient:null,stockUpdateStatus:{},console:{warn(){}},rebuildStockControls(){}});
+  vm.runInContext(source('renderStockSnapshotNotice')+'\n'+source('canReadPrivateStock')+'\n'+source('clearPrivateStock')+'\n'+source('loadLatestStockFromSupabase'),loading);
+  await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'locked');assert.match(note.textContent,/เข้าสู่ระบบ/);loading.window.getWmsCanAccess=()=>true;
   loading.stockSupabaseClient={rpc:async()=>({data:null,error:null})};
-  await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'fallback');
-  loading.stockSupabaseClient={rpc:async()=>({data:{items:[{}],report_date:'Current date'},error:null})};
+  await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'error');
+  loading.stockSupabaseClient={rpc:async()=>({data:{items:[{}],kpis:{},warehouses:[],report_date:'Current date'},error:null})};
   await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'latest');assert.match(note.textContent,/Current date/);
   const imports=vm.createContext({window:{XLSX:{}},XLSX:{read:x=>({SheetNames:[x.date],Sheets:{[x.date]:{}}}),utils:{sheet_to_json:()=>[]}},
     rowsFromMatrix:(matrix,name,date)=>({rows:[{wh:'200'}],reportDate:date}),REQUIRED_STOCK_WAREHOUSES:['200']});
