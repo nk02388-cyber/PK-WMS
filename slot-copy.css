@@ -15,3 +15,5 @@
 .slot-copy-actions button[type=submit] { background:var(--series-1);color:var(--surface-1);font-weight:700; }
 #fseCopyStatus.error { color:var(--status-critical); }
 @media(max-width:640px){.slot-copy-fields{grid-template-columns:1fr}.slot-copy-item{grid-template-columns:1fr}.slot-copy-actions{flex-wrap:wrap}.slot-copy-actions button{flex:1}}
+
+@media(max-width:640px){#fseCopyForm :is(input:not([type=checkbox]),select){font-size:16px}#fseCopyZone{touch-action:manipulation}}

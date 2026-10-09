@@ -17,7 +17,7 @@
   const keys=new Set();
   return destinations.map(destination=>{
    const key=JSON.stringify([destination.zone,destination.slot_code]);
-   if((destination.zone===source.zone&&destination.slot_code===source.slot_code)||keys.has(key))throw new Error('ปลายทางต้องไม่ซ้ำกันและไม่ใช่ต้นทาง');keys.add(key);
+   if(keys.has(key))throw new Error('ปลายทางต้องไม่ซ้ำกัน');keys.add(key);
    if(!destination.zone||!destination.slot_code||!Number.isInteger(destination.expected_version)||destination.expected_version<0||!Array.isArray(destination.items))throw new Error('ข้อมูลปลายทางไม่ครบ');
    return {...destination,occupied:true,items:[...JSON.parse(JSON.stringify(destination.items)),...JSON.parse(JSON.stringify(items))]};
   });

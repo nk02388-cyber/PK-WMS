@@ -12,7 +12,7 @@ for(const qty of [0,-1,'',NaN,Infinity])assert.throws(()=>build(source,dest,[{in
 assert.throws(()=>build(source,dest,[{index:0,qty:2}],'2026-02-30','RC','tester'));
 assert.throws(()=>build(source,dest,[{index:0,qty:2}],'2026-10-06','','tester'));
 assert.throws(()=>build(source,dest,[{index:0,qty:2}],'2026-10-06','RC',''));
-assert.throws(()=>build(source,[{...source,expected_version:1}],[{index:0,qty:2}],'2026-10-06','RC','tester'));
+const self=build(source,[{...source,expected_version:1}],[{index:0,qty:2}],'2026-10-06','RC','tester');assert.equal(self[0].items.length,2);assert.equal(self[0].items[0].remainingQty,70);assert.equal(self[0].items[1].remainingQty,2);assert.equal(source.items.length,1);
 assert.throws(()=>build(source,[dest[0],dest[0]],[{index:0,qty:2}],'2026-10-06','RC','tester'));
 assert.throws(()=>build(source,dest,[{index:0,qty:2},{index:0,qty:3}],'2026-10-06','RC','tester'));
 console.log('PASS: multi-pallet copy, source preservation, append, independent quantities, fresh receipt history and validation');

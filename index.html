@@ -6189,7 +6189,7 @@ function keepSlotFieldAboveKeyboard() {
   if (!viewport) return;
   const field = document.activeElement;
   const keyboardOpen = !zoomModal.hidden && window.innerWidth <= 900 && viewport.scale === 1
-    && slotEditPanel.contains(field) && field.matches('input, textarea, select')
+    && slotEditPanel.contains(field) && field.matches('input:not([type=checkbox]):not([type=radio]), textarea')
     && window.innerHeight - viewport.height > 120;
   zoomModal.classList.toggle('keyboard-open', keyboardOpen);
   zoomModal.style.setProperty('--keyboard-viewport-height', `${viewport.height}px`);
@@ -10161,9 +10161,9 @@ window.addEventListener('pageshow', () => {
 <script src="cycle-counts.js?v=20261005-confirm1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>
 <script src="scrap-inventory.js?v=20260926-1"></script>
-<link rel="stylesheet" href="slot-copy.css?v=20261006-1">
-<script src="slot-copy-core.js?v=20261006-1"></script>
-<script src="slot-copy.js?v=20261006-1"></script>
+<link rel="stylesheet" href="slot-copy.css?v=20261009-selfcopy1">
+<script src="slot-copy-core.js?v=20261009-selfcopy1"></script>
+<script src="slot-copy.js?v=20261009-selfcopy1"></script>
 <script src="sidebar-toggle.js?v=20261009-singlelabel1"></script>
 <script src="dashboard-motion.js?v=20261009-professional1"></script>
 
