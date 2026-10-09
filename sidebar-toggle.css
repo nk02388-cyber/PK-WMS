@@ -50,3 +50,20 @@
   .viz-root header.top .header-logo { display:none; }
 }
 @media(prefers-reduced-motion:reduce){.viz-root #tabs,.viz-root .wrap,.sidebar-backdrop { transition:none; }}
+
+@media(min-width:1024px){
+ .viz-root.sidebar-collapsed #tabs{width:64px;position:sticky;z-index:300;transition:width .24s cubic-bezier(.22,1,.36,1),box-shadow .24s ease}
+ .viz-root.sidebar-collapsed.sidebar-hover-open #tabs{width:280px;box-shadow:12px 0 32px #15242b1a;background:var(--nav-ink)}
+ .viz-root.sidebar-collapsed.sidebar-hover-open #tabs .dashboard-nav-brand{justify-content:flex-start;padding-inline:14px;gap:12px}
+ .viz-root.sidebar-collapsed.sidebar-hover-open #tabs .dashboard-nav-name{display:grid;color:var(--text-primary);animation:sidebar-name-in .2s ease both}
+ .viz-root.sidebar-collapsed.sidebar-hover-open #tabs .tab-btn{width:100%;justify-content:flex-start;padding:11px 12px;gap:10px}
+ .viz-root.sidebar-collapsed.sidebar-hover-open #tabs .tab-btn>span{display:block;animation:sidebar-name-in .2s ease both}
+ .viz-root.sidebar-collapsed.sidebar-hover-open #tabs .tab-btn>span:first-of-type{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+ .viz-root.sidebar-collapsed.sidebar-hover-open #tabs .tab-btn .tab-badge{flex:none;max-width:150px;white-space:normal}
+ @keyframes sidebar-name-in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+}
+@media(prefers-reduced-motion:reduce){.viz-root.sidebar-collapsed #tabs{transition:none}.viz-root.sidebar-collapsed.sidebar-hover-open #tabs :is(.dashboard-nav-name,.tab-btn>span){animation:none}}
+
+@media(min-width:1024px){.viz-root.sidebar-collapsed.sidebar-hover-open #tabs .tab-btn .tab-badge{display:none}}
+
+@media(min-width:1024px){.viz-root.sidebar-collapsed #tabs{max-width:none}}

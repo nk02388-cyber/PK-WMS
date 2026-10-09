@@ -16,6 +16,7 @@ const root=path.resolve(__dirname,'..');
     if(file.endsWith('index.html'))body=body.toString().replace(/const (SUPABASE_URL|STOCK_SUPABASE_URL) = '[^']*';/g,"const $1 = '';").replace(/<script src="account-status.js[^>]*><\/script>/,`<script>document.body.classList.remove('auth-pending','department-choosing');document.body.classList.add('auth-ready');window.getWmsIsAdmin=()=>true;window.getWmsCanAccess=()=>true;window.getWmsActorName=()=> 'QA';supabaseClient={rpc:async()=>({data:[]})};</script>`);
     route.fulfill({body,contentType:file.endsWith('.html')?'text/html':file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':file.endsWith('.png')?'image/png':file.endsWith('.webp')?'image/webp':'image/jpeg'});
    });
+   await page.addInitScript(()=>{if(!sessionStorage.getItem('qa-sidebar-start')){localStorage.setItem('pk-sidebar-collapsed-v2','false');sessionStorage.setItem('qa-sidebar-start','1');}});
    await page.goto('http://localhost/');
 
  const toggle=page.locator('#sidebarToggle'),nav=page.locator('#tabs');
