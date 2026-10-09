@@ -4365,17 +4365,19 @@ function renderSpeedMeter() {
   const cap = computeTotalCapacity();
   const pctClamped = Math.min(100, Math.max(0, cap.usedPct));
   const cx=84, cy=80, r=62;
-  const bandArcs=SPEED_METER_BANDS.map(b=>{const from=speedMeterPoint(cx,cy,r,b.from),to=speedMeterPoint(cx,cy,r,b.to);return '<path class="sm-band" d="M '+from.x.toFixed(2)+' '+from.y.toFixed(2)+' A '+r+' '+r+' 0 0 1 '+to.x.toFixed(2)+' '+to.y.toFixed(2)+'" fill="none" stroke="'+b.color+'" stroke-width="8" stroke-linecap="butt"/>';}).join('');
-  const needlePt=speedMeterPoint(cx,cy,r-12,pctClamped);
+  const bandArcs=SPEED_METER_BANDS.map(b=>{const from=speedMeterPoint(cx,cy,r,b.from),to=speedMeterPoint(cx,cy,r,b.to);return '<path class="sm-band" d="M '+from.x.toFixed(2)+' '+from.y.toFixed(2)+' A '+r+' '+r+' 0 0 1 '+to.x.toFixed(2)+' '+to.y.toFixed(2)+'" fill="none" stroke="'+b.color+'" stroke-width="9" stroke-linecap="butt"/>';}).join('');
+  const needlePt=speedMeterPoint(cx,cy,r+14,pctClamped);
   const needleColor='var(--text-primary)';
   if (gaugeWrap.dataset.percent !== String(pctClamped)) {
     gaugeWrap.dataset.percent = String(pctClamped);
   gaugeWrap.innerHTML = `
     <svg viewBox="0 0 168 96" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 80 A68 68 0 0 1 152 80" fill="none" stroke="var(--border)" stroke-width="1"/>
+      <path d="M32 80 A52 52 0 0 1 136 80" fill="none" stroke="var(--border)" stroke-width="1"/>
       ${bandArcs}
-      <circle cx="22" cy="80" r="4" fill="#5aa77d"/><circle cx="146" cy="80" r="4" fill="#df727a"/>
-      <line class="sm-needle" data-percent="${pctClamped}" style="transform-box:view-box;transform-origin:${cx}px ${cy}px" x1="${cx}" y1="${cy}" x2="${needlePt.x.toFixed(2)}" y2="${needlePt.y.toFixed(2)}" stroke="${needleColor}" stroke-width="1.8" stroke-linecap="round"></line>
-      <circle cx="${cx}" cy="${cy}" r="3" fill="${needleColor}"></circle>
+      <path d="M72 80 A12 12 0 0 1 96 80" fill="none" stroke="var(--series-1)" stroke-width="5"/>
+      <g class="sm-needle" data-percent="${pctClamped}" style="transform-box:view-box;transform-origin:${cx}px ${cy}px"><line x1="${cx}" y1="${cy}" x2="${needlePt.x.toFixed(2)}" y2="${needlePt.y.toFixed(2)}" stroke="${needleColor}" stroke-width="1" stroke-dasharray="3 3"/><circle cx="${needlePt.x.toFixed(2)}" cy="${needlePt.y.toFixed(2)}" r="2" fill="${needleColor}"/></g>
+      <circle cx="${cx}" cy="${cy}" r="2" fill="${needleColor}"/>
     </svg>
   `;
   }
