@@ -2000,6 +2000,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="reference-wms.css?v=20261009-department-noarrows1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
+<link rel="stylesheet" href="dashboard-layout.css?v=20261009-1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2131,39 +2132,33 @@ header.top .header-logo { border-radius: 14px; }
   <!-- ============ TAB: STOCK ============ -->
   <div class="tab-pane" id="pane-stock" role="tabpanel" aria-labelledby="tab-stock">
 
-    <!-- Building usage cards and warehouse KPIs share the first dashboard row. -->
-    <div class="top-summary-row">
-      <section class="panel" aria-labelledby="buildingUsageTitle">
-        <h2 id="buildingUsageTitle">พื้นที่จัดเก็บตามอาคาร</h2>
-        <div class="building-usage-list" id="buildingUsageList"></div>
-        <div class="building-usage-total" id="buildingUsageTotal"></div>
-      </section>
-
-      <!-- Speed meter (PK Capacity Storage) + total-value card, side by side, right-aligned as
-           one group. The total-value card lives inside the stock tab pane only (so it is
-           structurally impossible to show on the other two tabs), scrolls normally with the
-           page, and is intentionally non-draggable to prevent accidental layout changes. -->
-      <div class="kpi-side-row">
-        <section class="packaging-age-card" id="packagingAgeCard" aria-labelledby="packagingAgeTitle">
-          <div class="packaging-age-title" id="packagingAgeTitle">สถานะอายุบรรจุภัณฑ์</div>
-          <div class="packaging-age-chart" id="packagingAgeChart" role="list" aria-label="สัดส่วนพาเลตตามอายุ เทียบกับความจุคลังทั้งหมด"></div>
-        </section>
-        <div class="speed-meter-card" id="pkSpeedMeterCard" title="สัดส่วนตำแหน่งใช้งานต่อความจุรวมทั้งสองอาคาร">
-          <div class="sm-title">Storage capacity<small>ความจุในการจัดเก็บ</small></div>
-          <div class="sm-gauge-wrap" id="pkSpeedMeterGauge"></div>
-          <div class="sm-value" id="pkSpeedMeterValue" style="color: var(--status-good);">—</div>
-          <div class="sm-sub" id="pkSpeedMeterSub">95/992 ช่อง</div>
-        </div>
-        <div class="kpi-total-fixed" id="stockTotalKpiFixed" title="มูลค่าคงเหลือรวม">
+    <div class="dashboard-overview" aria-label="ภาพรวมคลัง">
+<div class="kpi-total-fixed" id="stockTotalKpiFixed" title="มูลค่าคงเหลือรวม">
     <div class="kpi-scope" id="filterStatus">กำลังแสดง: ทุกคลัง</div>
     <div class="label">มูลค่าคงเหลือรวม (บาท)</div>
     <div class="value">฿32.41M</div>
     <div class="sub">32,412,386 บาท</div>
   </div>
-      </div>
+<div class="speed-meter-card" id="pkSpeedMeterCard" title="สัดส่วนตำแหน่งใช้งานต่อความจุรวมทั้งสองอาคาร">
+          <div class="sm-title">Storage capacity<small>ความจุในการจัดเก็บ</small></div>
+          <div class="sm-gauge-wrap" id="pkSpeedMeterGauge"></div>
+          <div class="sm-value" id="pkSpeedMeterValue" style="color: var(--status-good);">—</div>
+          <div class="sm-sub" id="pkSpeedMeterSub">95/992 ช่อง</div>
+        </div>
+<section class="packaging-age-card" id="packagingAgeCard" aria-labelledby="packagingAgeTitle">
+          <div class="packaging-age-title" id="packagingAgeTitle">สถานะอายุบรรจุภัณฑ์</div>
+          <div class="packaging-age-chart" id="packagingAgeChart" role="list" aria-label="สัดส่วนพาเลตตามอายุ เทียบกับความจุคลังทั้งหมด"></div>
+        </section>
+    </div>
+    <div class="dashboard-main-grid">
+<section id="dashboardInsights" aria-labelledby="diTitle"><div class="di-head"><h2 id="diTitle">แนวโน้มการเคลื่อนไหวสินค้า</h2><div class="di-controls"><label>ช่วงเวลา<select><option value="7">7 วัน</option><option value="30" selected>30 วัน</option></select></label><label>ถึงวันที่<input type="date" required></label></div></div><div class="di-stats" aria-live="polite"></div><div class="di-charts"><div><h3>Trend Chart · จำนวนรายการต่อวัน</h3><div class="di-trend"></div></div><div><h3>สัดส่วนกิจกรรม</h3><div class="di-mix"></div></div></div><p class="di-note" hidden></p><details class="di-detail"><summary>ดูข้อมูลรายวัน</summary><div><table><thead><tr><th>วันที่</th><th>รับเข้า</th><th>เบิกออก</th><th>รับคืน</th></tr></thead><tbody></tbody></table></div></details></section>
+<section class="panel dashboard-building" aria-labelledby="buildingUsageTitle">
+        <h2 id="buildingUsageTitle">พื้นที่จัดเก็บตามอาคาร</h2>
+        <div class="building-usage-list" id="buildingUsageList"></div>
+        <div class="building-usage-total" id="buildingUsageTotal"></div>
+      </section>
     </div>
 
-<section id="dashboardInsights" aria-labelledby="diTitle"><div class="di-head"><h2 id="diTitle">แนวโน้มการเคลื่อนไหวสินค้า</h2><div class="di-controls"><label>ช่วงเวลา<select><option value="7">7 วัน</option><option value="30" selected>30 วัน</option></select></label><label>ถึงวันที่<input type="date" required></label></div></div><div class="di-stats" aria-live="polite"></div><div class="di-charts"><div><h3>Trend Chart · จำนวนรายการต่อวัน</h3><div class="di-trend"></div></div><div><h3>สัดส่วนกิจกรรม</h3><div class="di-mix"></div></div></div><p class="di-note" hidden></p><details class="di-detail"><summary>ดูข้อมูลรายวัน</summary><div><table><thead><tr><th>วันที่</th><th>รับเข้า</th><th>เบิกออก</th><th>รับคืน</th></tr></thead><tbody></tbody></table></div></details></section>
     <div class="two-col">
       <div class="panel">
         <h2>มูลค่าคงเหลือตามคลัง</h2>
