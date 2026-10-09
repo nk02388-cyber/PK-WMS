@@ -32,6 +32,7 @@ The Cloudflare plugin supplied documentation guidance but no callable zone/cache
 - Operations keyword fixture: six controls at desktop/mobile passed.
 - New browser check: enforced application CSP (transport upgrading omitted only on the local HTTP test server), local dependency loading with external network blocked, mobile Login rendering and Thai Excel read/write passed.
 - Supabase post-change metadata: seven new indexes present; zero public regular/partitioned tables with RLS disabled. Performance advisor no longer reports unindexed foreign keys or auth RLS initplan warnings. Newly added indexes naturally appear unused until relevant queries execute.
+- Production after deployment: new security headers verified on root and operations; desktop/mobile department and Login checks passed with zero page errors; all 91 referenced local assets returned HTTP 200. Anonymous operations entry remained denied. The SQL audit file returned HTTP 404 as intended.
 - Production verification is recorded in `work/live-readonly-audit.json` and `work/security-live-headers.json` after deployment. Those local evidence files are excluded from public deployment.
 
 ## Cache handling
