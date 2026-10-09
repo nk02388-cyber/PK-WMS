@@ -70,3 +70,14 @@
 }
 @media(max-width:1023px){.viz-root #tabs{transition:transform .32s cubic-bezier(.4,0,.2,1),visibility 0s linear .32s}.viz-root.sidebar-drawer-open #tabs{transition-delay:0s}.sidebar-backdrop,.sidebar-backdrop[hidden]{transition:opacity .24s ease,visibility 0s linear .32s}.sidebar-backdrop:not([hidden]){transition-delay:0s}}
 @media(prefers-reduced-motion:reduce){.viz-root .wrap,.viz-root #tabs,.viz-root #tabs .tab-btn>span,.viz-root #tabs .dashboard-nav-name,.sidebar-backdrop{transition:none!important}}
+
+/* Long labels and their badges get separate rows, rather than competing for width. */
+.viz-root #tabs :is(#tab-bompk,#tab-cycle-counts){display:grid;grid-template-columns:20px minmax(0,1fr);gap:4px 10px;flex-wrap:nowrap}
+.viz-root #tabs :is(#tab-bompk,#tab-cycle-counts)>span:first-of-type{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.45}
+.viz-root #tabs :is(#tab-bompk,#tab-cycle-counts) .tab-icon{grid-column:1;grid-row:1}
+.viz-root #tabs :is(#tab-bompk,#tab-cycle-counts) .tab-badge{grid-column:2;grid-row:2;justify-self:start;margin-left:0;max-width:100%;box-sizing:border-box;white-space:normal}
+@media(min-width:1024px){
+ .viz-root.sidebar-collapsed #tabs :is(.tab-btn,#tab-bompk,#tab-cycle-counts){position:relative;display:flex;flex-wrap:nowrap;justify-content:center;gap:0;padding-inline:0}
+ /* Hidden text must not keep a flex row alive or enlarge the BOM icon button. */
+ .viz-root.sidebar-collapsed #tabs .tab-btn>span{position:absolute;width:0;max-width:0;overflow:hidden;margin:0;padding:0;pointer-events:none}
+}
