@@ -2000,7 +2000,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="reference-wms.css?v=20261009-department-noarrows1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
-<link rel="stylesheet" href="dashboard-layout.css?v=20261009-1">
+<link rel="stylesheet" href="dashboard-layout.css?v=20261009-buildinggauges1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -4301,17 +4301,29 @@ function renderBuildingUsage() {
   const list = document.getElementById('buildingUsageList');
   const total = document.getElementById('buildingUsageTotal');
   if (!list || !total) return;
-  list.innerHTML = AREA_BUILDINGS.map(b => {
-    const u = computeAreaBuildingUsage(b);
-    const usedPct = u.palletNo > 0 ? (u.used / u.palletNo) * 100 : 0;
-    const level = usedPct >= 85 ? 'critical' : usedPct >= 75 ? 'warning' : 'good';
-    return `<article class="building-usage-card is-${level}" style="--building-used:${Math.min(100, Math.max(0, usedPct)).toFixed(1)}%">
-      <div class="building-usage-head"><span class="building-usage-name">${b.label}</span><span class="building-usage-percent">${usedPct.toFixed(1)}%</span></div>
+  const usage=AREA_BUILDINGS.map(b=>({b,u:computeAreaBuildingUsage(b)}));
+  const chartKey=JSON.stringify(usage);
+  if(list.dataset.chartKey!==chartKey){list.dataset.chartKey=chartKey;
+  list.innerHTML=usage.map(({b,u},index)=>{
+    const pct=u.palletNo>0?u.used/u.palletNo*100:0,clamped=Math.min(100,Math.max(0,pct)),angle=Math.PI*clamped/100;
+    const x=110-98*Math.cos(angle),y=110-98*Math.sin(angle),color=index===0?'#3478ed':'#d5b83c',gradient='buildingGauge'+index;
+    return `<article class="building-usage-card building-gauge-card" style="--building-accent:${color}">
+      <div class="building-usage-head"><span class="building-usage-name">${b.label}</span></div>
+      <svg class="building-gauge" viewBox="0 0 220 126" role="meter" aria-label="${b.label} พื้นที่ใช้งาน" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct.toFixed(1)}" aria-valuetext="${fmt0(u.used)} จาก ${fmt0(u.palletNo)} พาเลต">
+        <defs><linearGradient id="${gradient}"><stop offset="0%" stop-color="${color}"/><stop offset="100%" stop-color="${index===0?'#183fa8':'#8c7624'}"/></linearGradient></defs>
+        <path d="M22 110 A88 88 0 0 1 198 110" fill="none" stroke="var(--border)" stroke-width="1"/>
+        <path d="M40 110 A70 70 0 0 1 180 110" fill="none" stroke="var(--border)" stroke-width="1"/>
+        <path d="M30 110 A80 80 0 0 1 190 110" fill="none" stroke="var(--gridline)" stroke-width="12"/>
+        <path class="building-gauge-progress" data-percent="${clamped}" d="M30 110 A80 80 0 0 1 190 110" fill="none" stroke="url(#${gradient})" stroke-width="12" pathLength="100" stroke-dasharray="${clamped} 100"/>
+        <path d="M94 110 A16 16 0 0 1 126 110" fill="none" stroke="${color}" stroke-width="7"/>
+        <g class="building-gauge-needle" data-percent="${clamped}" style="transform-box:view-box;transform-origin:110px 110px"><line x1="110" y1="110" x2="${x.toFixed(2)}" y2="${y.toFixed(2)}" stroke="var(--text-primary)" stroke-width="1" stroke-dasharray="3 3"/><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.5" fill="var(--text-primary)"/></g>
+        <circle cx="110" cy="110" r="2.5" fill="var(--text-primary)"/>
+      </svg>
+      <div class="building-usage-percent">${pct.toFixed(1)}%</div>
       <p class="building-usage-count">ใช้งาน <strong>${fmt0(u.used)} / ${fmt0(u.palletNo)}</strong> พาเลต</p>
-      <div class="building-usage-track" role="meter" aria-label="${b.label} พื้นที่ใช้งาน" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${usedPct.toFixed(1)}" aria-valuetext="${fmt0(u.used)} จาก ${fmt0(u.palletNo)} พาเลต"><span class="building-usage-fill"></span></div>
       <div class="building-usage-free">ว่าง <strong>${fmt0(u.remaining)}</strong> พาเลต</div>
     </article>`;
-  }).join('');
+  }).join('');window.PKMotion?.buildingGauges();}
   const t = computeTotalCapacity();
   total.innerHTML = `<span>รวมทั้งสองอาคาร</span><strong>ใช้งาน ${fmt0(t.totalUsed)} / ${fmt0(t.totalPallet)} พาเลต</strong><small>ว่าง ${fmt0(t.totalRemaining)} พาเลต · ${t.usedPct.toFixed(1)}% ใช้งาน</small>`;
 }
@@ -10146,7 +10158,7 @@ window.addEventListener('pageshow', () => {
 <script src="slot-copy-core.js?v=20261006-1"></script>
 <script src="slot-copy.js?v=20261006-1"></script>
 <script src="sidebar-toggle.js?v=20261007-slide2"></script>
-<script src="dashboard-motion.js?v=20261008-trendmotion1"></script>
+<script src="dashboard-motion.js?v=20261009-buildinggauges1"></script>
 
 
 </body></html>

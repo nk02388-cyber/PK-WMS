@@ -25,3 +25,11 @@
 :root[data-theme] .viz-root .dashboard-main-grid :is(h2,h3,.di-stats strong){color:var(--text-primary)}
 :root[data-theme] .viz-root .dashboard-overview :is(.packaging-age-label,.packaging-age-values,.packaging-age-values strong){color:var(--text-primary)}
 @media(max-width:700px){.viz-root .dashboard-overview .packaging-age-row-head{flex-wrap:wrap}.viz-root .dashboard-overview .packaging-age-values{margin-left:auto}}
+
+.viz-root .dashboard-building .building-gauge-card{background:var(--surface-1);padding:16px;text-align:center;border:0;border-radius:0;border-bottom:1px solid var(--border)}
+.viz-root .dashboard-building .building-gauge-card:last-child{border-bottom:0}
+.viz-root .building-gauge-card .building-usage-head{justify-content:flex-start;margin-bottom:2px}
+.viz-root .building-gauge{display:block;width:min(100%,240px);height:auto;margin:4px auto 0;overflow:visible}
+.viz-root .building-gauge-card .building-usage-percent{font-size:28px;font-weight:600;line-height:1.2;color:var(--text-primary)}
+.viz-root .building-gauge-card .building-usage-count{margin:8px 0 4px;font-size:13px;color:var(--text-secondary)}
+.viz-root .building-gauge-card .building-usage-free{font-size:12px;color:var(--text-secondary)}
