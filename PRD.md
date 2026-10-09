@@ -1,6 +1,6 @@
 ---
 artifact: prd
-version: "1.0"
+version: "1.1"
 created: 2026-10-09
 status: current-baseline-with-proposed-follow-ups
 ---
@@ -117,6 +117,17 @@ BOM เดิมย้ายครบและ stock/BOM โหลดผ่า�
 3. หลังย้าย: ทดสอบ anonymous denial, authorized load และ mobile/network failure ก่อนส่ง release
 
 ทั้งสาม milestone ดำเนินการในวันที่ 9 ตุลาคม 2026; รายละเอียดการนำเข้าและการทดสอบอยู่ในรายงานการย้าย ไม่มีการแก้ยอดสต็อกจริงเพื่อทดสอบ
+
+## Release acceptance
+
+ผลผ่านในรายงานก่อนหน้าเป็นหลักฐานของ release นั้น งานถัดไปต้องเลือกตรวจตามส่วนที่เปลี่ยนและผ่านเกณฑ์ต่อไปนี้ก่อนส่ง:
+
+| ส่วนที่เปลี่ยน | เกณฑ์ผ่าน | หลักฐาน / ผู้ตรวจ |
+|---|---|---|
+| Stock/BOM loader (FR-10) | โหลดเมื่อมีสิทธิ์; ผู้ไม่มีสิทธิ์ถูกปฏิเสธ; logout และผลตอบกลับเก่าไม่คืนข้อมูล; static assets ไม่มี payload สำรอง | tests/private-data-browser.cjs, grant review และ anonymous HTTP checks / ผู้พัฒนา |
+| สูตรและการคำนวณ | สูตรบันทึกใช้แทนต้นฉบับตาม FG; ไม่เดาหน่วย; version conflict ไม่ทับสูตรใหม่ | tests/pk-recipes-browser.cjs และ calculation fixtures / ผู้พัฒนา |
+| UI | ขนาดมือถือไม่ overflow; keyboard/focus ใช้งานได้; light/dark และ reduced motion ตาม component | browser checks ตาม DESIGN_SYSTEM / ผู้พัฒนา |
+| เอกสาร | ลิงก์ local มีจริง; API/สิทธิ์ตรง schema; proposed/unknown ไม่ถูกอ้างว่าเสร็จ | ตรวจไฟล์และหลักฐาน / ผู้พัฒนา |
 
 ## Open Questions
 

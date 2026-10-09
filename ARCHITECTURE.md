@@ -77,6 +77,23 @@ Observed recipe saving uses a database transaction/version check to save header,
 
 API failures must not be reported as successful writes. Stock and recipe loading should expose loading/error/empty/ready separately. On logout or permission changes, privileged projections must be cleared and stale async responses discarded. A fallback used for availability cannot silently override a confidentiality requirement.
 
+## Private-data lifecycle — observed
+
+```mermaid
+flowchart LR
+  Empty[Empty browser projection] --> Account[Auth and menu check]
+  Account -->|allowed| Load[Guarded stock and BOM RPCs]
+  Account -->|denied| Locked[Locked state]
+  Load -->|current account result| Ready[Baseline plus saved recipe overlay]
+  Load -->|failure| Error[Clear projection and show retry]
+  Ready -->|logout or account change| Empty
+  Load -->|stale account result| Ignore[Discard result]
+```
+
+Stock and recipes have independent loading lifecycles. A missing stock response must not be presented as confirmed zero inventory. The BOM baseline preserves raw formulas; editable recipes are a separate authority and overlay by FG code. A ready baseline is a verified import, not evidence that missing units or business formula errors have been corrected.
+
+Browser drafts/preferences are separate from API projections. Clearing privileged loaded data does not authorize deleting planning drafts or counts. Loader behavior is covered by tests/private-data-browser.cjs.
+
 ## Security and deployment boundaries
 
 Observed: Vercel security headers allow same-origin Operations frames and camera use. CSP still permits inline scripts for the existing HTML. All public regular/partitioned tables had RLS enabled at the audit; SECURITY DEFINER RPCs still need individual guard review. `.vercelignore` excludes SQL, docs, tests, tools, server function sources, environment files and working artifacts. The public Git repository/history is a separate publication surface; excluding files from Vercel does not make Git history private.

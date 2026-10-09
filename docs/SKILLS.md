@@ -21,3 +21,7 @@ The installer download path hit Windows path-length limits for two large reposit
 - [DESIGN_SYSTEM](../DESIGN_SYSTEM.md): current CSS precedence, themes, responsive components and finite motion.
 
 These documents are excluded from Vercel public assets by `.vercelignore`; they remain in the project repository. The installation does not by itself change the website's UI.
+
+## Follow-up application — 9 October 2026
+
+All four skills were reapplied: deliver-prd added release acceptance, agents-md-creator preserved a concise index and the user-specified private API boundary, software-architecture-analysis mapped account/data lifecycle, and design-system-doc specified data presentation states. These updates document the current architecture and future component requirements without claiming new UI implementation.

@@ -1,6 +1,6 @@
 # PK WMS — Design System
 
-Version 1.0, 9 October 2026. Current implementation reference for [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). This documents the final reference WMS theme, not the earlier charcoal/lime theme.
+Version 1.1, 9 October 2026. Current implementation reference for [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). This documents the final reference WMS theme, not the earlier charcoal/lime theme.
 
 ## Foundations
 
@@ -55,6 +55,20 @@ Dashboard cards prioritize values with labels, context and units. Do not flatten
 | Stock card/form | Product context, history rows, quantity/unit, action buttons | Dark surfaces/text from tokens; distinguish receive/issue/return beyond color. No dark text on dark row backgrounds. | Label all fields; errors visible; horizontal scroll region focusable |
 | Map controls | Zoom %, minus/plus, rotate, reset, fullscreen; separate map viewport | Normal mobile reserves space outside map; fullscreen arrangement must preserve usable map height. Do not overlay an oversized wrapping toolbar on zones. | Touch and keyboard controls, named buttons, focus preserved when changing layout |
 
+## Data presentation states
+
+Use these states for Dashboard, stock and BOM data panels. These are component requirements; existing status notices implement part of this contract. Dedicated panel placeholders still require implementation if introduced in a later UI change.
+
+| State | Display and actions | Tokens / accessible behavior |
+|---|---|---|
+| Locked | Explain Login/menu access; do not display privileged prior-account values | surface-1, text-secondary; keep Login/navigation available |
+| Loading | Show a status near the relevant panel; do not label an unloaded value as confirmed zero | text-muted; status announcement should not repeatedly interrupt focus |
+| Error | Explain load failure and offer retry; do not substitute public fallback | text-primary on surface-1; error text plus named retry control |
+| Empty | State that the loaded result has no records in the selected period | text-secondary; preserve date/search controls |
+| Ready | Show actual value with unit, denominator and data date where applicable | text-primary; gauges/charts provide numeric/text alternatives |
+
+Related components: header freshness notice, gauge, trend chart, stock tables and BOM load status. Use the existing component specifications above for their shared anatomy and variants.
+
 ## Motion
 
 Use existing finite animation routines rather than adding a dependency. Desktop sidebar layout uses 340ms `cubic-bezier(.4,0,.2,1)`; mobile drawer uses 320ms; a single hovered label slides over about 200ms. Gauge/progress and trend reveals are approximately 1100ms where currently implemented. These are implementation values, not permission to animate every element continuously.
@@ -79,5 +93,7 @@ For affected components select existing browser tests: sidebar/hover, dashboard 
 Update this document with component changes; keep [PRD.md](PRD.md) requirements and [ARCHITECTURE.md](ARCHITECTURE.md) ownership aligned. Source evidence: `reference-wms.css`, `sidebar-toggle.css`, `dashboard-layout.css`, `dashboard-motion.js`, `typography.css`, `account-status.js`, `floorplan-mobile-controls.css`.
 
 ## Changelog
+
+- 1.1 — 2026-10-09: Defined locked/loading/error/empty/ready presentation requirements and separated them from currently verified UI behavior.
 
 - 1.0 — 2026-10-09: Documented current reference WMS tokens/components, mobile behavior and motion; replaced stale green/lime design guidance with a compatibility link. Created with `design-system-doc`; sources in [docs/SKILLS.md](docs/SKILLS.md).
