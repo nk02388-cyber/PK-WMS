@@ -52,9 +52,6 @@
 @media(prefers-reduced-motion:reduce){.viz-root #tabs,.viz-root .wrap,.sidebar-backdrop { transition:none; }}
 
 @media(min-width:1024px){.viz-root.sidebar-collapsed #tabs{width:64px;max-width:none;position:sticky;z-index:300}}
-.sidebar-label-peek{position:fixed;z-index:390;max-width:min(300px,calc(100vw - 88px));box-sizing:border-box;min-height:44px;display:flex;align-items:center;padding:10px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface-1);color:var(--text-primary);font:600 14px 'Noto Sans Thai',sans-serif;box-shadow:0 8px 24px #15242b1a;pointer-events:none;opacity:0;visibility:hidden;transform:translateX(-12px);transition:transform .2s cubic-bezier(.22,1,.36,1),opacity .16s ease,visibility 0s linear .2s}
-.sidebar-label-peek.is-open{opacity:1;visibility:visible;transform:translateX(0);transition-delay:0s}
-@media(prefers-reduced-motion:reduce){.sidebar-label-peek{transition:none}}
 
 /* One continuous layout transition; labels fade without display/layout jumps. */
 @media(min-width:1024px){

@@ -47,7 +47,7 @@ Dashboard cards prioritize values with labels, context and units. Do not flatten
 
 | Component | Anatomy / variants | States and usage | Accessibility |
 |---|---|---|---|
-| Sidebar | Logo, icon, menu label, optional badge; 64px rail or full width; mobile drawer | Default collapsed; icon rows retain equal height. BOM and Cycle Counts labels wrap with badges on a separate row when expanded. Point/focus reveals only that label; toggle expands the whole sidebar. Active uses nav tokens. Never expand all labels on hover. | Accessible toggle name/expanded state; drawer Escape/backdrop close, focus restoration and inert background |
+| Sidebar | Logo, icon, menu label, optional badge; 64px rail or full width; mobile drawer | Default collapsed; icon rows retain equal height. BOM and Cycle Counts labels wrap with badges on a separate row when expanded. Desktop pointer hover expands the whole sidebar temporarily; pointer leave restores the collapsed rail. Keyboard focus also reveals the full navigation. Toggle pins expansion. No floating menu-name labels. Active uses nav tokens. | Accessible toggle name/expanded state; drawer Escape/backdrop close, focus restoration and inert background |
 | Header icon button | 20–21px line SVG in consistent control; optional count badge | Stock update matches calendar/notification controls. Hover/focus/disabled/loading should preserve shape. No duplicate full-text stock update bar. | Name through aria-label/title; count meaningful to screen readers |
 | Account/profile | Avatar or initials, name/role, Settings actions | Change name/PIN/password/avatar in Settings; avatar menu can show account, change department and logout. No avatar-upload action there. | Buttons have names; input errors use status; photo does not replace text identity |
 | Gauge | Track, ordered color bands, dotted needle, percentage, used/total context | Same visual grammar for total and per-building capacity. Full arc green→yellow→red left-to-right. Needle settles on actual percent; bands are not three unrelated gauges. | Numeric text and denominator remain readable without color; SVG should not duplicate the spoken label |
@@ -71,7 +71,7 @@ Related components: header freshness notice, gauge, trend chart, stock tables an
 
 ## Motion
 
-Use existing finite animation routines rather than adding a dependency. Desktop sidebar layout uses 340ms `cubic-bezier(.4,0,.2,1)`; mobile drawer uses 320ms; a single hovered label slides over about 200ms. Gauge/progress and trend reveals are approximately 1100ms where currently implemented. These are implementation values, not permission to animate every element continuously.
+Use existing finite animation routines rather than adding a dependency. Desktop sidebar layout uses 340ms `cubic-bezier(.4,0,.2,1)`; mobile drawer uses 320ms; hover expansion uses the same desktop transition with a 120ms pointer-leave delay. Gauge/progress and trend reveals are approximately 1100ms where currently implemented. These are implementation values, not permission to animate every element continuously.
 
 Honor `prefers-reduced-motion: reduce`; cancel stale chart animations when data or view changes. Avoid display/layout jumps while labels fade. Gauge colors stay in green/yellow/red order regardless of percentage. Changing a date must update both chart and summary data, not only animate old data.
 
@@ -79,7 +79,7 @@ Honor `prefers-reduced-motion: reduce`; cancel stale chart animations when data 
 
 | Correct | Incorrect and reason |
 |---|---|
-| Point at DASHBORD and reveal only its name | Expand every menu label; contradicts requested interaction |
+| Point at the sidebar and expand its menus | Restore floating labels; superseded by automatic sidebar expansion |
 | Use one capacity gauge grammar for buildings and total | Mix old thick colored dial with new dotted-needle gauges |
 | Use icon stock update beside calendar with accessible name | Repeat a full-width update bar and header button |
 | Display profile photo in header and edit in Settings | Restore upload button in account dropdown |

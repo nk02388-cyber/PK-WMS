@@ -26,12 +26,29 @@ const root=path.resolve(__dirname,'..');
   await page.mouse.move(800,300);await page.waitForFunction(()=>Math.abs(document.getElementById('tabs').getBoundingClientRect().width-64)<.1);
   assert.equal(await toggle.getAttribute('aria-expanded'),'false');assert.equal(await nav.locator('.dashboard-nav-brand img').isVisible(),true);
 
-  const peek=page.locator('.sidebar-label-peek');const contentBefore=await page.locator('#dashboardContent').boundingBox();
-  await page.locator('#tab-stock').hover();await peek.waitFor({state:'visible'});assert.equal(await peek.textContent(),'DASHBOARD');assert.equal(await peek.getAttribute('data-menu'),'tab-stock');assert.equal(await nav.evaluate(el=>el.getBoundingClientRect().width),64);assert.equal(await nav.locator('#tab-stock > span').first().isVisible(),false);
-  await page.locator('#tab-product-history').hover();assert.equal(await peek.textContent(),'ค้นหาการเคลื่อนไหวสินค้า');assert.equal(await page.locator('.sidebar-label-peek.is-open').count(),1);const contentAfter=await page.locator('#dashboardContent').boundingBox();assert.equal(contentAfter.x,contentBefore.x);assert.equal(contentAfter.width,contentBefore.width);await page.screenshot({path:'work/sidebar-single-label.png'});
-  await page.mouse.move(800,300);await peek.waitFor({state:'hidden'});
-  await page.keyboard.press('Tab');await page.locator('#tab-stock').focus();await peek.waitFor({state:'visible'});assert.equal(await peek.textContent(),'DASHBOARD');await page.keyboard.press('Escape');await peek.waitFor({state:'hidden'});
-  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#tab-stock').hover();assert.ok(await peek.evaluate(el=>parseFloat(getComputedStyle(el).transitionDuration)<.001));await page.mouse.move(800,300);await toggle.click();assert.equal(await page.evaluate(()=>document.body.classList.contains('sidebar-collapsed')),false);await page.reload();await page.waitForFunction(()=>!document.body.classList.contains('sidebar-collapsed'));assert.equal(await toggle.getAttribute('aria-expanded'),'true');
+  assert.equal(await page.locator('.sidebar-label-peek').count(),0);
+  const contentBefore=await page.locator('#dashboardContent').boundingBox();
+  await page.locator('#tab-stock').hover();
+  await page.waitForFunction(()=>document.getElementById('tabs').getBoundingClientRect().width>260);
+  assert.equal(await toggle.getAttribute('aria-expanded'),'true');
+  assert.equal(await page.evaluate(()=>document.body.classList.contains('sidebar-hover-open')),true);
+  assert.equal(await nav.locator('#tab-stock > span').first().isVisible(),true);
+  await page.locator('#tab-product-history').hover();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('pk-sidebar-collapsed-v2')),null);
+  await page.screenshot({path:'work/sidebar-auto-expanded.png'});
+  await page.mouse.move(800,300);
+  await page.waitForFunction(()=>Math.abs(document.getElementById('tabs').getBoundingClientRect().width-64)<.1);
+  const contentAfter=await page.locator('#dashboardContent').boundingBox();assert.equal(contentAfter.x,contentBefore.x);
+  await page.keyboard.press('Tab');await page.locator('#tab-stock').focus();
+  await page.waitForFunction(()=>!document.body.classList.contains('sidebar-collapsed'));
+  await page.keyboard.press('Escape');assert.equal(await toggle.getAttribute('aria-expanded'),'false');
+  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#tab-stock').hover();
+  assert.ok(await page.locator('.wrap').evaluate(el=>parseFloat(getComputedStyle(el).transitionDuration)<.001));
+  await page.mouse.move(800,300);await page.waitForFunction(()=>document.body.classList.contains('sidebar-collapsed'));
+  await toggle.click();assert.equal(await page.evaluate(()=>document.body.classList.contains('sidebar-collapsed')),false);
+  await page.reload();await page.waitForFunction(()=>!document.body.classList.contains('sidebar-collapsed'));assert.equal(await toggle.getAttribute('aria-expanded'),'true');
+  await nav.hover();await page.mouse.move(800,300);await page.waitForTimeout(180);assert.equal(await toggle.getAttribute('aria-expanded'),'true');
+
  }else{assert.equal(await nav.evaluate(el=>el.inert),true);await toggle.click();await page.locator('#tab-product-history').click();assert.equal(await page.locator('#pane-product-history').isVisible(),true);assert.equal(await toggle.getAttribute('aria-expanded'),'false');}
- assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS single-menu label/default/focus/pin '+viewport.width);await page.close();
+ assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS auto-expand/no-floating-label/focus/pin '+viewport.width);await page.close();
  } }finally{await browser.close()}})();

@@ -32,7 +32,7 @@ Run `node --test tests/*.test.cjs tests/*.test.mjs` for the existing regression 
 - Use fixtures/mocks for inventory, account and credential tests; production verification should be read-only unless the user explicitly authorizes business-data writes.
 - Keep server keys and credentials out of frontend code, documentation, commits and logs. Browser publishable/anon keys still require server access controls.
 - Preserve inventory units, history, optimistic version checks and source/destination semantics. Do not silently reinterpret quantity units.
-- Keep profile-picture editing in Settings only; retain the company logo when the sidebar collapses and reveal only the pointed menu label. <!-- user-specified -->
+- Keep profile-picture editing in Settings only; retain the company logo when the sidebar collapses and expand the desktop sidebar on pointer hover and remove floating menu-name labels. <!-- user-specified -->
 - Preserve keyboard access, mobile touch controls and reduced-motion handling. Charts must settle on real values. <!-- user-specified -->
 - Clean only identified obsolete UI cache keys. Preserve sessions, inventory, calendar data, count states and planning drafts.
 - Keep documentation consistent with final CSS order and observed behavior. Record proposed changes separately from implemented features; use the audit report for current security findings.
