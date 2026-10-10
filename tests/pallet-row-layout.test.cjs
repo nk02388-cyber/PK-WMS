@@ -21,6 +21,25 @@ test('compact rows preserve every pallet code, count, row height and other zones
    assert.equal(new Set(changed.U.map(s=>s.code)).size,26);
    continue;
   }
+  if(zone==='M-1'){
+   assert.equal(changed[zone].length,24);
+   assert.equal(new Set(changed[zone].map(s=>s.code)).size,24);
+   for(const slot of slots.filter(s=>!['M1-20','M1-22'].includes(s.code)))assert.deepEqual(changed[zone].find(s=>s.code===slot.code),slot);
+   for(const code of ['M1-20','M1-22'])assert.equal(changed[zone].find(s=>s.code===code),undefined);
+   const find=code=>changed[zone].find(s=>s.code===code);
+   assert.equal(find('M1-23').leftPct,find('M1-16').leftPct);
+   assert.equal(find('M1-24').leftPct,find('M1-17').leftPct);
+   assert.equal(find('M1-23').topPct,find('M1-24').topPct);
+   assert.ok(find('M1-23').topPct>find('M1-16').topPct);
+   assert.ok(find('M1-23').topPct<find('M1-19').topPct);
+   for(const [code,neighbor] of [['M1-25','M1-19'],['M1-26','M1-21']]){
+    assert.equal(find(code).leftPct,find('M1-16').leftPct);
+    assert.equal(find(code).topPct,find(neighbor).topPct);
+   }
+   for(const a of changed[zone])for(const b of changed[zone])if(a!==b)assert.ok(Math.abs(a.leftPct-b.leftPct)>=.65 || Math.abs(a.topPct-b.topPct)>=.95,'M1 cells must not overlap');
+   assert.match(html,/palletNo: 525,/);
+   continue;
+  }
   assert.deepEqual(changed[zone].map(s=>s.code),slots.map(s=>s.code));
   assert.deepEqual(changed[zone].map(s=>s.topPct),slots.map(s=>s.topPct));
   if(!targets.has(zone)){assert.deepEqual(changed[zone],slots);continue}

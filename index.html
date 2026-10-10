@@ -3382,6 +3382,24 @@ uRightAisle.forEach((code, index) => {
   slot.topPct = ZONE_SLOTS.U.find(left => left.code === uLeftAisle[index]).topPct;
 });
 
+// M1: retire the two lower-right positions and add four in the marked aisle.
+// Geometry only: keep stored inventory/history attached to its original identity.
+const m1OriginalSlots = ZONE_SLOTS['M-1'];
+for (const code of ['M1-20', 'M1-22']) {
+  const slot = m1OriginalSlots.find(slot => slot.code === code);
+  PALLET_ROW_MASKS.push({left:slot.leftPct-.4, right:slot.leftPct+.5, top:slot.topPct-.6, bottom:slot.topPct+.65});
+}
+const m1Left = m1OriginalSlots.find(slot => slot.code === 'M1-16').leftPct;
+const m1Middle = m1OriginalSlots.find(slot => slot.code === 'M1-17').leftPct;
+const m1GapRow = (m1OriginalSlots.find(slot => slot.code === 'M1-16').topPct + m1OriginalSlots.find(slot => slot.code === 'M1-19').topPct) / 2;
+ZONE_SLOTS['M-1'] = m1OriginalSlots.filter(slot => !['M1-20', 'M1-22'].includes(slot.code));
+ZONE_SLOTS['M-1'].push(
+  {code:'M1-23', leftPct:m1Left, topPct:m1GapRow},
+  {code:'M1-24', leftPct:m1Middle, topPct:m1GapRow},
+  {code:'M1-25', leftPct:m1Left, topPct:m1OriginalSlots.find(slot => slot.code === 'M1-19').topPct},
+  {code:'M1-26', leftPct:m1Left, topPct:m1OriginalSlots.find(slot => slot.code === 'M1-21').topPct},
+);
+
 const pinnedZones = zoneEntries.filter(([z]) => ZONE_PINS[z]);
 const unpinnedZones = zoneEntries.filter(([z]) => !ZONE_PINS[z]);
 
@@ -4276,7 +4294,7 @@ const AREA_BUILDINGS = [
     // in two buildings) and push the total to 548, nowhere near his stated 503 -- confirmed with
     // him this means "J-1" (matching every other "-1"-suffixed zone in this list).
     zones: ['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1','I-1','J-1','K-1','L-1','M-1','N-1','O-1','P-1','Q-1','R-1','S-1','T-1','U'],
-    palletNo: 523, // Original 503 + 18 in T-1 + 2 in U's right aisle.
+    palletNo: 525, // Original 503 + 18 in T-1 + 2 in U + net 2 in M1.
   },
   {
     key: 'new',
@@ -4692,6 +4710,13 @@ function renderZoomSlots(zoneCode) {
     zoomSlotsLayer.innerHTML += (ZONE_SLOTS['T-1'] || []).map(s => {
       return `<div class="zoom-context-slot" data-zone="T-1" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
     }).join('');
+  }
+  // The four new M1 cells have no CAD artwork; keep them visible as context
+  // when a neighbouring zone is selected, without making them actionable there.
+  if (zoneCode !== 'M-1') {
+    zoomSlotsLayer.innerHTML += ZONE_SLOTS['M-1'].filter(s => ['M1-23','M1-24','M1-25','M1-26'].includes(s.code)).map(s =>
+      `<div class="zoom-context-slot" data-zone="M-1" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`
+    ).join('');
   }
   zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
     if(mobileMapView)el.style.display='none';else el.style.backgroundImage = `url(${zoomSourceUrl})`;

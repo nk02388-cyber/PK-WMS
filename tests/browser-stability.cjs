@@ -31,6 +31,13 @@ const root=path.resolve(__dirname,'..');
    await page.evaluate(()=>openZoomModal('M-1'));
    await page.waitForTimeout(150);
    const zoom=await page.evaluate(()=>({active:document.querySelectorAll('.zoom-slot').length,context:document.querySelectorAll('.zoom-context-slot').length,viewport:document.querySelector('.floorplan-zoom-box').getBoundingClientRect().toJSON()}));
+   const m1=await page.evaluate(()=>Array.from(document.querySelectorAll('.zoom-slot'),el=>({code:el.dataset.slot,x:Number(el.dataset.leftPct),y:Number(el.dataset.topPct),rect:el.getBoundingClientRect().toJSON()})));
+   assert.equal(m1.length,24);
+   assert.ok(!m1.some(s=>['M1-20','M1-22'].includes(s.code)));
+   for(const code of ['M1-23','M1-24','M1-25','M1-26']){
+    const slot=m1.find(s=>s.code===code);assert.ok(slot&&slot.rect.width>0&&slot.rect.height>0);
+   }
+   await page.screenshot({path:`work/m1-layout-${viewport.width}.png`});
    await page.screenshot({path:`work/qa-${viewport.width}.png`});
    await page.evaluate(()=>{palletDataReady=true;SLOT_ITEMS['M-1'] ||= {};SLOT_ITEMS['M-1']['M1-04']=[{code:'QA-PK',name:'QA packaging',qty:10,unit:'ใบ',receiveDate:'2026-09-01',withdrawals:[{date:'2026-09-02',qty:2,unit:'ใบ',by:'QA'}]}];openSlotEdit('M-1','M1-04');});
    const forms=[];
@@ -45,7 +52,7 @@ const root=path.resolve(__dirname,'..');
    await page.close();
   }
   fs.writeFileSync('work/browser-audit.json',JSON.stringify(results,null,2));
-  for(const r of results){assert.deepEqual(r.errors,[]);assert.equal(r.checks.length,16);assert.ok(r.checks.every(c=>c.active&&!c.overflow));assert.equal(r.zoom.active,22);assert.equal(r.zoom.context,18);assert.ok(r.forms.every(f=>f.visible&&f.focused&&!f.overflow));}
+  for(const r of results){assert.deepEqual(r.errors,[]);assert.equal(r.checks.length,16);assert.ok(r.checks.every(c=>c.active&&!c.overflow));assert.equal(r.zoom.active,24);assert.equal(r.zoom.context,18);assert.ok(r.forms.every(f=>f.visible&&f.focused&&!f.overflow));}
   fs.writeFileSync('work/browser-audit.json',JSON.stringify(results,null,2));
   console.log(JSON.stringify(results,null,2));
  }finally{await browser.close()}
