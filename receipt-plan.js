@@ -102,7 +102,7 @@
     if (pending) return pending;
     if (!force && loadedAt && Date.now() - loadedAt.getTime() < REFRESH_MS) {render(); return;}
     if (!window.XLSX) {
-      status.classList.add('error'); status.textContent = 'โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณารีโหลดหน้าเว็บ';
+      status.classList.add('error'); status.textContent = 'โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาโหลดหน้าใหม่';
       return;
     }
     refreshButton.disabled = true;

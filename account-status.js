@@ -272,7 +272,7 @@
         const nameLabel=document.createElement('label');nameLabel.textContent='ชื่อผู้ใช้ใหม่';
         const nameInput=document.createElement('input');nameInput.required=true;nameInput.minLength=3;nameInput.maxLength=32;nameInput.pattern='[a-zA-Z][a-zA-Z0-9._-]{2,31}';nameInput.autocomplete='off';nameInput.value=user.username;nameInput.defaultValue=user.username;
         nameLabel.append(nameInput);
-        const nameHint=document.createElement('p');nameHint.textContent='ใช้ชื่อใหม่เข้าสู่ระบบได้ทันที โดยใช้ PIN / รหัสผ่านเดิม · ภาษาอังกฤษ 3–32 ตัวอักษร ใช้ตัวเลข . _ - ได้';
+        const nameHint=document.createElement('p');nameHint.textContent='ชื่อผู้ใช้ต้องมี 3–32 ตัวอักษร ขึ้นต้นด้วยตัวอักษรภาษาอังกฤษ และใช้ตัวเลข . _ - ได้ หลังบันทึก ให้เข้าสู่ระบบด้วยชื่อใหม่และ PIN หรือรหัสผ่านเดิม';
         const nameError=document.createElement('p');nameError.setAttribute('role','status');
         const nameActions=document.createElement('div');nameActions.className='account-actions';
         const nameCancel=document.createElement('button');nameCancel.type='button';nameCancel.textContent='ยกเลิก';

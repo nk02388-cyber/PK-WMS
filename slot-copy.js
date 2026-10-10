@@ -17,7 +17,7 @@
   const selections=[...itemList.querySelectorAll('.slot-copy-check:checked')].map(check=>({index:Number(check.dataset.index),qty:itemList.querySelector(`input[data-qty="${check.dataset.index}"]`).value}));
   return window.PKSlotCopyCore.build(source,destinations,selections,$('fseCopyDate').value,$('fseCopyReference').value,window.getWmsUsername?.());
  }
- function update(){if(form.hidden)return;try{const rows=plan();save.disabled=palletWriteBusy;status.className='';const same=rows.some(row=>row.zone===source.zone&&row.slot_code===source.slot_code);status.textContent=`เพิ่มรายการรับเข้าใหม่ใน ${rows.length} พาเลต · จำนวนที่กรอกใช้ต่อพาเลต · ${same?'รวมพาเลทต้นทาง โดยเก็บรายการต้นฉบับไว้':'ต้นทางคงเดิม'}`;}catch(error){save.disabled=true;status.className='error';status.textContent=error.message;}}
+ function update(){if(form.hidden)return;try{const rows=plan();save.disabled=palletWriteBusy;status.className='';const same=rows.some(row=>row.zone===source.zone&&row.slot_code===source.slot_code);status.textContent=`เพิ่มรายการรับเข้าใหม่ใน ${rows.length} พาเลต · จำนวนที่กรอกใช้ต่อพาเลต · ${same?'รวมพาเลตต้นทาง โดยเก็บรายการต้นฉบับไว้':'ต้นทางคงเดิม'}`;}catch(error){save.disabled=true;status.className='error';status.textContent=error.message;}}
  function populate(){
   if(!source||form.hidden)return;
   if(!source||form.hidden)return;

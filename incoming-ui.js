@@ -279,7 +279,7 @@
       updatePutaway();
       await refreshList();
     } catch(error) {
-      status('incomingPutawayStatus',error.message?.includes('INCOMING_ALREADY_STORED')?'ป้ายนี้ถูกจัดเก็บแล้ว · รีเฟรชรายการเพื่อตรวจ Location':'บันทึก Location ไม่สำเร็จ: '+error.message,true);
+      status('incomingPutawayStatus',error.message?.includes('INCOMING_ALREADY_STORED')?'พาเลตตามป้ายนี้จัดเก็บแล้ว · รีเฟรชรายการเพื่อตรวจตำแหน่ง':'บันทึก Location ไม่สำเร็จ: '+error.message,true);
     } finally {saving=false;updatePutaway();}
   });
   function openPrintWindow() {

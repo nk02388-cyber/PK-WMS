@@ -2011,7 +2011,7 @@ header.top .header-logo { border-radius: 14px; }
     <p class="auth-intro">เข้าสู่ระบบเพื่อจัดการคลังบรรจุภัณฑ์</p>
     <label for="authUsername">ชื่อผู้ใช้<input id="authUsername" name="username" autocomplete="username" placeholder="กรอกชื่อผู้ใช้" required></label>
     <label for="authPassword">รหัสผ่าน / PIN<span class="auth-password-field"><input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่านหรือ PIN" required><button id="authTogglePassword" type="button" aria-label="แสดงรหัสผ่าน" aria-pressed="false">แสดง</button></span></label>
-    <p class="auth-help">ผู้ใช้ย่อยใช้ PIN 6 หลัก · Admin ใช้รหัสผ่าน</p>
+    <p class="auth-help">ใช้ PIN 6 หลักหรือรหัสผ่านตามที่ตั้งไว้สำหรับบัญชี</p>
     <p class="auth-error" id="authError" role="alert" hidden></p>
     <button id="authSubmit" type="submit">เข้าสู่ระบบ</button>
     <span id="authLoading" role="status">กำลังตรวจสอบบัญชี…</span>
@@ -2751,7 +2751,7 @@ header.top .header-logo { border-radius: 14px; }
     <section class="panel scrap-panel" aria-labelledby="scrapTitle">
       <h2 id="scrapTitle">Scrap Inventory · ตัดจำหน่ายสินค้าชำรุด</h2>
       <p class="panel-sub">เลือกสินค้าในตำแหน่งพาเลต ระบุจำนวนและเหตุผล แล้วตรวจข้อมูลก่อนยืนยัน</p>
-      <p class="scrap-notice">เมื่อยืนยัน ระบบจะลดยอดคงเหลือในพาเลตและบันทึกประวัติ Scrap ใน STOCK CARD โดยถือเป็น Inventory Loss เสมือน ไม่มีการย้ายไปตำแหน่งจริงหรือปรับ Stock Snapshot และบัญชีอัตโนมัติ</p>
+      <p class="scrap-notice">เมื่อยืนยัน ระบบจะลดยอดคงเหลือในพาเลตและบันทึก Scrap ใน STOCK CARD เป็น Inventory Loss เสมือน ระบบจะไม่ย้ายสินค้าไปตำแหน่งจริง และไม่ปรับยอดสต็อกอ้างอิงหรือบัญชีอัตโนมัติ</p>
       <form id="scrapForm" novalidate>
         <div class="scrap-fields">
           <label>โซนต้นทาง *<select id="scrapZone" required></select></label>
@@ -3114,7 +3114,7 @@ header.top .header-logo { border-radius: 14px; }
               <button type="submit">เพิ่มผู้ใช้</button>
             </form>
             <p id="accountManageMessage" role="status"></p>
-            <div id="accountUserList" aria-label="รายชื่อผู้ใช้ย่อย"></div>
+            <div id="accountUserList" aria-label="รายชื่อผู้ใช้"></div>
           </div>
     </section>
   </div>
@@ -5453,7 +5453,7 @@ document.getElementById('stockReconcileExport').addEventListener('click',()=>{
     renderStockReconciliation();
     const search=document.getElementById('stockReconcileSearch').value;
     const exportedRows=sortStockReconciliation(filterStockReconciliation(stockReconciliationRows,document.getElementById('stockReconcileFilter').value,search),stockReconciliationSort);
-    const tables=stockReconciliationTables(exportedRows,{exportedAt:new Date().toISOString(),stockDate:STOCK.report_date||'',stockStatus:stockSnapshotState==='latest'?'โหลดจากระบบสำเร็จ':'ข้อมูลสำรอง/ยังไม่ยืนยันล่าสุด',...reconciliationCutoff()});
+    const tables=stockReconciliationTables(exportedRows,{exportedAt:new Date().toISOString(),stockDate:STOCK.report_date||'',stockStatus:stockSnapshotState==='latest'?'โหลดจากระบบสำเร็จ':'ยังไม่มีสต็อกที่โหลดจากระบบสำเร็จ',...reconciliationCutoff()});
     const book=XLSX.utils.book_new();
     tables.forEach(table=>{const sheet=XLSX.utils.aoa_to_sheet(table.rows);sheet['!cols']=table.rows[0].map((_,i)=>({wch:i===1?48:22}));if(table.name==='ผลเปรียบเทียบ')sheet['!autofilter']={ref:sheet['!ref']};XLSX.utils.book_append_sheet(book,sheet,table.name);});
     XLSX.writeFile(book,`Stock-Reconcile-${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -6564,10 +6564,10 @@ function buildPalletExcelTables(rows, dates, geometry, buildings, meta) {
   return [
     {name:'คำแนะนำ',rows:[['รายการ','รายละเอียด'],['เริ่มโหลดข้อมูล',meta.startedAt],['โหลดข้อมูลเสร็จ',meta.finishedAt],['แหล่งข้อมูล','ข้อมูลพาเลตที่บันทึกในระบบ Supabase'],
       ['ขอบเขต','ทุกโซน รวมตำแหน่งว่าง ไม่จำกัดตัวกรองบนหน้าจอ'],['การใช้งาน','1 แถวต่อรายการสินค้าในตำแหน่งและล็อต ใช้ Filter / Pivot ได้ ห้ามรวมคนละหน่วย'],
-      ['รหัสและล็อต','เก็บเป็นข้อความเพื่อรักษาเลขศูนย์นำหน้า'],['วันที่','วันที่ Excel จริง รูปแบบ DD/MM/YYYY; ช่องว่างหมายถึงไม่ระบุ'],['จำนวน','ตัวเลขจริง ช่องว่างหมายถึงไม่ทราบ ไม่ใช่ศูนย์'],
+      ['รหัสและล็อต','เก็บเป็นข้อความเพื่อรักษาเลขศูนย์นำหน้า'],['วันที่','วันที่ Excel จริง รูปแบบ DD/MM/YYYY ช่องว่างหมายถึงไม่ระบุ'],['จำนวน','ตัวเลขจริง ช่องว่างหมายถึงไม่ทราบ ไม่ใช่ศูนย์'],
       ['STOCK CARD','ประวัติเรียงวันที่ภายในแต่ละรายการ คงเหลือคำนวณแยกจากยอดที่บันทึก'],['ตำแหน่งไม่มีข้อมูล','แสดงให้ตรวจสอบ ไม่สรุปว่าเป็นตำแหน่งว่าง'],
-      ['ความสดของข้อมูล','ข้อมูลถูกอ่านในช่วงเวลาที่ระบุ หากมีการแก้พร้อมกันอาจเป็นคนละเวอร์ชันระหว่างตำแหน่ง'],['นำเข้าระบบ','ไฟล์นี้สำหรับรายงาน/ตรวจนับ ไม่รองรับนำเข้า Excel ใช้ JSON จากปุ่มส่งออกข้อมูลพาเลตเพื่อสำรอง/นำเข้า'],
-      ['ข้อมูลที่ไม่รวม','รูปผังและประวัติการแก้ย้อนหลัง (movementEdits); เก็บข้อมูลต้นฉบับครบด้วย JSON'],['จำนวนตำแหน่ง',positions.length-1],['จำนวนรายการสินค้า',items.length-1]]},
+      ['เวลาที่อ่านข้อมูล','ระบบอ่านข้อมูลในช่วงเวลาที่ระบุ หากมีผู้แก้ไขพร้อมกัน ข้อมูลแต่ละตำแหน่งอาจมีเวอร์ชันต่างกัน'],['นำเข้าระบบ','ไฟล์ Excel นี้ใช้ทำรายงานหรือตรวจนับ นำกลับเข้าระบบไม่ได้ หากต้องการสำรองหรือนำเข้า ให้ใช้ไฟล์ JSON จากปุ่มส่งออกข้อมูลพาเลต'],
+      ['ข้อมูลที่ไม่รวม','ไม่รวมรูปผังและประวัติการแก้ย้อนหลัง (movementEdits) หากต้องการเก็บข้อมูลต้นฉบับครบ ให้ส่งออกเป็น JSON'],['จำนวนตำแหน่ง',positions.length-1],['จำนวนรายการสินค้า',items.length-1]]},
     {name:'ตำแหน่งพาเลต',rows:positions},{name:'รายการสินค้า',rows:items},{name:'STOCK CARD',rows:movements}
   ];
 }
@@ -7039,24 +7039,28 @@ stockExcelInput.addEventListener('change', async () => {
   const files = [...stockExcelInput.files];
   stockExcelInput.value = '';
   if (!files.length) return;
+  let accountGeneration = stockLoadGeneration;
   stockUpdateBtn.disabled = true; stockUpdateStatus.className = 'stock-update-status';
   stockUpdateStatus.textContent = 'กำลังตรวจสอบและอัปเดตสต็อก…';
   try {
     if (!stockSupabaseClient) throw new Error('เชื่อมต่อระบบสต็อกไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
+    if (!canReadPrivateStock()) throw new Error('เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์ก่อนอัปเดตสต็อก');
     const parsed = await parseStockFiles(files);
-    const updatePin = window.prompt('กรอก PIN เพื่อยืนยันการอัปเดตสต็อก');
-    if (updatePin === null) throw new Error('ยกเลิกการอัปเดต');
-    const { data:updated, error } = await stockSupabaseClient.rpc('replace_stock_inventory', { p_report_date:parsed.reportDate, p_source_name:files.map(f => f.name).join(', '), p_items:parsed.items, p_update_pin:updatePin });
-    if (error) throw error;
     if (accountGeneration !== stockLoadGeneration || !canReadPrivateStock()) return;
-    if (!updated || !updated.items) throw new Error('ไม่ได้รับผลคำนวณจากระบบ กรุณาลองใหม่');
+    const updatePin = window.prompt('กรอก PIN เพื่อยืนยันการอัปเดตสต็อก');
+    if (updatePin === null) { stockUpdateStatus.textContent = 'ยกเลิกการอัปเดตสต็อกแล้ว'; return; }
+    accountGeneration = ++stockLoadGeneration;
+    const { data:updated, error } = await stockSupabaseClient.rpc('replace_stock_inventory', { p_report_date:parsed.reportDate, p_source_name:files.map(f => f.name).join(', '), p_items:parsed.items, p_update_pin:updatePin });
+    if (accountGeneration !== stockLoadGeneration || !canReadPrivateStock()) return;
+    if (error) throw error;
+    if (!updated || !Array.isArray(updated.items) || !Array.isArray(updated.warehouses) || !updated.kpis) throw new Error('ระบบส่งผลอัปเดตกลับมาไม่ครบ กรุณาโหลดหน้าใหม่เพื่อตรวจสต็อกก่อนอัปเดตอีกครั้ง');
     stockSnapshotState = 'latest';
     STOCK = updated; DATA.stock = updated; rebuildStockControls(); renderStockSnapshotNotice();
-    await loadLatestStockFromSupabase();
     stockUpdateStatus.textContent = `อัปเดตสำเร็จ ${fmt0(updated.kpis.total_rows)} รายการ · ${updated.report_date}`;
     stockUpdateStatus.className = 'stock-update-status success';
   } catch (err) {
-    stockUpdateStatus.textContent = 'อัปเดตไม่สำเร็จ: ' + (err.message || err);
+    if (accountGeneration !== stockLoadGeneration) return;
+    stockUpdateStatus.textContent = 'ยังยืนยันการอัปเดตไม่ได้: ' + (err.message || err);
     stockUpdateStatus.className = 'stock-update-status error';
   } finally { stockUpdateBtn.disabled = false; }
 });
@@ -8905,7 +8909,7 @@ document.getElementById('bomPlanExport').addEventListener('click', () => {
     const entries = [...bomPlan].map(([fg,qty]) => ({fg,qty}));
     const plan = calculateBomPlan(entries,BOMPK.bom_detail,STOCK.items || [],BOMPK.assumptions.excluded_warehouses || []);
     const tables = bomPlanExportTables(entries,BOMPK.bom_detail,plan,{exportedAt:new Date().toISOString(),stockDate:STOCK.report_date || '',
-      status:stockSnapshotState === 'latest' ? 'โหลดจากระบบสำเร็จ' : 'ข้อมูลสำรอง/ยังไม่ยืนยันล่าสุด'});
+      status:stockSnapshotState === 'latest' ? 'โหลดจากระบบสำเร็จ' : 'ยังไม่มีสต็อกที่โหลดจากระบบสำเร็จ'});
     const book = XLSX.utils.book_new();
     tables.forEach(table => {
       const sheet = XLSX.utils.aoa_to_sheet(table.rows);
@@ -10156,22 +10160,22 @@ window.addEventListener('pageshow', () => {
 <script src="incoming-workflow.js?v=20261008-keywords1"></script>
 <script src="supplier-options-data.js?v=20260924-1"></script>
 <script src="supplier-options.js?v=20260924-1"></script>
-<script src="incoming-ui.js?v=20260924-3"></script>
+<script src="incoming-ui.js?v=20261010-kien1"></script>
 <script src="daily-movements.js?v=20261008-keywords1"></script>
 <script src="latest-suppliers.js?v=20260924-1"></script>
-<script src="product-history.js?v=20261008-chronology1"></script>
+<script src="product-history.js?v=20261010-kien1"></script>
 <script src="top-withdrawals.js?v=20260925-2"></script>
 <script src="dashboard-insights.js?v=20261009-professional1"></script>
 <script src="reorder-points-data.js?v=20260924-1"></script>
 <script src="reorder-points.js?v=20261008-keywords2"></script>
 <link rel="stylesheet" href="action-confirmation.css?v=20261008-2">
 <script src="action-confirmation.js?v=2"></script>
-<script src="event-calendar.js?v=20261005-confirm1"></script>
+<script src="event-calendar.js?v=20261010-kien1"></script>
 <script src="cache-maintenance.js?v=20261009-audit1"></script>
-<script src="notifications.js?v=20260926-1"></script>
-<script src="receipt-plan.js?v=20261008-keywords1"></script>
+<script src="notifications.js?v=20261010-kien1"></script>
+<script src="receipt-plan.js?v=20261010-kien1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20261009-no-department-logout1"></script>
+<script src="account-status.js?v=20261010-kien1"></script>
 <link rel="stylesheet" href="warehouse-operations-pin.css?v=20261008-2">
 <script src="warehouse-operations.js?v=20261002-pin2"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
@@ -10179,12 +10183,12 @@ window.addEventListener('pageshow', () => {
 <script src="keyword-picker.js?v=20261008-1"></script>
 <script src="pk-recipes.js?v=20261009-private1"></script>
 <script src="cycle-counts-core.js?v=20260926-1"></script>
-<script src="cycle-counts.js?v=20261005-confirm1"></script>
+<script src="cycle-counts.js?v=20261010-kien1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>
 <script src="scrap-inventory.js?v=20260926-1"></script>
 <link rel="stylesheet" href="slot-copy.css?v=20261009-selfcopy1">
 <script src="slot-copy-core.js?v=20261009-selfcopy1"></script>
-<script src="slot-copy.js?v=20261009-selfcopy1"></script>
+<script src="slot-copy.js?v=20261010-kien1"></script>
 <script src="sidebar-toggle.js?v=20261009-singlelabel1"></script>
 <script src="dashboard-motion.js?v=20261009-professional1"></script>
 

@@ -123,7 +123,7 @@
     if (mismatch) actions.push({kind:'reconcile',tone:'warning',title:`ยอดสต็อกกับพาเลตไม่ตรง ${fmt(mismatch.count)} รหัส/หน่วย`,
       detail:`ตัวอย่าง ${mismatch.example.code} · ${mismatch.differentTimes ? 'พาเลตแก้หลังบันทึกสต็อก ยอดอาจมาจากคนละเวลา' : 'ตรวจวันเวลาอ้างอิงก่อนสรุปผลต่าง'}`});
     if (bomCount > 0) actions.push({kind:'bom',tone:'critical',title:`บรรจุภัณฑ์ไม่พร้อม ${fmt(bomCount)} FG`,detail:'เปิดหน้าความพร้อมบรรจุภัณฑ์เพื่อตรวจสอบ'});
-    if (stockSnapshotState === 'fallback') actions.push({kind:'stock',tone:'warning',title:'โหลดสต็อกล่าสุดไม่ได้',detail:'กำลังแสดงข้อมูลสำรองในไฟล์'});
+    if (stockSnapshotState === 'error') actions.push({kind:'stock',tone:'warning',title:'โหลดสต็อกล่าสุดไม่ได้',detail:'ตรวจการเชื่อมต่อแล้วโหลดหน้าใหม่เพื่อลองอีกครั้ง'});
     if (syncProblem) actions.push({kind:'sync',tone:'critical',title:'การซิงค์ข้อมูลพาเลตมีปัญหา',detail:'รีเฟรชหน้าเว็บหรือตรวจการเชื่อมต่อ'});
     if (pending.error) actions.push({kind:'pending-error',tone:'warning',title:'ตรวจรายการรอจัดเก็บไม่ได้',detail:'กดรีเฟรชเพื่อลองอีกครั้ง'});
     currentActions = visibleActions(actions,dismissed);

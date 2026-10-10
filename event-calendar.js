@@ -109,7 +109,7 @@
       events=cleanEvents(rows.map(fromRow));
       versions=new Map(rows.map(row=>[row.id,Number(row.version)]));
       try { localStorage.setItem(storageKey,JSON.stringify(events)); } catch (_) {}
-      setSyncState('ready','ซิงค์ทุกเครื่องแล้ว · กำลังแสดงข้อมูลล่าสุด');
+      setSyncState('ready','โหลดปฏิทินล่าสุดจากระบบแล้ว');
       notifyChange();
     } catch (fetchError) {
       if (request!==refreshId) return;
@@ -141,7 +141,7 @@
     const selectedDate = new Date(selected+'T12:00');
     byId('eventCalendarSelectedHeading').textContent = `กิจกรรมวันที่ ${dateFormat.format(selectedDate)}`;
     const selectedEvents = events.filter(event => event.date === selected);
-    agenda.innerHTML = selectedEvents.length ? selectedEvents.map(event => `<article class="event-calendar-entry"><div><strong>${escape(event.time)} · ${escape(event.name)}</strong>${event.details ? `<p>${escape(event.details)}</p>` : ''}<small>เตือน${event.lead === 0 ? 'เมื่อถึงเวลา' : `ล่วงหน้า ${event.lead === 15 ? '15 นาที' : event.lead === 60 ? '1 ชั่วโมง' : event.lead === 1440 ? '1 วัน' : '7 วัน'}`}</small></div><div class="event-calendar-entry-actions"><button type="button" data-edit="${escape(event.id)}" ${syncState === 'ready' && !busy ? '' : 'disabled'}>แก้ไข</button><button type="button" data-delete="${escape(event.id)}" ${syncState === 'ready' && !busy ? '' : 'disabled'}>ลบ</button></div></article>`).join('') : '<p class="event-calendar-empty">ยังไม่มีกิจกรรมในวันนี้</p>';
+    agenda.innerHTML = selectedEvents.length ? selectedEvents.map(event => `<article class="event-calendar-entry"><div><strong>${escape(event.time)} · ${escape(event.name)}</strong>${event.details ? `<p>${escape(event.details)}</p>` : ''}<small>เตือน${event.lead === 0 ? 'เมื่อถึงเวลา' : `ล่วงหน้า ${event.lead === 15 ? '15 นาที' : event.lead === 60 ? '1 ชั่วโมง' : event.lead === 1440 ? '1 วัน' : '7 วัน'}`}</small></div><div class="event-calendar-entry-actions"><button type="button" data-edit="${escape(event.id)}" ${syncState === 'ready' && !busy ? '' : 'disabled'}>แก้ไข</button><button type="button" data-delete="${escape(event.id)}" ${syncState === 'ready' && !busy ? '' : 'disabled'}>ลบ</button></div></article>`).join('') : '<p class="event-calendar-empty">ยังไม่มีกิจกรรมในวันที่เลือก</p>';
   }
   function resetForm() {
     form.reset();

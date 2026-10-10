@@ -148,7 +148,7 @@
       delete completed.confirmEmpty;
       if (persist({ ...state, draft: null, history: [completed, ...state.history].slice(0, 100) })) {
         refresh();
-        setStatus(`บันทึกผลตรวจนับโซน ${completed.zone} แล้ว · ผลต่าง ${CycleCountCore.countSummary(completed.rows).different} รายการ · ยอดสต็อกจริงยังไม่ถูกปรับ`);
+        setStatus(`บันทึกผลตรวจนับโซน ${completed.zone} แล้ว · ผลต่าง ${CycleCountCore.countSummary(completed.rows).different} รายการ · ระบบยังไม่ได้ปรับยอดพาเลตหรือสต็อก`);
       }
     }
   });

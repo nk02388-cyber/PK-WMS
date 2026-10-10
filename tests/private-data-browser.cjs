@@ -28,9 +28,11 @@ setTimeout(()=>window.dispatchEvent(new Event('wms:account-changed')),0);
    await page.waitForTimeout(80);assert.equal(await page.evaluate(()=>STOCK.items.length),0);
    await page.evaluate(()=>{qaPrivate.allowed=true;qaPrivate.delayStock=false;qaPrivate.fail=true;window.dispatchEvent(new Event('wms:account-changed'));});
    await page.waitForFunction(()=>document.getElementById('pkRecipesStatus').textContent.includes('โหลดสูตรไม่ได้'));
+   await page.waitForFunction(()=>document.getElementById('notificationItems').textContent.includes('โหลดสต็อกล่าสุดไม่ได้'));
    assert.deepEqual(await page.evaluate(()=>({stock:STOCK.items.length,bom:Object.keys(BOMPK.bom_detail).length})),{stock:0,bom:0});
    await page.evaluate(()=>{qaPrivate.fail=false;window.dispatchEvent(new Event('wms:account-changed'));});
    await page.waitForFunction(()=>STOCK.items.length===1&&Object.keys(BOMPK.bom_detail).length===2);
+   await page.waitForFunction(()=>!document.getElementById('notificationItems').textContent.includes('โหลดสต็อกล่าสุดไม่ได้'));
    assert.deepEqual(errors,[]);console.log('PASS private API stock/BOM, saved overlay, logout, late response, failure/retry '+width);await page.close();
   }
  }finally{await browser.close();}
