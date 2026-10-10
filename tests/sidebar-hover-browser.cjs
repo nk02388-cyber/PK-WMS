@@ -48,7 +48,7 @@ const root=path.resolve(__dirname,'..');
   await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#tab-stock').hover();
   assert.ok(await page.locator('.wrap').evaluate(el=>parseFloat(getComputedStyle(el).transitionDuration)<.001));
   await page.mouse.move(800,300);await page.waitForFunction(()=>document.body.classList.contains('sidebar-collapsed'));
-  await toggle.click();assert.equal(await page.evaluate(()=>document.body.classList.contains('sidebar-collapsed')),false);
+  await toggle.click();assert.equal(await page.evaluate(()=>document.body.classList.contains('sidebar-pinned-open')),true);await page.waitForFunction(()=>document.getElementById('dashboardContent').getBoundingClientRect().left>=278);const pinned=await page.locator('#dashboardContent').boundingBox();assert.ok(pinned.x-contentBefore.x>=200);assert.ok(contentBefore.width-pinned.width>=200);
   await page.reload();await page.waitForFunction(()=>!document.body.classList.contains('sidebar-collapsed'));assert.equal(await toggle.getAttribute('aria-expanded'),'true');
   await nav.hover();await page.mouse.move(800,300);await page.waitForTimeout(180);assert.equal(await toggle.getAttribute('aria-expanded'),'true');
 

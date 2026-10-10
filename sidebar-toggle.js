@@ -11,6 +11,7 @@
   const shown=desktop.matches?!compact:open;
   document.body.classList.toggle('sidebar-collapsed',desktop.matches&&compact);
   document.body.classList.toggle('sidebar-hover-open',desktop.matches&&collapsed&&!compact);
+  document.body.classList.toggle('sidebar-pinned-open',desktop.matches&&!collapsed);
   document.body.classList.toggle('sidebar-drawer-open',!desktop.matches&&open);
   toggle.setAttribute('aria-expanded',String(shown));toggle.setAttribute('aria-label',shown?'ปิดไซด์บาร์':'เปิดไซด์บาร์');toggle.title=shown?'ปิดไซด์บาร์':'เปิดไซด์บาร์';
   const navigationVisible=desktop.matches||open;

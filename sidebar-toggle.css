@@ -79,9 +79,10 @@
  .viz-root.sidebar-collapsed #tabs .tab-btn>span{position:absolute;width:0;max-width:0;overflow:hidden;margin:0;padding:0;pointer-events:none}
 }
 
-/* Reserve only the icon rail; the expanded navigation paints over the page. */
+/* Hover reserves only the icon rail; a pinned sidebar shifts the page alongside it. */
 @media(min-width:1024px){
- .viz-root .wrap,.viz-root.sidebar-collapsed .wrap{grid-template-columns:64px minmax(0,1fr);transition:none}
+ .viz-root .wrap,.viz-root.sidebar-collapsed .wrap{grid-template-columns:64px minmax(0,1fr);transition:grid-template-columns .34s cubic-bezier(.4,0,.2,1)}
+ .viz-root.sidebar-pinned-open .wrap{grid-template-columns:278px minmax(0,1fr)}
  .viz-root #tabs,.viz-root.sidebar-collapsed #tabs{position:sticky;z-index:300;width:278px;max-width:none;box-sizing:border-box;transition:width .34s cubic-bezier(.4,0,.2,1),box-shadow .2s ease}
  .viz-root #tabs{box-shadow:8px 0 24px #15242b1a}
  .viz-root.sidebar-collapsed #tabs{width:64px;box-shadow:none}
