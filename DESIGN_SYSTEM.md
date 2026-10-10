@@ -97,3 +97,5 @@ Update this document with component changes; keep [PRD.md](PRD.md) requirements 
 - 1.1 — 2026-10-09: Defined locked/loading/error/empty/ready presentation requirements and separated them from currently verified UI behavior.
 
 - 1.0 — 2026-10-09: Documented current reference WMS tokens/components, mobile behavior and motion; replaced stale green/lime design guidance with a compatibility link. Created with `design-system-doc`; sources in [docs/SKILLS.md](docs/SKILLS.md).
+
+Movement analysis uses compact 18px desktop/16px mobile card padding, an 840px maximum trend SVG width, 145px building gauges and a 105px activity donut. Text, date controls, chart data and motion remain unchanged.

@@ -57,3 +57,23 @@
 @media(max-width:360px){.viz-root .dashboard-overview{grid-template-columns:1fr}.viz-root .dashboard-overview #stockTotalKpiFixed{height:150px}.viz-root .dashboard-overview #packagingAgeCard{grid-column:auto}.viz-root .dashboard-building .building-usage-list{grid-template-columns:1fr}.viz-root .dashboard-building .building-gauge-card+ .building-gauge-card{border-left:0;border-top:1px solid var(--border)}}
 
 .viz-root .dashboard-table-scroll{width:100%;max-width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:10px}.viz-root .dashboard-table-scroll table{min-width:620px;margin:0}.viz-root .dashboard-table-scroll:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+/* Compact the movement row while retaining readable chart labels and controls. */
+.viz-root .dashboard-main-grid #dashboardInsights,
+.viz-root .dashboard-main-grid :is(.dashboard-building,.dashboard-activity){padding:18px}
+.viz-root .dashboard-main-grid .di-stats{margin:14px 0;gap:10px}
+.viz-root .dashboard-main-grid .di-stats>div{padding:10px 14px}
+.viz-root .dashboard-main-grid .di-stats strong{font-size:24px}
+.viz-root .dashboard-main-grid .di-trend svg{max-width:840px;margin-inline:auto}
+.viz-root .dashboard-main-grid .di-detail{margin-top:10px;padding-top:8px}
+.viz-root .dashboard-building .building-gauge{width:min(100%,145px);margin-top:4px}
+.viz-root .dashboard-building .building-gauge-card{padding:6px 6px 4px}
+.viz-root .dashboard-building .building-usage-total{margin-top:12px;padding:10px 12px}
+.viz-root .dashboard-activity .di-mix{grid-template-columns:minmax(90px,105px) minmax(0,1fr);gap:12px}
+.viz-root .dashboard-activity .di-mix svg{max-width:105px}
+@media(max-width:700px){
+ .viz-root .dashboard-main-grid #dashboardInsights,
+ .viz-root .dashboard-main-grid :is(.dashboard-building,.dashboard-activity){padding:16px}
+ .viz-root .dashboard-main-grid .di-stats>div{padding:10px 8px}
+ .viz-root .dashboard-main-grid .di-stats strong{font-size:22px}
+}
