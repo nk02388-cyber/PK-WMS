@@ -77,3 +77,27 @@
  .viz-root .dashboard-main-grid .di-stats>div{padding:10px 8px}
  .viz-root .dashboard-main-grid .di-stats strong{font-size:22px}
 }
+
+/* Lead with inventory value and overall space use; age is a supporting strip. */
+.viz-root .dashboard-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
+.viz-root .dashboard-overview #stockTotalKpiFixed,
+.viz-root .dashboard-overview #pkSpeedMeterCard{height:270px;min-height:270px;padding:28px 32px;border:1px solid var(--border);box-shadow:0 4px 14px #15242b08}
+.viz-root .dashboard-overview #stockTotalKpiFixed{border-color:var(--series-1);border-left-width:4px}
+.viz-root .dashboard-overview #stockTotalKpiFixed .label{font-size:17px;font-weight:600}
+.viz-root .dashboard-overview #stockTotalKpiFixed .value{font-size:clamp(40px,4vw,60px);font-weight:700;margin:14px 0 10px;letter-spacing:-.03em}
+.viz-root .dashboard-overview #stockTotalKpiFixed .sub{font-size:14px}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-title{font-size:17px}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-title small{font-size:12px}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-gauge-wrap{width:200px;height:112px;margin:10px 0 2px}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-value{font-size:36px;line-height:1.15;margin-top:0}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-sub{font-size:13px;margin-top:6px}
+.viz-root .dashboard-overview #packagingAgeCard{grid-column:1 / -1;height:auto;min-height:0;padding:18px 24px}
+.viz-root .dashboard-overview .packaging-age-title{margin-bottom:12px}
+.viz-root .dashboard-overview .packaging-age-chart{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+@media(max-width:900px){.viz-root .dashboard-overview .packaging-age-chart{grid-template-columns:1fr;gap:12px}}
+@media(max-width:600px){
+ .viz-root .dashboard-overview{grid-template-columns:1fr}
+ .viz-root .dashboard-overview #stockTotalKpiFixed,
+ .viz-root .dashboard-overview #pkSpeedMeterCard{height:240px;min-height:240px;padding:22px 24px}
+ .viz-root .dashboard-overview #packagingAgeCard{padding:18px 16px}
+}

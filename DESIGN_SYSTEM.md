@@ -30,7 +30,7 @@ Noto Sans Thai is served locally through `typography.css`. Use the existing type
 ```mermaid
 flowchart TD
   Header[Header: sidebar toggle / product / status / stock update / calendar / notices / theme / avatar]
-  Overview[Overview: stock value / total Storage capacity / packaging age]
+  Overview[Primary pair: stock value / total Storage capacity; supporting packaging-age strip below]
   Trend[Movement trend: date controls / summaries / plot / daily rows]
   Side[Building gauges and activity distribution]
   Details[Stock value distributions and tables]
@@ -101,3 +101,5 @@ Update this document with component changes; keep [PRD.md](PRD.md) requirements 
 Movement analysis uses compact 18px desktop/16px mobile card padding, an 840px maximum trend SVG width, 145px building gauges and a 105px activity donut. Text, date controls, chart data and motion remain unchanged.
 
 Desktop sidebar labels keep a 262px menu-row layout while the navigation width animates. Labels fade/slide without a start delay; long-menu rows animate height between 44px and 68px instead of wrapping text on every width frame. Reduced-motion preferences disable these transitions.
+
+Dashboard primary KPIs: equal-width stock-value and total-capacity cards lead the page at 270px desktop height, with a 40-60px stock value, 200px gauge and 36px capacity percentage. Packaging age follows as a full-width strip with three columns on wide screens. At 600px and below, the two primary cards stack at 240px height. Data sources, chart animations and sidebar behaviour are preserved.
