@@ -98,7 +98,7 @@ Update this document with component changes; keep [PRD.md](PRD.md) requirements 
 
 - 1.0 — 2026-10-09: Documented current reference WMS tokens/components, mobile behavior and motion; replaced stale green/lime design guidance with a compatibility link. Created with `design-system-doc`; sources in [docs/SKILLS.md](docs/SKILLS.md).
 
-Movement analysis uses compact 18px desktop/16px mobile card padding, an 840px maximum trend SVG width, 145px building gauges and a 105px activity donut. Text, date controls, chart data and motion remain unchanged.
+Movement analysis uses compact 18px desktop/16px mobile card padding, a 640px maximum trend SVG width, 145px building gauges and a 105px activity donut. Text, date controls, chart data and motion remain unchanged.
 
 Desktop sidebar labels keep a 262px menu-row layout while the navigation width animates. Menu labels have no independent fade/transform animation. The sidebar width alone slides open/closed; long-menu rows switch between 44px and 68px without a height animation. Reduced-motion preferences disable these transitions.
 
