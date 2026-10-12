@@ -100,3 +100,15 @@
  .viz-root #tabs .dashboard-nav-name{transition:opacity .18s ease,visibility 0s}
 }
 @media(prefers-reduced-motion:reduce){.viz-root #tabs :is(#tab-bompk,#tab-cycle-counts){transition:none!important}}
+
+/* Reveal the fixed menu through the sliding rail, without separate text motion. */
+@media(min-width:1024px){
+ .viz-root #tabs .tab-btn>span,.viz-root.sidebar-collapsed #tabs .tab-btn>span,
+ .viz-root #tabs .dashboard-nav-name,.viz-root.sidebar-collapsed #tabs .dashboard-nav-name{opacity:1;visibility:visible;transform:none;transition:none}
+ .viz-root.sidebar-collapsed #tabs .tab-btn>span{visibility:hidden}
+ .viz-root #tabs .dashboard-nav-name{max-width:none}
+ .viz-root.sidebar-collapsed #tabs .dashboard-nav-name{visibility:hidden}
+ .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts),.viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){height:68px;transition:background-color .16s ease}
+ .viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){height:44px}
+ .viz-root #tabs .tab-btn .tab-icon,.viz-root #tabs .tab-btn:hover .tab-icon{transform:none;transition:none}
+}
