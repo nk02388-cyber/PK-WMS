@@ -103,3 +103,5 @@ Movement analysis uses compact 18px desktop/16px mobile card padding, a 640px ma
 Desktop sidebar labels keep a 262px menu-row layout while the navigation width animates. Menu labels have no independent fade/transform animation. The sidebar width alone slides open/closed; long-menu rows switch between 44px and 68px without a height animation. Reduced-motion preferences disable these transitions.
 
 Dashboard primary KPIs: equal-width stock-value and total-capacity cards lead the page at 270px desktop height, with a 40-60px stock value, 200px gauge and 36px capacity percentage. Packaging age follows as a full-width strip with three columns on wide screens. At 600px and below, the two primary cards stack at 240px height. Data sources, chart animations and sidebar behaviour are preserved.
+
+Above 1250px, movement analysis and the building/activity stack share aligned top/bottom edges. Building gauges are 120px, the combined-capacity summary wraps inline, and the 90px activity donut uses a compact card. At narrower widths the existing responsive stacking remains.

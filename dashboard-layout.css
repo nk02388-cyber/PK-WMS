@@ -106,3 +106,17 @@
 .viz-root .dashboard-main-grid #dashboardInsights .di-stats>div{padding-block:8px}
 .viz-root .dashboard-main-grid #dashboardInsights .di-legend{margin-bottom:4px}
 .viz-root .dashboard-main-grid #dashboardInsights .di-trend{margin-top:6px}
+
+/* Balance the building/activity stack with the adjacent movement panel. */
+@media(min-width:1251px){
+ .viz-root .dashboard-main-grid{align-items:stretch}
+ .viz-root .dashboard-side-stack{grid-template-rows:minmax(0,1fr) auto}
+ .viz-root .dashboard-main-grid .dashboard-building{display:flex;flex-direction:column;padding:16px 18px}
+ .viz-root .dashboard-building .building-usage-list{flex:1;align-items:center}
+ .viz-root .dashboard-building .building-gauge{width:min(100%,120px)}
+ .viz-root .dashboard-building .building-usage-total{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin-top:10px;padding:10px 12px}
+ .viz-root .dashboard-main-grid .dashboard-activity{padding:14px 18px}
+ .viz-root .dashboard-activity .dashboard-widget-head{margin-bottom:8px}
+ .viz-root .dashboard-activity .di-mix svg{max-width:90px}
+ .viz-root .dashboard-activity .di-mix{grid-template-columns:90px minmax(0,1fr)}
+}
