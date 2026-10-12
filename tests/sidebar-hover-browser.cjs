@@ -28,11 +28,15 @@ const root=path.resolve(__dirname,'..');
 
   assert.equal(await page.locator('.sidebar-label-peek').count(),0);
   const contentBefore=await page.locator('#dashboardContent').boundingBox();
+  const labelWidthBefore=await page.locator('#tab-product-history > span').first().evaluate(el=>el.getBoundingClientRect().width);
   await page.locator('#tab-stock').hover();
   await page.waitForFunction(()=>document.getElementById('tabs').getBoundingClientRect().width>260);
   assert.equal(await toggle.getAttribute('aria-expanded'),'true');
   assert.equal(await page.evaluate(()=>document.body.classList.contains('sidebar-hover-open')),true);
   assert.equal(await nav.locator('#tab-stock > span').first().isVisible(),true);
+  const labelWidthAfter=await page.locator('#tab-product-history > span').first().evaluate(el=>el.getBoundingClientRect().width);
+  assert.equal(labelWidthBefore,labelWidthAfter);assert.ok(labelWidthAfter>150);
+  assert.equal(await nav.locator('#tab-stock > span').first().evaluate(el=>getComputedStyle(el).transitionDelay.split(',')[0].trim()),'0s');
   const contentExpanded=await page.locator('#dashboardContent').boundingBox();
   assert.equal(contentExpanded.x,contentBefore.x);assert.equal(contentExpanded.width,contentBefore.width);
   const navExpanded=await nav.boundingBox();assert.ok(navExpanded.x+navExpanded.width>contentExpanded.x);

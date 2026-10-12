@@ -87,3 +87,16 @@
  .viz-root #tabs{box-shadow:8px 0 24px #15242b1a}
  .viz-root.sidebar-collapsed #tabs{width:64px;box-shadow:none}
 }
+
+/* Keep text layout at full width while the rail reveals it. This avoids
+   repeatedly wrapping labels and moving badges during each animation frame. */
+@media(min-width:1024px){
+ .viz-root #tabs .tab-btn,.viz-root.sidebar-collapsed #tabs .tab-btn{width:262px;flex-shrink:0;justify-content:flex-start;padding:10px 14px;gap:10px}
+ .viz-root.sidebar-collapsed #tabs :is(.tab-btn,#tab-bompk,#tab-cycle-counts){justify-content:flex-start;padding:10px 14px;gap:10px}
+ .viz-root #tabs .tab-btn>span{transition:opacity .18s ease,transform .26s cubic-bezier(.4,0,.2,1),visibility 0s}
+ .viz-root.sidebar-collapsed #tabs .tab-btn>span{position:static;width:auto;max-width:none;margin:0;padding:0;transition:opacity .12s ease,transform .2s ease,visibility 0s linear .16s}
+ .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts),.viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){display:grid;grid-template-columns:20px minmax(0,1fr);grid-template-rows:24px 20px;align-content:start;gap:4px 10px;height:68px;min-height:44px;transition:height .34s cubic-bezier(.4,0,.2,1),background-color .16s ease}
+ .viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){height:44px}
+ .viz-root #tabs .dashboard-nav-name{transition:opacity .18s ease,visibility 0s}
+}
+@media(prefers-reduced-motion:reduce){.viz-root #tabs :is(#tab-bompk,#tab-cycle-counts){transition:none!important}}
