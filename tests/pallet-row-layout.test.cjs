@@ -53,12 +53,12 @@ test('compact rows preserve every pallet code, count, row height and other zones
  assert.deepEqual(Array.from(changed['T-1'],s=>s.code),Array.from({length:20},(_,i)=>`T1-${String(i+1).padStart(2,'0')}`));
  assert.equal(new Set(changed['T-1'].map(s=>s.leftPct)).size,2);
  assert.equal(new Set(changed['T-1'].map(s=>s.topPct)).size,10);
- for(let i=0;i<18;i++){
+ for(let i=0;i<20;i++){
   assert.equal(changed['T-1'][i].leftPct,48.94+(i%2)*.727);
-  assert.equal(changed['T-1'][i].topPct,36.39+Math.floor(i/2)*((45.096-36.39)/8));
+  assert.equal(changed['T-1'][i].topPct,i<2?36.39-((45.096-36.39)/8):36.39+Math.floor((i-2)/2)*((45.096-36.39)/8));
  }
  for(let i=0;i<2;i++){
-  const added=changed['T-1'][18+i],below=changed['T-1'][i];
+  const added=changed['T-1'][i],below=changed['T-1'][i+2];
   assert.equal(added.leftPct,below.leftPct);
   assert.ok(Math.abs(below.topPct-added.topPct-((45.096-36.39)/8))<1e-10);
   for(const [zone,slots] of Object.entries(changed))for(const s of slots)if(s!==added)assert.ok(Math.abs(s.leftPct-added.leftPct)>=.65||Math.abs(s.topPct-added.topPct)>=.95,`new T1 cell overlaps ${zone}/${s.code}`);
@@ -67,7 +67,7 @@ test('compact rows preserve every pallet code, count, row height and other zones
  assert.equal(changed['T-1'][0].topPct,changed['T-1'][1].topPct);
  assert.ok(changed['T-1'][2].topPct>changed['T-1'][0].topPct);
  const mRows=changed['M-1'];
- assert.equal(changed['T-1'][0].topPct,Math.min(...mRows.map(s=>s.topPct)));
- assert.equal(changed['T-1'][17].topPct,Math.max(...mRows.map(s=>s.topPct)));
+ assert.equal(changed['T-1'][2].topPct,Math.min(...mRows.map(s=>s.topPct)));
+ assert.equal(changed['T-1'][19].topPct,Math.max(...mRows.map(s=>s.topPct)));
  assert.ok(Math.abs((changed['T-1'][1].leftPct-changed['T-1'][0].leftPct)-(mRows[1].leftPct-mRows[0].leftPct))<1e-10);
 });

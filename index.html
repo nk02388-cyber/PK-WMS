@@ -3363,18 +3363,13 @@ function compactPalletRows(slotsByZone, pins) {
 compactPalletRows(ZONE_SLOTS, ZONE_PINS);
 
 // T-1 occupies the freed aisle at the right of the shortened old-building rows.
-// Number left-to-right within each row, then continue downward (2 columns x 9).
-ZONE_SLOTS['T-1'] = Array.from({length:18}, (_, index) => ({
+// Number left-to-right from the new top row, then continue downward.
+const t1RowGap = (45.096 - 36.39) / 8;
+ZONE_SLOTS['T-1'] = Array.from({length:20}, (_, index) => ({
   code:`T1-${String(index + 1).padStart(2, '0')}`,
   leftPct:48.94 + (index % 2) * 0.727,
-  topPct:36.39 + Math.floor(index / 2) * ((45.096 - 36.39) / 8),
+  topPct:index<2 ? 36.39-t1RowGap : 36.39+Math.floor((index-2)/2)*t1RowGap,
 }));
-// Add a row above T1-01/T1-02 without renumbering existing inventory locations.
-const t1RowGap = (45.096 - 36.39) / 8;
-ZONE_SLOTS['T-1'].push(
-  {code:'T1-19', leftPct:ZONE_SLOTS['T-1'][0].leftPct, topPct:36.39-t1RowGap},
-  {code:'T1-20', leftPct:ZONE_SLOTS['T-1'][1].leftPct, topPct:36.39-t1RowGap},
-);
 ZONE_PINS['T-1'] = {leftPct:49.3035, topPct:(36.39-t1RowGap+45.096)/2};
 
 // Zone U's right aisle has six positions, aligned with the six on the left.
