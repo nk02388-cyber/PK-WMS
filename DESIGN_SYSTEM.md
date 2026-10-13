@@ -133,3 +133,5 @@ Recent withdrawal/return input suggestions now span every loaded pallet and prod
 QR camera actions use the user-provided qr-code.png as a 28px CSS alpha mask, with green high-contrast buttons (46px minimum height), text labels and keyboard focus. Dark mode uses a pale green surface with dark ink. Camera handlers and lazy-loading stay unchanged.
 
 Entering the incoming/putaway sidebar menu slides its content in from the right by 40px over 380ms with a gentle fade, replacing the general upward card entry for this pane. Rapid navigation cancels previous motion; reduced-motion and hidden-document states remain still. The pane clips horizontal motion to avoid widening mobile pages.
+
+Motion 14.1.1 (MIT) is vendored locally from the official npm release. Page entries use Motion animateMini with short 20–40px horizontal slide and fade (320–380ms), bounded card staggering, and no looping. Receive/putaway/history steps share the same entry rhythm. Hidden views, rapid navigation and reduced-motion cancel and restore inline properties. Existing sidebar slide/fade and value-correct gauge/trend effects remain.

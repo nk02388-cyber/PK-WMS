@@ -10,5 +10,12 @@
     "source": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.js",
     "sha384": "lDkWTkrzxBtYvBtgQmPcLBhTbJdqB11igYtWVcCIVXO0Lv4+XuKKdd4razodiyzk",
     "bytes": 129604
+  },
+  {
+    "path": "vendor/motion-14.1.1.js",
+    "source": "https://registry.npmjs.org/motion/-/motion-14.1.1.tgz",
+    "sha384": "lE0xt41/sedAUMpaJMRnhzZwBWQuweJZDXqW7SEbG0Av0912oR34NXrvRVyAY5h9",
+    "bytes": 144927,
+    "license": "MIT"
   }
 ]

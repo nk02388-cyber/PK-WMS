@@ -11,6 +11,19 @@
   animation.id='pk-motion';
   animation.finished.then(()=>live.delete(entry),()=>live.delete(entry));
  }
+ function reveal(el,{distance=24,duration=380,delay=0}={}){
+  if(!enabled()||!visible(el))return;
+  if(typeof window.Motion?.animateMini!=='function'){
+   animate(el,[{opacity:.65,transform:`translateX(${distance}px)`},{opacity:1,transform:'translateX(0)'}],duration,delay);return;
+  }
+  for(const entry of live)if(entry.el===el){entry.animation.cancel();live.delete(entry);}
+  const previous={opacity:el.style.opacity,transform:el.style.transform};
+  const control=Motion.animateMini(el,{opacity:[.65,1],transform:[`translateX(${distance}px)`,'translateX(0)']},{duration:duration/1000,delay:delay/1000,ease:[.22,1,.36,1]});
+  const restore=()=>{el.style.opacity=previous.opacity;el.style.transform=previous.transform;};
+  const animation={cancel(){control.cancel();restore();}},entry={el,animation};live.add(entry);
+  el.getAnimations().forEach(a=>a.id='pk-motion');
+  Promise.resolve(control).then(()=>{if(live.has(entry)){control.cancel();restore();live.delete(entry);}},()=>{restore();live.delete(entry);});
+ }
  function buildingGauges(replay=false){
   const needles=[...document.querySelectorAll('.building-gauge-needle')];if(replay)needles.forEach(el=>el.dataset.played='false');
   if(!enabled()||!visible(stock))return;
@@ -47,11 +60,11 @@
    entryFrame=0;if(!visible(pane))return;
    if(pane.id==='pane-incoming'){
     const content=pane.querySelector('.incoming-panel');
-    animate(content,[{opacity:.65,transform:'translateX(40px)'},{opacity:1,transform:'translateX(0)'}],380);
+    reveal(content,{distance:40,duration:380});
     return;
    }
    const cards=[...pane.querySelectorAll('.filter-bar,.panel,.packaging-age-card,.speed-meter-card,.kpi-total-fixed')].filter(el=>{const r=el.getBoundingClientRect();return r.height&&r.top<innerHeight+80&&r.bottom>0;}).slice(0,8);
-   for(const [index,card] of cards.entries())animate(card,[{opacity:.45,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],340,index*35);
+   for(const [index,card] of cards.entries())reveal(card,{distance:20,duration:360,delay:Math.min(index*35,140)});
    const selectedIcon=document.querySelector('#tabs .tab-btn.active .tab-icon');
    animate(selectedIcon,[{opacity:.5,transform:'scale(.86)'},{opacity:1,transform:'scale(1)'}],220);
    if(pane===stock){charts(stock);gauge(true);buildingGauges(true);window.PKDashboardInsights?.animate();}
@@ -69,7 +82,7 @@
  function cancelAll(){for(const entry of live)entry.animation.cancel();live.clear();if(chartFrame)cancelAnimationFrame(chartFrame);if(entryFrame)cancelAnimationFrame(entryFrame);chartFrame=0;entryFrame=0;pendingCharts.clear();}
  function preference(){document.body.classList.toggle('pk-motion-enabled',!reduced.matches);if(reduced.matches)cancelAll();}
  reduced.addEventListener('change',preference);document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAll();});
- window.PKMotion={enterPane,gauge,buildingGauges};
+ window.PKMotion={enterPane,gauge,buildingGauges,reveal,cancelWithin(root){for(const entry of live)if(root?.contains(entry.el)){entry.animation.cancel();live.delete(entry);}}};
  if(stock&&typeof IntersectionObserver!=='undefined'){const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting))buildingGauges();},{threshold:.1});observer.observe(document.getElementById('buildingUsageList'));}
  let ready=false;
  function readyState(){const now=document.body.classList.contains('auth-ready')&&!document.body.classList.contains('department-choosing');if(now&&!ready)enterPane(document.querySelector('.tab-pane:not([hidden])'));ready=now;}

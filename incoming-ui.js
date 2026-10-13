@@ -23,7 +23,8 @@
   function showIncomingView(view,scroll=false) {
     if (!incomingViews[view]) return;
     if (cameraRunning||cameraStarting) stopCamera();
-    for (const [name,panel] of Object.entries(incomingViews)) panel.hidden=name!==view;
+    for (const [name,panel] of Object.entries(incomingViews)){window.PKMotion?.cancelWithin(panel);panel.hidden=name!==view;}
+    window.PKMotion?.reveal(incomingViews[view],{distance:24,duration:320});
     for (const button of $('incomingWorkflowTabs').querySelectorAll('[data-incoming-view]'))
       button.setAttribute('aria-pressed',String(button.dataset.incomingView===view));
     if (scroll) $('incomingWorkflowTabs').scrollIntoView({block:'start',behavior:'smooth'});
