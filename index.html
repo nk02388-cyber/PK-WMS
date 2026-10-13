@@ -2000,7 +2000,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="reference-wms.css?v=20261009-circlelogo1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
-<link rel="stylesheet" href="dashboard-layout.css?v=20261013-fulltrend1">
+<link rel="stylesheet" href="dashboard-layout.css?v=20261013-proportions1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -4426,7 +4426,7 @@ function renderSpeedMeter() {
     valueEl.textContent = cap.usedPct.toFixed(1) + '%';
     valueEl.style.color = 'var(--text-primary)';
   }
-  if (subEl) subEl.textContent = `${fmt0(cap.totalUsed)}/${fmt0(cap.totalPallet)} ช่อง`;
+  if (subEl) subEl.textContent = `ใช้งาน ${fmt0(cap.totalUsed)} / ${fmt0(cap.totalPallet)} · ว่าง ${fmt0(Math.max(0,cap.totalPallet-cap.totalUsed))} ช่อง`;
 }
 
 // itemAgeDays()/slotAgeStatus(): added 20 Aug 2026 per Pornchai's request to color every

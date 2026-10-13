@@ -137,3 +137,40 @@
  .viz-root .dashboard-overview{grid-template-columns:1fr}
  .viz-root .dashboard-overview #dashboardActivity{padding:18px 16px}
 }
+
+/* Warehouse overview: value and usable space lead; activity supports them. */
+:root[data-theme] .viz-root #pane-stock{--dash-gap:20px}
+.viz-root .dashboard-overview{grid-template-columns:minmax(0,1.15fr) minmax(0,1.05fr) minmax(0,.9fr)}
+.viz-root .dashboard-overview #stockTotalKpiFixed,
+.viz-root .dashboard-overview #pkSpeedMeterCard,
+.viz-root .dashboard-overview #dashboardActivity{height:270px;min-height:270px;padding:20px 24px}
+.viz-root .dashboard-overview #stockTotalKpiFixed .label{font-size:16px;line-height:1.5}
+.viz-root .dashboard-overview #stockTotalKpiFixed .value{font-size:clamp(44px,3.6vw,56px);line-height:1.15;margin:16px 0 12px}
+.viz-root .dashboard-overview #stockTotalKpiFixed .sub{font-size:13px;line-height:1.5}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-gauge-wrap{width:210px;height:120px;margin:6px 0 0}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-value{font-size:36px;line-height:1.2;margin:0}
+.viz-root .dashboard-overview #pkSpeedMeterCard .sm-sub{font-size:12px;line-height:1.5;margin-top:8px;text-wrap:balance}
+.viz-root .dashboard-overview #dashboardActivity .dashboard-widget-head{margin-bottom:18px;gap:8px}
+.viz-root .dashboard-overview #dashboardActivity .di-mix{grid-template-columns:120px minmax(0,1fr);gap:16px}
+.viz-root .dashboard-overview #dashboardActivity .di-mix svg{width:120px}
+.viz-root .dashboard-main-grid{grid-template-columns:minmax(0,1.75fr) minmax(340px,1fr)}
+.viz-root .dashboard-main-grid #dashboardInsights,
+.viz-root .dashboard-main-grid .dashboard-building{padding:22px}
+.viz-root .dashboard-building .building-gauge{width:min(100%,180px);margin:10px auto 6px}
+:root[data-theme] .viz-root .dashboard-building .building-gauge-card .building-usage-percent{font-size:28px;line-height:1.3}
+.viz-root .dashboard-building .building-usage-list{align-items:start;padding-top:16px}
+.viz-root .dashboard-building .building-usage-count{margin:10px 0 8px;font-size:12px;line-height:1.6}
+.viz-root .dashboard-building .building-usage-free{margin-top:4px;font-size:12px;line-height:1.5}
+.viz-root .dashboard-building .building-usage-total{margin-top:18px;padding:12px 14px;gap:8px 12px}
+.viz-root .dashboard-main-grid #dashboardInsights .di-stats{margin:16px 0}
+.viz-root .dashboard-main-grid #dashboardInsights .di-legend{margin:10px 0 6px}
+@media(max-width:1250px){.viz-root .dashboard-main-grid{grid-template-columns:1fr}.viz-root .dashboard-side-stack{grid-template-columns:1fr}}
+@media(max-width:1100px){.viz-root .dashboard-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.viz-root .dashboard-overview #dashboardActivity{height:auto;min-height:190px}}
+@media(max-width:600px){
+ :root[data-theme] .viz-root #pane-stock{--dash-gap:12px}
+ .viz-root .dashboard-overview{grid-template-columns:1fr}
+ .viz-root .dashboard-overview #stockTotalKpiFixed,.viz-root .dashboard-overview #pkSpeedMeterCard{height:260px;min-height:260px;padding:18px 20px}
+ .viz-root .dashboard-overview #dashboardActivity{padding:18px 20px}
+ .viz-root .dashboard-main-grid #dashboardInsights,.viz-root .dashboard-main-grid .dashboard-building{padding:16px}
+ .viz-root .dashboard-building .building-gauge{width:min(100%,160px)}
+}

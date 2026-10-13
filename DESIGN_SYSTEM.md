@@ -102,10 +102,12 @@ Movement analysis uses compact 18px desktop/16px mobile card padding, a full-wid
 
 Desktop sidebar labels keep a 262px menu-row layout while the navigation width animates. Menu labels have no independent fade/transform animation. The sidebar width alone slides open/closed; long-menu rows switch between 44px and 68px without a height animation. Reduced-motion preferences disable these transitions.
 
-Dashboard primary KPIs: stock-value and total-capacity cards lead the page alongside activity distribution at 270px desktop height, with a 40-60px stock value, 200px gauge and 36px capacity percentage. Packaging age follows as a full-width strip with three columns on wide screens. At 600px and below, the two primary cards stack at 240px height. Data sources, chart animations and sidebar behaviour are preserved.
+Dashboard primary KPIs: stock-value and total-capacity cards lead the page alongside activity distribution at 270px desktop height, with a 44-56px stock value, 210px gauge and 36px capacity percentage. Packaging age follows as a full-width strip with three columns on wide screens. At 600px and below, the two primary cards stack at 240px height. Data sources, chart animations and sidebar behaviour are preserved.
 
-Above 1250px, movement analysis and the building card share aligned top/bottom edges. Building gauges are 120px, the combined-capacity summary wraps inline, and the 90px activity donut uses a compact card. At narrower widths the existing responsive stacking remains.
+Above 1250px, movement analysis and the building card share aligned top/bottom edges. Building gauges are 180px, the combined-capacity summary wraps inline, and the activity donut sits in the top overview. At narrower widths the existing responsive stacking remains.
 
 Activity distribution now sits in the top overview beside stock value and Storage capacity. At 1100px and below it occupies a separate full-width overview row; mobile keeps it above the packaging-age strip. The former lower-right activity card is removed, preserving its existing data and period controls.
 
 Trend chart horizontal coordinates use the container width so the plot fills its card without scaling text or markers. Resize redraws reuse the existing summary and do not scan stock history again.
+
+Final proportion pass (13 October): overview weights 1.15 / 1.05 / 0.9, shared 270px desktop card height, 20px card gaps, 120px activity donut, and 180px building gauges (up to 160px on mobile). Building labels use explicit 8-16px spacing, and tablet building cards use the full row. Total capacity includes both used/total and available positions from the same computed capacity. Recommended hierarchy: usable space and stock value first, aged pallets next, movement analysis as supporting evidence.
