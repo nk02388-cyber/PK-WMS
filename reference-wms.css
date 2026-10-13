@@ -132,3 +132,12 @@
 
 /* The logo source has extra vertical canvas space; keep its circular artwork proportional. */
 .viz-root .auth-brand img{width:48px;height:48px;aspect-ratio:1 / 1;object-fit:cover;object-position:50% 0;border-radius:50%;flex:0 0 48px;background:transparent}
+
+/* High-contrast QR camera actions with the user-supplied icon. */
+.viz-root :is(#barcodeCameraStart,#incomingProductCamera,#incomingTagCamera,#incomingLocationCamera){display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:46px;padding:10px 16px;border:1px solid #216247;border-radius:10px;background:#267457;color:#fff;font-weight:700;box-shadow:0 3px 8px rgba(38,116,87,.18);cursor:pointer}
+.viz-root :is(#barcodeCameraStart,#incomingProductCamera,#incomingTagCamera,#incomingLocationCamera):hover{background:#1d5e45;border-color:#1d5e45}
+.viz-root :is(#barcodeCameraStart,#incomingProductCamera,#incomingTagCamera,#incomingLocationCamera):focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}
+.viz-root :is(#barcodeCameraStart,#incomingProductCamera,#incomingTagCamera,#incomingLocationCamera):disabled{opacity:.55;cursor:wait;box-shadow:none}
+.viz-root .qr-scan-icon{display:inline-block;flex:0 0 28px;width:28px;height:28px;background:currentColor;mask:url('assets/qr-code-scan.png') center/contain no-repeat;-webkit-mask:url('assets/qr-code-scan.png') center/contain no-repeat}
+:root[data-theme="dark"] .viz-root :is(#barcodeCameraStart,#incomingProductCamera,#incomingTagCamera,#incomingLocationCamera){background:#9ed5ba;color:#173b2d;border-color:#9ed5ba}
+:root[data-theme="dark"] .viz-root :is(#barcodeCameraStart,#incomingProductCamera,#incomingTagCamera,#incomingLocationCamera):hover{background:#b8e5ce;border-color:#b8e5ce}

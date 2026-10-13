@@ -1997,7 +1997,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="profile-avatar.css?v=20261008-1">
 <link rel="stylesheet" href="settings.css?v=20261013-sound1">
 <link rel="stylesheet" href="floorplan-mobile-controls.css?v=20261007-1">
-<link rel="stylesheet" href="reference-wms.css?v=20261013-warehouseblue1">
+<link rel="stylesheet" href="reference-wms.css?v=20261013-qrscan1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
 <link rel="stylesheet" href="dashboard-layout.css?v=20261013-activity2">
@@ -2812,7 +2812,7 @@ header.top .header-logo { border-radius: 14px; }
       <section class="barcode-panel" aria-labelledby="barcodeTitle">
         <h3 id="barcodeTitle">สแกนป้ายพาเลต สินค้า หรือตำแหน่ง</h3>
         <p>สแกนป้าย FM-ST-019 หรือตำแหน่งเพื่อเปิดรายการเบิก</p>
-        <div class="barcode-controls"><input id="barcodeScanInput" type="text" autocomplete="off" placeholder="สแกนด้วยเครื่องอ่าน หรือพิมพ์รหัสแล้วกด Enter" aria-label="รหัส QR หรือบาร์โค้ด"><button type="button" id="barcodeScanApply">ตรวจรหัส</button><button type="button" id="barcodeScanClear">ล้างค่าที่สแกน</button><button type="button" id="barcodeCameraStart"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8V5h3m10 0h3v3M4 16v3h3m10 0h3v-3M8 12h8m-4-4v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>เปิดกล้องสแกน</button><button type="button" id="barcodeCameraStop" hidden>ปิดกล้อง</button></div>
+        <div class="barcode-controls"><input id="barcodeScanInput" type="text" autocomplete="off" placeholder="สแกนด้วยเครื่องอ่าน หรือพิมพ์รหัสแล้วกด Enter" aria-label="รหัส QR หรือบาร์โค้ด"><button type="button" id="barcodeScanApply">ตรวจรหัส</button><button type="button" id="barcodeScanClear">ล้างค่าที่สแกน</button><button type="button" id="barcodeCameraStart"><span class="qr-scan-icon" aria-hidden="true"></span>เปิดกล้องสแกน</button><button type="button" id="barcodeCameraStop" hidden>ปิดกล้อง</button></div>
         <div id="barcodeCameraView" class="barcode-camera" hidden></div>
         <div id="barcodeScanSelection" class="barcode-selection">ยังไม่ได้เลือกสินค้า</div>
         <p id="barcodeScanStatus" role="status" aria-live="polite"></p>
@@ -3004,7 +3004,7 @@ header.top .header-logo { border-radius: 14px; }
               <label>ชื่อสินค้า<input id="incomingProductName" readonly></label>
               <label>Lot *<input id="incomingLot" required maxlength="120"></label>
               </div>
-              <div class="incoming-scan-actions"><button type="button" class="incoming-camera-button" id="incomingProductCamera"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8V5h3m10 0h3v3M4 16v3h3m10 0h3v-3M8 12h8m-4-4v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>เปิดกล้องสแกน</button></div>
+              <div class="incoming-scan-actions"><button type="button" class="incoming-camera-button" id="incomingProductCamera"><span class="qr-scan-icon" aria-hidden="true"></span>เปิดกล้องสแกน</button></div>
             </div>
             <div class="incoming-form-group">
               <h4><span>2</span> จำนวนและป้ายพาเลต</h4>
@@ -3033,8 +3033,8 @@ header.top .header-logo { border-radius: 14px; }
         <section class="incoming-step" aria-labelledby="incomingPutawayTitle" hidden>
           <h3 id="incomingPutawayTitle">นำพาเลตเข้าตำแหน่ง</h3>
           <p>สแกนป้ายพาเลตและระบุตำแหน่ง ก่อนยืนยัน</p>
-          <div class="incoming-scan-card"><h4><span>1</span> สแกนป้ายบนพาเลต</h4><div class="incoming-scan"><input id="incomingTagScan" aria-label="QR ป้ายพาเลต" placeholder="สแกนป้ายพาเลต PKTAG"><button type="button" class="incoming-camera-button" id="incomingTagCamera"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8V5h3m10 0h3v3M4 16v3h3m10 0h3v-3M8 12h8m-4-4v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>เปิดกล้อง</button></div></div>
-          <div class="incoming-scan-card"><h4><span>2</span> ระบุตำแหน่งจัดเก็บ</h4><p>สแกนป้ายตำแหน่ง หรือเลือกโซนและตำแหน่งด้านล่าง</p><div class="incoming-scan"><input id="incomingLocationScan" aria-label="QR ตำแหน่งจัดเก็บ" placeholder="สแกนตำแหน่ง PKLOC"><button type="button" class="incoming-camera-button" id="incomingLocationCamera"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8V5h3m10 0h3v3M4 16v3h3m10 0h3v-3M8 12h8m-4-4v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>เปิดกล้อง</button></div><div class="incoming-location-choice"><label>เลือกโซน<select id="incomingZoneSelect"><option value="">เลือกโซน</option></select></label><label>เลือกตำแหน่ง<select id="incomingSlotSelect" disabled><option value="">เลือกโซนก่อน</option></select></label></div></div>
+          <div class="incoming-scan-card"><h4><span>1</span> สแกนป้ายบนพาเลต</h4><div class="incoming-scan"><input id="incomingTagScan" aria-label="QR ป้ายพาเลต" placeholder="สแกนป้ายพาเลต PKTAG"><button type="button" class="incoming-camera-button" id="incomingTagCamera"><span class="qr-scan-icon" aria-hidden="true"></span>เปิดกล้อง</button></div></div>
+          <div class="incoming-scan-card"><h4><span>2</span> ระบุตำแหน่งจัดเก็บ</h4><p>สแกนป้ายตำแหน่ง หรือเลือกโซนและตำแหน่งด้านล่าง</p><div class="incoming-scan"><input id="incomingLocationScan" aria-label="QR ตำแหน่งจัดเก็บ" placeholder="สแกนตำแหน่ง PKLOC"><button type="button" class="incoming-camera-button" id="incomingLocationCamera"><span class="qr-scan-icon" aria-hidden="true"></span>เปิดกล้อง</button></div><div class="incoming-location-choice"><label>เลือกโซน<select id="incomingZoneSelect"><option value="">เลือกโซน</option></select></label><label>เลือกตำแหน่ง<select id="incomingSlotSelect" disabled><option value="">เลือกโซนก่อน</option></select></label></div></div>
           <div id="incomingPutawaySummary" class="incoming-summary">ยังไม่ได้เลือกป้ายพาเลตและ Location</div>
           <div class="incoming-fields"><label>ผู้จัดเก็บ *<input id="incomingStorer" maxlength="100"></label></div>
           <button type="button" class="incoming-primary" id="incomingPutaway" disabled>ยืนยันจัดเก็บพาเลตนี้</button>

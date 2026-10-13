@@ -129,3 +129,5 @@ Pallet return entry also defaults to today in Bangkok and shows up to five lates
 Withdrawal/return recent tables are superseded by native input suggestions: quantity, actor and document inputs have datalists of distinct values from the latest five matching movements of the selected product. Selection fills only that input. Today defaults remain; no separate history table or empty-history message is shown. Browser controls the suggestion popup appearance.
 
 Recent withdrawal/return input suggestions now span every loaded pallet and product, separated by action. Sort newest recordedAt first, falling back to movement date; each field exposes the newest five distinct nonempty values. Rendering preserves stock/history and never writes suggested values automatically.
+
+QR camera actions use the user-provided qr-code.png as a 28px CSS alpha mask, with green high-contrast buttons (46px minimum height), text labels and keyboard focus. Dark mode uses a pale green surface with dark ink. Camera handlers and lazy-loading stay unchanged.
