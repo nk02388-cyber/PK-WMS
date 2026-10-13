@@ -42,7 +42,8 @@
 :root[data-theme="dark"] .viz-root .kpi-total-fixed{background:#29493e!important;border-color:#3e6556}
 :root[data-theme="dark"] .viz-root .kpi-total-fixed :where(.kpi-scope,.label,.value,.sub){color:#c5efda!important}
 .viz-root :is(.bar-fill,.barchart.vertical .bar-fill,#whChart .bar-fill){background:#a9d3e5;border-radius:5px 5px 0 0}
-.viz-root .bar-row[data-warehouse]:is(:hover,[aria-checked=true]) .bar-fill{background:#6ba6c0}
+.viz-root #whChart .bar-fill{background:#78b0c9}
+.viz-root #whChart .bar-row[data-warehouse]:is(:hover,[aria-checked=true]) .bar-fill{background:#5c95af}
 .viz-root #catChart .bar-fill{background:#5aa77d;border-radius:8px}
 .viz-root .bar-track{background:var(--gridline)}
 .viz-root .stock-update-btn,.viz-root .incoming-step .incoming-primary,.viz-root .incoming-record-actions button[data-select-tag],.viz-root .incoming-view-nav button[aria-pressed=true]{background:var(--series-1-wash)!important;border-color:var(--border)!important;color:var(--series-1)!important}
