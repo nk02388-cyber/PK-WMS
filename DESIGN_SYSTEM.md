@@ -71,7 +71,7 @@ Related components: header freshness notice, gauge, trend chart, stock tables an
 
 ## Motion
 
-Use existing finite animation routines rather than adding a dependency. Desktop sidebar width uses 340ms `cubic-bezier(.4,0,.2,1)`; mobile drawer uses 320ms; hover expansion uses the same desktop transition with a 120ms pointer-leave delay. Gauge/progress and trend reveals are approximately 1100ms where currently implemented. These are implementation values, not permission to animate every element continuously.
+Use existing finite animation routines rather than adding a dependency. Desktop sidebar width and mobile drawer use 280ms `cubic-bezier(.22,1,.36,1)`; menu names and badges fade in over 200ms; hover expansion uses the same desktop transition with a 120ms pointer-leave delay. Gauge/progress and trend reveals are approximately 1100ms where currently implemented. These are implementation values, not permission to animate every element continuously.
 
 Honor `prefers-reduced-motion: reduce`; cancel stale chart animations when data or view changes. Avoid display/layout jumps while labels fade. Gauge colors stay in green/yellow/red order regardless of percentage. Changing a date must update both chart and summary data, not only animate old data.
 
@@ -100,7 +100,7 @@ Update this document with component changes; keep [PRD.md](PRD.md) requirements 
 
 Movement analysis uses compact 18px desktop/16px mobile card padding, a full-width trend SVG with a fixed 230px height, 145px building gauges and a 105px activity donut. Text, date controls, chart data and motion remain unchanged.
 
-Desktop sidebar labels keep a 262px menu-row layout while the navigation width animates. Menu labels have no independent fade/transform animation. The sidebar width alone slides open/closed; long-menu rows switch between 44px and 68px without a height animation. Reduced-motion preferences disable these transitions.
+Desktop sidebar labels keep a 262px menu-row layout while the navigation width animates. Menu labels and brand text fade in without translation; the navigation slides open/closed; long-menu rows switch between 44px and 68px without a height animation. Reduced-motion preferences disable these transitions.
 
 Dashboard primary KPIs: stock-value and total-capacity cards lead the page alongside activity distribution at 270px desktop height, with a 44-56px stock value, 210px gauge and 36px capacity percentage. Packaging age follows as a full-width strip with three columns on wide screens. At 600px and below, the two primary cards stack at 240px height. Data sources, chart animations and sidebar behaviour are preserved.
 

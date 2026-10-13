@@ -55,8 +55,6 @@
 :root[data-theme="dark"] .viz-root :where(input,select,textarea){background-color:var(--surface-2);color:var(--text-primary);border-color:var(--border)}
 @media(max-width:700px){.viz-root .panel{padding:16px}.viz-root .filter-bar{padding:12px}.viz-root .top-summary-row,.viz-root .two-col{gap:12px}}
 @media(prefers-reduced-motion:no-preference){
- .viz-root #tabs .tab-icon{transition:transform .18s ease}
- @media(hover:hover){.viz-root #tabs .tab-btn:hover .tab-icon{transform:translateY(-1px)}}
  .viz-root .account-panel:not([hidden]){animation:wms-pop .2s cubic-bezier(.22,1,.36,1)}
  .viz-root dialog[open]{animation:wms-pop .24s cubic-bezier(.22,1,.36,1)}
  .viz-root .floorplan-zoom-modal:not([hidden]) .floorplan-zoom-box{animation:wms-pop .24s cubic-bezier(.22,1,.36,1)}

@@ -1,114 +1,48 @@
-.sidebar-toggle,.sidebar-close {
-  width:44px;height:44px;flex:none;display:grid;place-items:center;padding:0;
-  border:1px solid var(--border);border-radius:12px;background:var(--surface-1);color:var(--text-primary);cursor:pointer;
-}
-.sidebar-toggle svg { width:21px;height:21px; }
-.sidebar-toggle:hover { border-color:var(--series-1);background:var(--series-1-wash); }
-.sidebar-close { display:none; }
-.sidebar-backdrop { display:none; }
-@media(min-width:1024px) {
-  .viz-root .wrap { transition:grid-template-columns .24s cubic-bezier(.22,1,.36,1); }
-  .viz-root #tabs { min-width:0;overflow-x:hidden; }
-  .viz-root.sidebar-collapsed .wrap { grid-template-columns:64px minmax(0,1fr); }
-  .viz-root.sidebar-collapsed #tabs { display:flex;width:100%;box-sizing:border-box;padding:0 8px 24px;gap:4px; }
-  .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand { display:flex;justify-content:center;min-height:var(--dashboard-shell-header-h);height:var(--dashboard-shell-header-h);margin:0 -8px 12px;padding:0;gap:0;border-bottom:1px solid rgba(227,240,232,.25); }
-  .viz-root.sidebar-collapsed #tabs .dashboard-nav-brand img { display:block;width:36px;height:36px;flex:none; }
-  .viz-root.sidebar-collapsed #tabs .dashboard-nav-name { display:none; }
-  .viz-root.sidebar-collapsed #tabs .tab-btn { display:flex;justify-content:center;align-items:center;width:48px;min-height:44px;padding:10px 0;gap:0; }
-  .viz-root.sidebar-collapsed #tabs .tab-btn > span { display:none; }
-  .viz-root.sidebar-collapsed #tabs .tab-icon { display:block;width:20px;height:20px;flex:none; }
-  .viz-root.sidebar-collapsed header.top .header-product-name { display:block; }
-}
-@media(max-width:1023px) {
-  .viz-root .dashboard-layout { display:block; }
-  .viz-root #tabs {
-    position:fixed;inset:0 auto 0 0;z-index:410;width:min(300px,calc(100vw - 56px));
-    height:100dvh;max-height:100dvh;min-height:0;box-sizing:border-box;margin:0;padding:0 12px 24px;
-    display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;gap:4px;
-    overflow-y:auto;overflow-x:hidden;background:var(--nav-ink);border:0;border-radius:0;
-    transform:translateX(-100%);visibility:hidden;
-    transition:transform .26s cubic-bezier(.22,1,.36,1),visibility 0s linear .26s;
-  }
-  .viz-root.sidebar-drawer-open #tabs { transform:translateX(0);visibility:visible;transition-delay:0s; }
-  .viz-root #tabs .dashboard-nav-brand { display:flex;align-items:center;gap:12px;padding:16px 12px;margin:0 0 12px;border-bottom:1px solid var(--border);color:#fff; }
-  .viz-root #tabs .dashboard-nav-brand img { width:36px;height:36px; }
-  .viz-root #tabs .dashboard-nav-name { display:grid;gap:3px;font-size:14px;min-width:0; }
-  .viz-root #tabs .dashboard-nav-name small { font-size:9px; }
-  .viz-root #tabs .tab-btn { display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;flex:none;gap:4px 10px;white-space:normal;text-align:left;width:100%;margin:0;color:var(--nav-text); }
-  .viz-root #tabs .tab-btn > span:first-of-type { min-width:0; }
-  .viz-root #tabs #tab-bompk { grid-template-columns:18px minmax(0,1fr); }
-  .viz-root #tabs #tab-bompk .tab-badge { grid-column:2;grid-row:2;justify-self:start;margin-left:0; }
-  .viz-root #tabs .tab-btn.active { color:#1d2410; }
-  .viz-root #tabs .tab-btn .tab-icon { flex:none; }
-  .viz-root #tabs .tab-btn .tab-badge { flex:none; }
-  .viz-root #tabs .sidebar-close { display:grid;margin-left:auto;width:44px;height:44px;border-color:#555a51;background:transparent;color:#fff; }
-  /* Keep the backdrop mounted while it fades out, without intercepting taps. */
-  .sidebar-backdrop,.sidebar-backdrop[hidden] { display:block;position:fixed;inset:0;z-index:405;background:rgba(0,0,0,.45);border:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .26s ease,visibility 0s linear .26s; }
-  .sidebar-backdrop:not([hidden]) { opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s; }
-  body.sidebar-drawer-open { overflow:hidden; }
-  .viz-root header.top .header-brand { gap:8px;min-width:0; }
-  .viz-root header.top .header-logo { display:none; }
-}
-@media(prefers-reduced-motion:reduce){.viz-root #tabs,.viz-root .wrap,.sidebar-backdrop { transition:none; }}
-
-@media(min-width:1024px){.viz-root.sidebar-collapsed #tabs{width:64px;max-width:none;position:sticky;z-index:300}}
-
-/* One continuous layout transition; labels fade without display/layout jumps. */
-@media(min-width:1024px){
- .viz-root .wrap{transition:grid-template-columns .34s cubic-bezier(.4,0,.2,1)}
- .viz-root #tabs,.viz-root.sidebar-collapsed #tabs{width:100%;max-width:none;overflow-x:hidden;padding:0 8px 24px;gap:4px}
- .viz-root #tabs .tab-btn,.viz-root.sidebar-collapsed #tabs .tab-btn{display:flex;align-items:center;justify-content:flex-start;box-sizing:border-box;width:100%;min-height:44px;padding:10px 14px;gap:10px;overflow:hidden;transition:background-color .16s ease}
- .viz-root #tabs .tab-icon{width:20px;height:20px;flex:none}
- .viz-root #tabs .tab-btn>span{display:block;opacity:1;visibility:visible;transform:translateX(0);transition:opacity .18s ease .08s,transform .26s cubic-bezier(.4,0,.2,1) .05s,visibility 0s}
- .viz-root #tabs .tab-btn>span:first-of-type{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
- .viz-root.sidebar-collapsed #tabs .tab-btn>span{display:block;opacity:0;visibility:hidden;transform:translateX(-8px);transition:opacity .12s ease,transform .2s ease,visibility 0s linear .16s}
- .viz-root #tabs .dashboard-nav-name{display:grid;overflow:hidden;opacity:1;visibility:visible;transition:opacity .18s ease .08s,visibility 0s}
- .viz-root.sidebar-collapsed #tabs .dashboard-nav-name{display:grid;max-width:0;opacity:0;visibility:hidden;transition:opacity .12s ease,visibility 0s linear .16s}
-}
-@media(max-width:1023px){.viz-root #tabs{transition:transform .32s cubic-bezier(.4,0,.2,1),visibility 0s linear .32s}.viz-root.sidebar-drawer-open #tabs{transition-delay:0s}.sidebar-backdrop,.sidebar-backdrop[hidden]{transition:opacity .24s ease,visibility 0s linear .32s}.sidebar-backdrop:not([hidden]){transition-delay:0s}}
-@media(prefers-reduced-motion:reduce){.viz-root .wrap,.viz-root #tabs,.viz-root #tabs .tab-btn>span,.viz-root #tabs .dashboard-nav-name,.sidebar-backdrop{transition:none!important}}
-
-/* Long labels and their badges get separate rows, rather than competing for width. */
+.sidebar-toggle,.sidebar-close{width:44px;height:44px;flex:none;display:grid;place-items:center;padding:0;border:1px solid var(--border);border-radius:12px;background:var(--surface-1);color:var(--text-primary);cursor:pointer}
+.sidebar-toggle svg{width:21px;height:21px}
+.sidebar-toggle:hover{border-color:var(--series-1);background:var(--series-1-wash)}
+.sidebar-close,.sidebar-backdrop{display:none}
+/* One motion system: navigation slides; labels fade without moving or reflowing. */
+.viz-root #tabs .tab-icon,.viz-root #tabs .tab-btn:hover .tab-icon{transform:none;transition:none}
 .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts){display:grid;grid-template-columns:20px minmax(0,1fr);gap:4px 10px;flex-wrap:nowrap}
 .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts)>span:first-of-type{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.45}
 .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts) .tab-icon{grid-column:1;grid-row:1}
 .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts) .tab-badge{grid-column:2;grid-row:2;justify-self:start;margin-left:0;max-width:100%;box-sizing:border-box;white-space:normal}
 @media(min-width:1024px){
- .viz-root.sidebar-collapsed #tabs :is(.tab-btn,#tab-bompk,#tab-cycle-counts){position:relative;display:flex;flex-wrap:nowrap;justify-content:center;gap:0;padding-inline:0}
- /* Hidden text must not keep a flex row alive or enlarge the BOM icon button. */
- .viz-root.sidebar-collapsed #tabs .tab-btn>span{position:absolute;width:0;max-width:0;overflow:hidden;margin:0;padding:0;pointer-events:none}
-}
-
-/* Hover reserves only the icon rail; a pinned sidebar shifts the page alongside it. */
-@media(min-width:1024px){
- .viz-root .wrap,.viz-root.sidebar-collapsed .wrap{grid-template-columns:64px minmax(0,1fr);transition:grid-template-columns .34s cubic-bezier(.4,0,.2,1)}
+ .viz-root .wrap{grid-template-columns:64px minmax(0,1fr);transition:grid-template-columns .28s cubic-bezier(.22,1,.36,1)}
  .viz-root.sidebar-pinned-open .wrap{grid-template-columns:278px minmax(0,1fr)}
- .viz-root #tabs,.viz-root.sidebar-collapsed #tabs{position:sticky;z-index:300;width:278px;max-width:none;box-sizing:border-box;transition:width .34s cubic-bezier(.4,0,.2,1),box-shadow .2s ease}
- .viz-root #tabs{box-shadow:8px 0 24px #15242b1a}
+ .viz-root #tabs{position:sticky;z-index:300;min-width:0;max-width:none;width:278px;box-sizing:border-box;overflow-x:hidden;padding:0 8px 24px;gap:4px;box-shadow:8px 0 24px #15242b1a;transition:width .28s cubic-bezier(.22,1,.36,1)}
  .viz-root.sidebar-collapsed #tabs{width:64px;box-shadow:none}
-}
-
-/* Keep text layout at full width while the rail reveals it. This avoids
-   repeatedly wrapping labels and moving badges during each animation frame. */
-@media(min-width:1024px){
- .viz-root #tabs .tab-btn,.viz-root.sidebar-collapsed #tabs .tab-btn{width:262px;flex-shrink:0;justify-content:flex-start;padding:10px 14px;gap:10px}
- .viz-root.sidebar-collapsed #tabs :is(.tab-btn,#tab-bompk,#tab-cycle-counts){justify-content:flex-start;padding:10px 14px;gap:10px}
- .viz-root #tabs .tab-btn>span{transition:opacity .18s ease,transform .26s cubic-bezier(.4,0,.2,1),visibility 0s}
- .viz-root.sidebar-collapsed #tabs .tab-btn>span{position:static;width:auto;max-width:none;margin:0;padding:0;transition:opacity .12s ease,transform .2s ease,visibility 0s linear .16s}
- .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts),.viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){display:grid;grid-template-columns:20px minmax(0,1fr);grid-template-rows:24px 20px;align-content:start;gap:4px 10px;height:68px;min-height:44px;transition:height .34s cubic-bezier(.4,0,.2,1),background-color .16s ease}
+ .viz-root #tabs .dashboard-nav-brand{display:flex;align-items:center;justify-content:flex-start;box-sizing:border-box;width:278px;min-height:var(--dashboard-shell-header-h);height:var(--dashboard-shell-header-h);margin:0 -8px 12px;padding:0 14px;gap:12px;border-bottom:1px solid var(--border)}
+ .viz-root #tabs .dashboard-nav-brand img{display:block;width:36px;height:36px;flex:none}
+ .viz-root #tabs .dashboard-nav-name{display:grid;min-width:0;max-width:none;opacity:1;visibility:visible;transition:opacity .2s ease}
+ .viz-root #tabs .tab-btn{display:flex;align-items:center;justify-content:flex-start;box-sizing:border-box;width:262px;min-height:44px;flex-shrink:0;padding:10px 14px;gap:10px;overflow:hidden}
+ .viz-root #tabs .tab-icon{display:block;width:20px;height:20px;flex:none}
+ .viz-root #tabs .tab-btn>span{display:block;position:static;transform:none;opacity:1;visibility:visible;transition:opacity .2s ease}
+ .viz-root #tabs .tab-btn>span:first-of-type{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .viz-root.sidebar-collapsed #tabs .tab-btn>span,.viz-root.sidebar-collapsed #tabs .dashboard-nav-name{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .14s ease,visibility 0s linear .14s}
+ .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts){grid-template-rows:24px 20px;align-content:start;height:68px}
  .viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){height:44px}
- .viz-root #tabs .dashboard-nav-name{transition:opacity .18s ease,visibility 0s}
+ .viz-root.sidebar-collapsed header.top .header-product-name{display:block}
 }
-@media(prefers-reduced-motion:reduce){.viz-root #tabs :is(#tab-bompk,#tab-cycle-counts){transition:none!important}}
-
-/* Reveal the fixed menu through the sliding rail, without separate text motion. */
-@media(min-width:1024px){
- .viz-root #tabs .tab-btn>span,.viz-root.sidebar-collapsed #tabs .tab-btn>span,
- .viz-root #tabs .dashboard-nav-name,.viz-root.sidebar-collapsed #tabs .dashboard-nav-name{opacity:1;visibility:visible;transform:none;transition:none}
- .viz-root.sidebar-collapsed #tabs .tab-btn>span{visibility:hidden}
- .viz-root #tabs .dashboard-nav-name{max-width:none}
- .viz-root.sidebar-collapsed #tabs .dashboard-nav-name{visibility:hidden}
- .viz-root #tabs :is(#tab-bompk,#tab-cycle-counts),.viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){height:68px;transition:background-color .16s ease}
- .viz-root.sidebar-collapsed #tabs :is(#tab-bompk,#tab-cycle-counts){height:44px}
- .viz-root #tabs .tab-btn .tab-icon,.viz-root #tabs .tab-btn:hover .tab-icon{transform:none;transition:none}
+@media(max-width:1023px){
+ .viz-root .dashboard-layout{display:block}
+ .viz-root #tabs{position:fixed;inset:0 auto 0 0;z-index:410;width:min(300px,calc(100vw - 56px));height:100dvh;max-height:100dvh;min-height:0;box-sizing:border-box;margin:0;padding:0 12px 24px;display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;gap:4px;overflow-y:auto;overflow-x:hidden;background:var(--nav-ink);border:0;border-radius:0;transform:translateX(-100%);visibility:hidden;transition:transform .28s cubic-bezier(.22,1,.36,1),visibility 0s linear .28s}
+ .viz-root.sidebar-drawer-open #tabs{transform:translateX(0);visibility:visible;transition-delay:0s}
+ .viz-root #tabs .dashboard-nav-brand{display:flex;align-items:center;gap:12px;padding:16px 12px;margin:0 0 12px;border-bottom:1px solid var(--border)}
+ .viz-root #tabs .dashboard-nav-brand img{width:36px;height:36px}
+ .viz-root #tabs .dashboard-nav-name{display:grid;gap:3px;font-size:14px;min-width:0}
+ .viz-root #tabs .dashboard-nav-name small{font-size:9px}
+ .viz-root #tabs .tab-btn{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;flex:none;gap:4px 10px;white-space:normal;text-align:left;width:100%;margin:0;color:var(--nav-text)}
+ .viz-root #tabs .tab-btn>span:first-of-type{min-width:0}
+ .viz-root #tabs .tab-btn>span,.viz-root #tabs .dashboard-nav-name{opacity:0;transform:none;transition:opacity .2s ease}
+ .viz-root.sidebar-drawer-open #tabs .tab-btn>span,.viz-root.sidebar-drawer-open #tabs .dashboard-nav-name{opacity:1}
+ .viz-root #tabs .tab-icon,.viz-root #tabs .tab-badge{flex:none}
+ .viz-root #tabs .sidebar-close{display:grid;margin-left:auto;width:44px;height:44px;border-color:var(--border);background:transparent;color:var(--text-primary)}
+ .sidebar-backdrop,.sidebar-backdrop[hidden]{display:block;position:fixed;inset:0;z-index:405;background:rgba(0,0,0,.45);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility 0s linear .28s}
+ .sidebar-backdrop:not([hidden]){opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+ body.sidebar-drawer-open{overflow:hidden}
+ .viz-root header.top .header-brand{gap:8px;min-width:0}
+ .viz-root header.top .header-logo{display:none}
 }
+@media(prefers-reduced-motion:reduce){.viz-root .wrap,.viz-root #tabs,.viz-root #tabs .tab-btn>span,.viz-root #tabs .dashboard-nav-name,.sidebar-backdrop{transition:none!important}}
