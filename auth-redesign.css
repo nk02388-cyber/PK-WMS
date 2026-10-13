@@ -1,0 +1,62 @@
+/* Figma BCL WMS: Login 3:11/3:13, departments 3:12/3:14.
+   Loaded last; overrides only the authentication shell. */
+:root[data-theme] .viz-root :is(.auth-screen,.department-screen) {
+  --auth-brand: #267457;
+  grid-template-columns: minmax(0, 530fr) minmax(0, 910fr);
+  place-items: stretch; align-items: stretch;
+  padding: 0; background: var(--surface-1); color: var(--text-primary);
+}
+:root[data-theme="dark"] .viz-root :is(.auth-screen,.department-screen) { --auth-brand: #9ed5ba; }
+.auth-story { display: flex; flex-direction: column; justify-content: center; gap: 28px; padding: 60px clamp(28px,4.03vw,58px); background: #173d32; color: #e8f4ee; }
+.auth-story span { font-size: 15px; font-weight: 600; }
+:root[data-theme] .viz-root .auth-story h2 { margin: 0; font-size: clamp(32px,3.34vw,48px) !important; font-weight: 600 !important; line-height: 1.5; color: #fff; }
+.auth-story p { margin: 0; font-size: 20px; line-height: 1.5; }
+.auth-story img { width: min(100%,330px); height: auto; }
+.auth-content { display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 0; padding: 70px clamp(24px,5.56vw,80px) 24px; }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) { box-sizing: border-box; width: 100%; max-width: 480px; display: grid; gap: 24px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; font-size: 16px; line-height: 1.5; }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) .auth-brand { gap: 14px; min-height: 56px; padding: 0; border: 0; }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) .auth-brand img { width: 52px; height: 52px; background: white; object-fit: cover; object-position: 50% 0; }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) .auth-brand div { gap: 0; }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) .auth-brand strong { font-size: 21px; font-weight: 600; letter-spacing: 0; color: var(--text-primary); }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) .auth-brand div span { font-size: 11px; letter-spacing: 0; color: var(--text-secondary); }
+:root[data-theme] .viz-root :is(#authTitle,#departmentTitle) { margin: 0; font-size: 32px !important; font-weight: 600 !important; line-height: 1.5; color: var(--text-primary); }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) :is(.auth-intro,.department-intro) { margin: 0; font-size: 16px; color: var(--text-secondary); }
+:root[data-theme] .viz-root .auth-card label { gap: 8px; font-size: 16px; font-weight: 400; color: var(--text-primary); }
+:root[data-theme] .viz-root .auth-card input { min-height: 54px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-1); color: var(--text-primary); font-size: 16px; line-height: 1.5; }
+:root[data-theme] .viz-root .auth-card input::placeholder { color: var(--text-secondary); font-size: 16px; }
+:root[data-theme] .viz-root .auth-card input:focus-visible { border-color: var(--focus-ring); outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+:root[data-theme] .viz-root .auth-card #authChangeDepartment { justify-self: stretch; justify-content: center; margin: 0; min-height: 54px; padding: 12px 16px; border-radius: 12px; background: transparent; color: var(--auth-brand); font-size: 16px; font-weight: 600; }
+:root[data-theme] .viz-root .auth-card #authChangeDepartment:hover { background: var(--nav-active); }
+:root[data-theme] .viz-root .auth-card #authTogglePassword { position: static; justify-self: start; min-height: 44px; margin: -10px 0; padding: 8px 0; background: transparent; color: var(--auth-brand); font-size: 14px; font-weight: 400; }
+:root[data-theme] .viz-root .auth-card #authTogglePassword:hover { text-decoration: underline; }
+:root[data-theme] .viz-root .auth-card #authSubmit { min-height: 54px; padding: 12px 16px; border-radius: 12px; background: #267457; color: #fff; font-size: 16px; font-weight: 600; }
+:root[data-theme] .viz-root .auth-card #authSubmit:hover:not(:disabled) { background: #1b5e44; }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) :is(button,a):focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+:root[data-theme] .viz-root .auth-card .auth-help { margin: 0; color: var(--text-secondary); font-size: 13px; }
+:root[data-theme] .viz-root :is(.auth-card,.department-card) :is(.auth-footer,.department-footer) { padding: 0; border: 0; text-align: left; color: var(--text-secondary); font-size: 12px; }
+:root[data-theme] .viz-root .department-options { gap: 12px; margin: 0; }
+:root[data-theme] .viz-root .department-option { display: block; min-height: 124px; padding: 20px 24px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-1); color: var(--text-primary); }
+:root[data-theme] .viz-root .department-option .department-copy { gap: 4px; }
+:root[data-theme] .viz-root .department-option .department-code { font-size: 12px; font-weight: 600; letter-spacing: 0; color: var(--auth-brand); }
+:root[data-theme] .viz-root .department-option strong { font-size: 21px; font-weight: 600; line-height: 1.5; color: var(--text-primary); }
+:root[data-theme] .viz-root .department-option small { font-size: 14px; font-weight: 400; color: var(--text-secondary); }
+:root[data-theme] .viz-root .department-option:hover,:root[data-theme] .viz-root .department-option:focus-visible { background: var(--nav-active); border-color: var(--focus-ring); }
+:root[data-theme] .viz-root .department-card .department-note { padding: 0; border-radius: 0; background: transparent; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+@media (max-width: 900px) {
+  :root[data-theme] .viz-root :is(.auth-screen,.department-screen) { grid-template-columns: minmax(0,1fr); }
+  .auth-story { display: none; }
+  .auth-content { justify-content: flex-start; padding: 32px 24px; }
+  :root[data-theme] .viz-root :is(.auth-card,.department-card) { gap: 16px; }
+  :root[data-theme] .viz-root :is(#authTitle,#departmentTitle) { font-size: 26px !important; }
+}
+@media (max-height: 740px) and (min-width: 901px) {
+  .auth-content { justify-content: flex-start; padding-top: 32px; padding-bottom: 32px; }
+}
+
+:root[data-theme] .viz-root .department-option { background: var(--surface-1) !important; }
+:root[data-theme] .viz-root .department-option:hover { background: var(--nav-active) !important; }
+:root[data-theme] .viz-root .auth-card :is(#authSubmit,#authChangeDepartment) { font-size: 16px !important; }
+:root[data-theme] .viz-root .auth-card #authTogglePassword { border: 0; }
+:root[data-theme] .viz-root .department-card .department-note { border: 0; }
+
+:root[data-theme] .viz-root .auth-card #authChangeDepartment { border: 0; }
