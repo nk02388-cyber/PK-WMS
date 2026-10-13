@@ -121,3 +121,5 @@ Movement date filters (13 October 2026): replace preset duration with labeled Fr
 Category-value horizontal bars use #5aa77d, matching the green capacity-gauge band, in both light and dark themes (13 October 2026).
 
 Warehouse-value bars use a deeper blue #78b0c9 with #5c95af on hover; category bars keep their gauge-matched green (13 October 2026).
+
+Pallet withdrawal entry defaults to today in Bangkok and shows up to five latest withdrawals for the selected product, with date, quantity/unit, actor and document. Values are escaped; no historical data is overwritten.

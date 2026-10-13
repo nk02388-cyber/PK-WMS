@@ -1243,6 +1243,10 @@
   .fse-edit-form { border-color: var(--series-1); box-shadow: inset 3px 0 0 var(--series-1), 0 4px 14px rgba(15,23,42,.07); }
   .fse-withdraw-form { border-color: #d28b00; box-shadow: inset 3px 0 0 #d28b00, 0 4px 14px rgba(15,23,42,.07); }
   .fse-return-form { border-color: var(--status-good); box-shadow: inset 3px 0 0 var(--status-good), 0 4px 14px rgba(15,23,42,.07); }
+  .fw-recent{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px}
+  .fw-recent-scroll{overflow-x:auto;margin-top:6px}
+  .fw-recent table{width:100%;min-width:440px;border-collapse:collapse}
+  .fw-recent th,.fw-recent td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
   .fse-edit-form input, .fse-withdraw-form input, .fse-return-form input { min-height: 34px; border-radius: 8px; }
   .fse-edit-save, .fse-edit-cancel, .fw-save-btn, .fw-cancel-btn, .fr-save-btn, .fr-cancel-btn {
     min-height: 34px; box-sizing: border-box; padding: 6px 12px; border-radius: 8px;
@@ -5770,7 +5774,11 @@ function renderWithdrawForm(i, item, remaining) {
   const hint = remaining != null
     ? `เบิกได้ไม่เกิน ${escapeHtml(String(remaining))}${item.unit ? ' ' + escapeHtml(item.unit) : ''}`
     : `ไม่ระบุยอดรับ · บันทึกเฉพาะประวัติการเบิก ไม่คำนวณคงเหลือ`;
-  // Movement history is already shown in the stock card above this entry form.
+  const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const part = type => parts.find(p => p.type === type).value;
+  const today = `${part('year')}-${part('month')}-${part('day')}`;
+  const recent = getStockMovement(item).rows.filter(row => row.type === 'withdraw').reverse().slice(0,5);
+  const recentHtml = recent.length ? `<div class="fw-recent"><strong>ประวัติเบิกล่าสุด 5 รายการ</strong><div class="fw-recent-scroll"><table><thead><tr><th>วันที่</th><th>จำนวน</th><th>ผู้เบิก</th><th>เลขเอกสาร</th></tr></thead><tbody>${recent.map(row => `<tr><td>${escapeHtml(formatMovementDate(row.date))}</td><td>${escapeHtml(String(row.qty))} ${escapeHtml(row.unit)}</td><td>${escapeHtml(row.by || '—')}</td><td>${escapeHtml(row.reference || '—')}</td></tr>`).join('')}</tbody></table></div></div>` : '<div class="fw-hint">ยังไม่มีประวัติการเบิกสินค้านี้</div>';
   return `
     <div class="fse-withdraw-form" data-idx="${i}">
       <table class="fw-table">
@@ -5779,7 +5787,7 @@ function renderWithdrawForm(i, item, remaining) {
         </thead>
         <tbody>
           <tr class="fw-entry-row">
-            <td><input type="date" class="fw-date" title="วันที่เบิกจ่าย"></td>
+            <td><input type="date" class="fw-date" title="วันที่เบิกจ่าย" value="${today}"></td>
             <td><input type="number" class="fw-qty" placeholder="จำนวน" min="0"${maxAttr} step="any" inputmode="decimal"></td>
             <td><input type="text" class="fw-unit" placeholder="หน่วย" value="${escapeHtml(item.unit || '')}"></td>
             <td><input type="text" class="fw-by" placeholder="ชื่อผู้เบิก"></td>
@@ -5789,6 +5797,7 @@ function renderWithdrawForm(i, item, remaining) {
       <label>เลขเอกสารเบิก * <input type="text" class="fw-reference" placeholder="เลขใบเบิก / เลขอ้างอิง" required></label>
       <div class="fw-actions"><button type="button" class="fw-save-btn" data-idx="${i}" disabled>ยืนยันการเบิก</button><button type="button" class="fw-cancel-btn" data-idx="${i}">ยกเลิก</button></div>
       <div class="fw-hint">${hint}</div>
+      ${recentHtml}
     </div>`;
 }
 
