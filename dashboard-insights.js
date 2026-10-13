@@ -22,7 +22,7 @@ if(typeof module!=='undefined'&&module.exports){module.exports={dateKey,summariz
 const host=document.getElementById('dashboardInsights');if(!host)return;
 const from=host.querySelector('#diFromDate'),date=host.querySelector('#diToDate'),chart=host.querySelector('.di-trend'),mix=document.querySelector('#dashboardActivity .di-mix') || host.querySelector('.di-mix'),stats=host.querySelector('.di-stats'),note=host.querySelector('.di-note');
 const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const part=t=>parts.find(p=>p.type===t).value;date.value=part('year')+'-'+part('month')+'-'+part('day');
-from.value=new Date(Date.parse(date.value+'T00:00:00Z')-29*86400000).toISOString().slice(0,10);
+from.value=date.value.slice(0,7)+'-01';
 const series=[['receive','รับเข้า','#6ba6c0'],['issue','เบิกออก','#c99c39'],['returns','รับคืน','#74bc95']];let last='', pendingMotion=false;const reduced=matchMedia('(prefers-reduced-motion: reduce)'),motions=new Set();
 function cancelMotion(){for(const a of motions)a.cancel();motions.clear();}
 function playMotion(replay=true){

@@ -21,6 +21,10 @@ const root=path.resolve(__dirname,'..');
 
  await page.waitForTimeout(1800);
 
+ const defaultTo=await page.locator('#diToDate').inputValue();
+ const bangkokToday=await page.evaluate(()=>{const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=t=>parts.find(p=>p.type===t).value;return `${get('year')}-${get('month')}-${get('day')}`;});
+ assert.equal(defaultTo,bangkokToday);
+ assert.equal(await page.locator('#diFromDate').inputValue(),defaultTo.slice(0,7)+'-01');
  await page.evaluate(()=>{palletDataReady=true;Object.keys(SLOT_ITEMS).forEach(k=>delete SLOT_ITEMS[k]);Object.assign(SLOT_ITEMS,{A:{'A-1':[{qty:10,receiveDate:'2026-10-02',withdrawals:[{date:'2026-10-08',qty:3}],returns:[{date:'2026-10-07',qty:1}]}]}});PKDashboardInsights.refresh();});
  const host=page.locator('#dashboardInsights');await host.locator('#diToDate').fill('2026-10-08');await host.locator('#diToDate').dispatchEvent('change');
  assert.equal(await host.locator('.di-stats strong').first().textContent(),'1 รายการ');assert.equal(await host.locator('svg').count(),1);
