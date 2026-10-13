@@ -120,3 +120,20 @@
  .viz-root .dashboard-activity .di-mix svg{max-width:90px}
  .viz-root .dashboard-activity .di-mix{grid-template-columns:90px minmax(0,1fr)}
 }
+
+.viz-root .dashboard-overview{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,.9fr)}
+.viz-root .dashboard-overview #dashboardActivity{min-width:0;box-sizing:border-box;height:270px;margin:0;padding:24px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--border);border-radius:14px;background:var(--surface-1)}
+.viz-root .dashboard-overview #dashboardActivity h2{font-size:18px;margin:0;color:var(--text-primary)}
+.viz-root .dashboard-overview #dashboardActivity .dashboard-widget-head{align-items:flex-start;margin-bottom:20px}
+.viz-root .dashboard-overview #dashboardActivity .di-mix{display:grid;grid-template-columns:105px minmax(0,1fr);gap:14px;align-items:center}
+.viz-root .dashboard-overview #dashboardActivity .di-mix svg{width:105px;max-width:100%}
+.viz-root .dashboard-overview #dashboardActivity .di-mix ul{font-size:12px}
+@media(min-width:1251px){.viz-root .dashboard-side-stack{grid-template-rows:minmax(0,1fr)}}
+@media(max-width:1100px){
+ .viz-root .dashboard-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .viz-root .dashboard-overview #dashboardActivity{grid-column:1 / -1;height:auto;min-height:170px}
+}
+@media(max-width:600px){
+ .viz-root .dashboard-overview{grid-template-columns:1fr}
+ .viz-root .dashboard-overview #dashboardActivity{padding:18px 16px}
+}
