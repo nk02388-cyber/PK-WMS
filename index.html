@@ -1995,7 +1995,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="typography.css?v=20261006-noto1">
 <link rel="stylesheet" href="dashboard-motion.css?v=20261007-1">
 <link rel="stylesheet" href="profile-avatar.css?v=20261008-1">
-<link rel="stylesheet" href="settings.css?v=20261008-rename1">
+<link rel="stylesheet" href="settings.css?v=20261013-sound1">
 <link rel="stylesheet" href="floorplan-mobile-controls.css?v=20261007-1">
 <link rel="stylesheet" href="reference-wms.css?v=20261013-sidebarcleanup1">
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
@@ -2062,6 +2062,7 @@ header.top .header-logo { border-radius: 14px; }
         </button>
         <div class="account-panel" id="accountPanel" hidden>
           <strong>บัญชีผู้ใช้</strong><span id="accountStatus">กำลังตรวจสอบการเข้าสู่ระบบ…</span>
+          <button type="button" id="uiSoundToggle" data-ui-sound-control aria-pressed="true">เสียงปุ่มและเมนู: เปิด</button>
           <button type="button" id="accountChangeDepartment">เปลี่ยนแผนก</button>
           <button type="button" id="accountLogout">ออกจากระบบ</button>
         </div>
@@ -3103,7 +3104,8 @@ header.top .header-logo { border-radius: 14px; }
   </div>
   <div class="tab-pane" id="pane-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
     <section class="panel settings-panel" aria-labelledby="settingsTitle"><h2 id="settingsTitle">ตั้งค่า</h2><p class="panel-sub">จัดการบัญชีและสิทธิ์การใช้งาน PK WMS</p>
-          <div id="accountAdmin" hidden>
+          <label class="ui-sound-setting" data-ui-sound-control><input id="uiSoundEnabled" type="checkbox" checked><span>เสียงเมื่อชี้เมาส์และกดปุ่มหรือเมนู<small>บันทึกการเปิด–ปิดเสียงเฉพาะเบราว์เซอร์นี้</small></span></label>
+      <div id="accountAdmin" hidden>
             <h3>จัดการผู้ใช้</h3><p class="panel-sub">เพิ่มผู้ใช้และกำหนดสิทธิ์การเข้าถึงเมนู</p>
             <form id="accountCreateForm">
               <label>ชื่อผู้ใช้<input name="username" required minlength="3" maxlength="32" pattern="[A-Za-z][A-Za-z0-9._-]{2,31}" autocomplete="off"></label>
@@ -10183,6 +10185,7 @@ window.addEventListener('pageshow', () => {
 <script src="pallet-audit.js?v=20261008-keywords1"></script>
 
 <script src="vendor/qrcode-generator.js"></script>
+<script src="ui-sound.js?v=20261013-1"></script>
 <script src="scan-sound.js?v=20260923-1"></script>
 <script src="barcode-operations.js?v=20260923-3"></script>
 <script src="barcode-ui.js?v=20261013-lazy1"></script>
