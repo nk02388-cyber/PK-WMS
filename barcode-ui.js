@@ -128,10 +128,12 @@
   startButton.addEventListener('click', async () => {
     if (cameraRunning || cameraStarting) return;
     PKScanSound.arm();
-    if (typeof Html5Qrcode === 'undefined') { message('โหลดตัวอ่านบาร์โค้ดไม่สำเร็จ กรุณารีเฟรช',true); return; }
     const generation = ++cameraGeneration;
     cameraStarting = true; startButton.disabled = true;
     try {
+      message('กำลังโหลดตัวสแกน…');
+      await PKDependencies.scanner();
+      if(generation !== cameraGeneration || document.hidden) return;
       const nextCamera = new Html5Qrcode('barcodeCameraView', {formatsToSupport:[0,3,4,5,6,8,9,10,11,13,14]});
       camera = nextCamera;
       view.hidden = false;

@@ -101,10 +101,6 @@
     keepCurrentDay();
     if (pending) return pending;
     if (!force && loadedAt && Date.now() - loadedAt.getTime() < REFRESH_MS) {render(); return;}
-    if (!window.XLSX) {
-      status.classList.add('error'); status.textContent = 'โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาโหลดหน้าใหม่';
-      return;
-    }
     refreshButton.disabled = true;
     status.classList.remove('error');
     status.textContent = workbook ? 'กำลังตรวจข้อมูลใหม่จาก Google Drive…' : 'กำลังโหลดไฟล์แผนจาก Google Drive…';
@@ -112,6 +108,7 @@
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30000);
       try {
+        await PKDependencies.excel();
         const response = await fetch(`${sourceUrl}&_=${Date.now()}`, {cache:'no-store', signal:controller.signal});
         if (!response.ok) throw new Error(`Google Drive ตอบกลับ HTTP ${response.status}`);
         const buffer = await response.arrayBuffer();
@@ -148,5 +145,5 @@
   document.getElementById('tab-receipt-plan').addEventListener('click', () => refresh());
   document.addEventListener('visibilitychange', () => {if (!document.hidden && !panel.hidden) refresh();});
   setInterval(() => {if (!document.hidden && !panel.hidden) refresh();}, REFRESH_MS);
-  refresh();
+  if(!panel.hidden)refresh();
 })();

@@ -329,9 +329,11 @@
   async function startCamera(target) {
     if(cameraStarting||cameraRunning)return;
     armScanAudio();
-    if(typeof Html5Qrcode==='undefined'){status('incomingListStatus','โหลดตัวอ่าน QR ไม่สำเร็จ กรุณารีเฟรช',true);return;}
     const generation=++cameraGeneration;cameraStarting=true;
     try {
+      status('incomingListStatus','กำลังโหลดตัวสแกน…');
+      await PKDependencies.scanner();
+      if(generation!==cameraGeneration||document.hidden)return;
       const reader=new Html5Qrcode('incomingCameraView',{formatsToSupport:[0,3,4,5,6,8,9,10,11,13,14]});
       camera=reader;$('incomingCameraView').hidden=false;
       await reader.start({facingMode:'environment'},{fps:8,qrbox:(w,h)=>({width:Math.min(w-20,320),height:Math.min(h-20,220)})},async decoded=>{

@@ -48,7 +48,7 @@ console.log('PASS: repeated BOM capacity/value, unknown units, small quantities,
   await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'error');
   loading.stockSupabaseClient={rpc:async()=>({data:{items:[{}],kpis:{},warehouses:[],report_date:'Current date'},error:null})};
   await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'latest');assert.match(note.textContent,/Current date/);
-  const imports=vm.createContext({window:{XLSX:{}},XLSX:{read:x=>({SheetNames:[x.date],Sheets:{[x.date]:{}}}),utils:{sheet_to_json:()=>[]}},
+  const imports=vm.createContext({window:{XLSX:{}},PKDependencies:{excel:async()=>{}},XLSX:{read:x=>({SheetNames:[x.date],Sheets:{[x.date]:{}}}),utils:{sheet_to_json:()=>[]}},
     rowsFromMatrix:(matrix,name,date)=>({rows:[{wh:'200'}],reportDate:date}),REQUIRED_STOCK_WAREHOUSES:['200']});
   vm.runInContext(source('parseStockFiles'),imports);
   const file=date=>({name:date,arrayBuffer:async()=>({date})});
