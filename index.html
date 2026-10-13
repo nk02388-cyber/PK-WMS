@@ -3398,6 +3398,21 @@ ZONE_SLOTS.U = U_SLOT_ORDER.map((oldNumber, index) => ({
   code:`U-${String(index+1).padStart(2,'0')}`,
 }));
 
+
+// Four new U positions extend the central rack without renaming existing locations.
+const uUpperLeft = ZONE_SLOTS.U.find(s => s.code === 'U-04');
+const uUpperRight = ZONE_SLOTS.U.find(s => s.code === 'U-05');
+const uLowerLeft = ZONE_SLOTS.U.find(s => s.code === 'U-16');
+const uLowerRight = ZONE_SLOTS.U.find(s => s.code === 'U-17');
+const uUpperGap = ZONE_SLOTS.U.find(s => s.code === 'U-07').topPct - uUpperLeft.topPct;
+const uLowerGap = uLowerLeft.topPct - ZONE_SLOTS.U.find(s => s.code === 'U-13').topPct;
+ZONE_SLOTS.U.push(
+ {code:'U-26',leftPct:uUpperLeft.leftPct,topPct:uUpperLeft.topPct-uUpperGap},
+ {code:'U-27',leftPct:uUpperRight.leftPct,topPct:uUpperRight.topPct-uUpperGap},
+ {code:'U-28',leftPct:uLowerLeft.leftPct,topPct:uLowerLeft.topPct+uLowerGap},
+ {code:'U-29',leftPct:uLowerRight.leftPct,topPct:uLowerRight.topPct+uLowerGap},
+);
+
 // M1: retire the two lower-right positions and add four in the marked aisle.
 // Geometry only: keep stored inventory/history attached to its original identity.
 const m1OriginalSlots = ZONE_SLOTS['M-1'];
@@ -4310,7 +4325,7 @@ const AREA_BUILDINGS = [
     // in two buildings) and push the total to 548, nowhere near his stated 503 -- confirmed with
     // him this means "J-1" (matching every other "-1"-suffixed zone in this list).
     zones: ['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1','I-1','J-1','K-1','L-1','M-1','N-1','O-1','P-1','Q-1','R-1','S-1','T-1','U'],
-    palletNo: 526, // Original 503 + 20 in T-1 + net 1 in U + net 2 in M1.
+    palletNo: 530, // Original 503 + 20 in T-1 + net 5 in U + net 2 in M1.
   },
   {
     key: 'new',
@@ -4733,6 +4748,16 @@ function renderZoomSlots(zoneCode) {
     zoomSlotsLayer.innerHTML += ZONE_SLOTS['M-1'].filter(s => ['M1-23','M1-24','M1-25','M1-26'].includes(s.code)).map(s =>
       `<div class="zoom-context-slot" data-zone="M-1" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`
     ).join('');
+  }
+  // U's added positions and new numbering differ from the static CAD artwork.
+  // Draw the current U projection in neighbouring views without changing edit scope.
+  if (zoneCode !== 'U') {
+    zoomSlotsLayer.innerHTML += ZONE_SLOTS.U.map(s => {
+      const status = slotAgeStatus('U', s.code);
+      const ageCls = status === 'none' ? '' : ` age-${status}`;
+      const occCls = isOccupied('U', s.code) ? ' occupied' : '';
+      return `<div class="zoom-context-slot${occCls}${ageCls}" data-zone="U" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
+    }).join('');
   }
   zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
     if(mobileMapView)el.style.display='none';else el.style.backgroundImage = `url(${zoomSourceUrl})`;
