@@ -127,3 +127,5 @@ Pallet withdrawal entry defaults to today in Bangkok and shows up to five latest
 Pallet return entry also defaults to today in Bangkok and shows up to five latest returns for the selected product, newest first, with date, quantity/unit, returner and reference. Empty histories show an explicit message.
 
 Withdrawal/return recent tables are superseded by native input suggestions: quantity, actor and document inputs have datalists of distinct values from the latest five matching movements of the selected product. Selection fills only that input. Today defaults remain; no separate history table or empty-history message is shown. Browser controls the suggestion popup appearance.
+
+Recent withdrawal/return input suggestions now span every loaded pallet and product, separated by action. Sort newest recordedAt first, falling back to movement date; each field exposes the newest five distinct nonempty values. Rendering preserves stock/history and never writes suggested values automatically.

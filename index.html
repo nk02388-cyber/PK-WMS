@@ -5761,6 +5761,27 @@ function updateItemEditBtnState(formEl) {
   if (saveBtn) saveBtn.disabled = !isItemEditFormValid(formEl);
 }
 
+// Suggestions use saved movement records from every loaded pallet, grouped by action.
+function latestPalletMovements(type) {
+  const key = type === 'withdraw' ? 'withdrawals' : 'returns';
+  const rows = [];
+  for (const slots of Object.values(SLOT_ITEMS || {})) {
+    for (const items of Object.values(slots || {})) {
+      for (const item of items || []) {
+        for (const row of item[key] || []) rows.push(row);
+      }
+    }
+  }
+  const stamp = row => {
+    const recorded = Date.parse(row.recordedAt || '');
+    if (Number.isFinite(recorded)) return recorded;
+    const key = movementDateKey(row.date);
+    return key ? Date.parse(`${key.slice(0,4)}-${key.slice(4,6)}-${key.slice(6,8)}T00:00:00+07:00`) : -Infinity;
+  };
+  return rows.map((row,index) => ({row,index,time:stamp(row)}))
+    .sort((a,b) => (b.time===a.time ? b.index-a.index : b.time-a.time)).map(entry => entry.row);
+}
+
 function renderWithdrawForm(i, item, remaining) {
   // remaining is null for items with no recorded received qty (see the comment above where
   // withdrawBtn is built) -- most real "Area เก็บ"-linked items fall in this case. Without a
@@ -5773,9 +5794,9 @@ function renderWithdrawForm(i, item, remaining) {
   const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const part = type => parts.find(p => p.type === type).value;
   const today = `${part('year')}-${part('month')}-${part('day')}`;
-  const recent = getStockMovement(item).rows.filter(row => row.type === 'withdraw').reverse().slice(0,5);
+  const recent = latestPalletMovements('withdraw');
   const recentHtml = ['qty','by','reference'].map(field => {
-    const values = [...new Set(recent.map(row => String(row[field] ?? '').trim()).filter(Boolean))];
+    const values = [...new Set(recent.map(row => String(row[field] ?? '').trim()).filter(Boolean))].slice(0,5);
     return `<datalist id="fw-recent-${i}-${field}">${values.map(value => `<option value="${escapeHtml(value)}"></option>`).join('')}</datalist>`;
   }).join('');
   return `
@@ -5804,9 +5825,9 @@ function renderReturnForm(i, item, returnable) {
   const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const part = type => parts.find(p => p.type === type).value;
   const today = `${part('year')}-${part('month')}-${part('day')}`;
-  const recent = getStockMovement(item).rows.filter(row => row.type === 'return').reverse().slice(0,5);
+  const recent = latestPalletMovements('return');
   const recentHtml = ['qty','by','reference'].map(field => {
-    const values = [...new Set(recent.map(row => String(row[field] ?? '').trim()).filter(Boolean))];
+    const values = [...new Set(recent.map(row => String(row[field] ?? '').trim()).filter(Boolean))].slice(0,5);
     return `<datalist id="fr-recent-${i}-${field}">${values.map(value => `<option value="${escapeHtml(value)}"></option>`).join('')}</datalist>`;
   }).join('');
   return `

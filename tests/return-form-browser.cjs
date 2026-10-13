@@ -21,14 +21,18 @@ const root=path.resolve(__dirname,'..');
 
  await page.evaluate(()=>{
  const item={qty:100,unit:'ชิ้น',receiveDate:'2026-10-01',returns:Array.from({length:8},(_,i)=>({date:`2026-10-${String(i+1).padStart(2,'0')}`,qty:i+1,by:'QA-'+i,reference:i===7?'<script>bad</script>':'REF-'+i}))};
+ Object.keys(SLOT_ITEMS).forEach(k=>delete SLOT_ITEMS[k]);
+ SLOT_ITEMS.A={'A-01':[item]};
+ SLOT_ITEMS.U={'U-01':[{returns:[{date:'2026-10-09',recordedAt:'2026-10-09T05:00:00Z',qty:99,by:'LATEST-U',reference:'LATEST-REF'},{date:'2026-10-08',qty:2,by:'QA-7',reference:'REF-6'}],withdrawals:[{date:'2026-10-10',qty:101,by:'OTHER-TYPE',reference:'OTHER-REF'}]}]};
  const fixture=document.createElement('div');fixture.id='returnFixture';fixture.innerHTML=renderReturnForm(0,item,64);document.body.append(fixture);
  });
  const form=page.locator('#returnFixture');
  const expected=await page.evaluate(()=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=t=>p.find(x=>x.type===t).value;return `${get('year')}-${get('month')}-${get('day')}`;});
  assert.equal(await form.locator('.fr-date').inputValue(),expected);
- const values=await form.locator('#fr-recent-0-by option').evaluateAll(nodes=>nodes.map(n=>n.value));assert.deepEqual(values,['QA-7','QA-6','QA-5','QA-4','QA-3']);
- assert.equal(await form.locator('script').count(),0);assert.equal(await form.locator('#fr-recent-0-reference option').first().getAttribute('value'),'<script>bad</script>');
- assert.equal(await form.locator('.fw-recent').count(),0);
+ const values=await form.locator('#fr-recent-0-by option').evaluateAll(nodes=>nodes.map(n=>n.value));assert.deepEqual(values,['LATEST-U','QA-7','QA-6','QA-5','QA-4']);
+ assert.equal(await form.locator('script').count(),0);assert.ok((await form.locator('#fr-recent-0-reference option').evaluateAll(nodes=>nodes.map(n=>n.value))).includes('<script>bad</script>'));
+ assert.equal(await form.locator('.fw-recent').count(),0);assert.equal(await form.locator('option[value="OTHER-TYPE"]').count(),0);
+ assert.equal(await form.locator('datalist').first().locator('option').first().getAttribute('value'),'99');
  const by=form.locator('.fr-by');await by.fill('QA-7');assert.equal(await by.inputValue(),'QA-7');
  assert.equal(await by.getAttribute('list'),'fr-recent-0-by');
  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS return today, latest five field suggestions and escaping '+viewport.width);await page.close();

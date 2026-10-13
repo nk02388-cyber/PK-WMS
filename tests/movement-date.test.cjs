@@ -3,14 +3,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const names = ['formatMovementDate', 'getRemainingQty', 'movementNumber', 'movementDateKey', 'getStockMovement', 'renderStockMovement', 'renderMovementEditForm', 'renderSlotEdit', 'renderWithdrawForm', 'renderReturnForm'];
+const names = ['formatMovementDate', 'getRemainingQty', 'movementNumber', 'movementDateKey', 'getStockMovement', 'renderStockMovement', 'renderMovementEditForm', 'renderSlotEdit', 'latestPalletMovements', 'renderWithdrawForm', 'renderReturnForm'];
 const source = names.map(name => html.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))[0]).join('\n');
 const items = [{ code: 'TEST', name: 'Test', qty: 21, unit: 'ม้วน', receiveDate: '2026-08-04',
   withdrawals: [{ date: '2026-08-26', qty: 9, unit: 'ม้วน', by: '<Tester>' }],
   returns: [{ date: '2026-09-02', qty: 3, unit: 'ม้วน' }] }];
 const before = JSON.stringify(items);
 const ctx = vm.createContext({
-  editingSlot: { zone: 'F', slot: 'F-18' }, fseSlotTitle: {}, fseItemCount: {}, fseItemsList: {},
+  SLOT_ITEMS:{}, editingSlot: { zone: 'F', slot: 'F-18' }, fseSlotTitle: {}, fseItemCount: {}, fseItemsList: {},
   FSE_ITEMS_HEADER: '', slotItemsFor: () => items, renderSlotBalance() {}, getReturnableQty: () => 6,
   editItemIndex: null, withdrawOpenIndex: null, returnOpenIndex: null, removeConfirmIndex: null,
   movementEdit: null, fmt3: String,
