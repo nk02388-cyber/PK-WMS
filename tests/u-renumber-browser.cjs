@@ -39,11 +39,11 @@ const root=path.resolve(__dirname,'..');
  assert.equal(await context.count(),29,'all 29 U positions render beside M1');
  assert.deepEqual(await context.locator('.zoom-slot-label').allTextContents(),Array.from({length:29},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
  assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),24,'M1 edit scope unchanged');
- assert.equal(await context.filter({hasText:'U-12'}).evaluate(el=>el.classList.contains('occupied')&&el.classList.contains('age-green')),true,'context uses real U state');
+ assert.equal(await context.filter({hasText:'U-12'}).evaluate(el=>el.classList.contains('occupied')&&!['age-green','age-yellow','age-red'].some(c=>el.classList.contains(c))),true,'U context stays neutral inside M1');
  assert.equal(await context.first().evaluate(el=>getComputedStyle(el).pointerEvents),'none');
  await page.screenshot({path:'work/u-context-m1-'+viewport.width+'.png'});
- await page.evaluate(()=>openZoomModal('T-1'));assert.equal(await context.count(),29);assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),20);
- await page.evaluate(()=>openZoomModal('U'));assert.equal(await context.count(),0,'no duplicate U overlay in own zone');assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),29);
+ await page.evaluate(()=>openZoomModal('T-1'));assert.equal(await context.count(),29);assert.equal(await context.filter({hasText:'U-12'}).evaluate(el=>el.classList.contains('age-green')),true);assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),20);
+ await page.evaluate(()=>openZoomModal('U'));assert.equal(await context.count(),0,'no duplicate U overlay in own zone');assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),29);assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="U-12"]').evaluate(el=>el.classList.contains('age-green')),true);
  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS U 29 spatially numbered positions, zoom labels, no overflow '+viewport.width);
  await page.close();} }finally{await browser.close()}})();
 
