@@ -3369,7 +3369,13 @@ ZONE_SLOTS['T-1'] = Array.from({length:18}, (_, index) => ({
   leftPct:48.94 + (index % 2) * 0.727,
   topPct:36.39 + Math.floor(index / 2) * ((45.096 - 36.39) / 8),
 }));
-ZONE_PINS['T-1'] = {leftPct:49.3035, topPct:40.743};
+// Add a row above T1-01/T1-02 without renumbering existing inventory locations.
+const t1RowGap = (45.096 - 36.39) / 8;
+ZONE_SLOTS['T-1'].push(
+  {code:'T1-19', leftPct:ZONE_SLOTS['T-1'][0].leftPct, topPct:36.39-t1RowGap},
+  {code:'T1-20', leftPct:ZONE_SLOTS['T-1'][1].leftPct, topPct:36.39-t1RowGap},
+);
+ZONE_PINS['T-1'] = {leftPct:49.3035, topPct:(36.39-t1RowGap+45.096)/2};
 
 // Zone U's right aisle has six positions, aligned with the six on the left.
 // Retain existing slot identities so their stock and history follow the same codes.
@@ -4295,7 +4301,7 @@ const AREA_BUILDINGS = [
     // in two buildings) and push the total to 548, nowhere near his stated 503 -- confirmed with
     // him this means "J-1" (matching every other "-1"-suffixed zone in this list).
     zones: ['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1','I-1','J-1','K-1','L-1','M-1','N-1','O-1','P-1','Q-1','R-1','S-1','T-1','U'],
-    palletNo: 525, // Original 503 + 18 in T-1 + 2 in U + net 2 in M1.
+    palletNo: 527, // Original 503 + 20 in T-1 + 2 in U + net 2 in M1.
   },
   {
     key: 'new',
