@@ -117,3 +117,5 @@ UI feedback sounds (13 October 2026): quiet synthesized sine tones distinguish m
 Activity distribution (13 October 2026): overview donut SVG grows to 140px with a 24px gap; the legend aligns to the right with a maximum width of 210px. At 600px and below, use 120px with a 16px gap to keep labels and percentages readable.
 
 Movement date filters (13 October 2026): replace preset duration with labeled From/To dates, defaulting to the inclusive last 30 days in Bangkok. Trend, totals, daily rows and activity distribution share the selected inclusive range; reversed/empty dates show validation and preserve the last valid chart. Single-day charts center their points without duplicate axis labels.
+
+Category-value horizontal bars use #5aa77d, matching the green capacity-gauge band, in both light and dark themes (13 October 2026).
