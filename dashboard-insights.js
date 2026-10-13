@@ -24,18 +24,27 @@ function playMotion(replay=true){
 }
 reduced.addEventListener('change',()=>{if(reduced.matches){pendingMotion=false;cancelMotion();}});document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelMotion();});
 if(typeof IntersectionObserver!=='undefined')new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)&&pendingMotion)playMotion(false);},{threshold:.1}).observe(chart);
+let trendData=null,lastTrendWidth=0,resizeFrame=0;
+function renderTrend(s){
+ const width=Math.max(180,Math.round(chart.clientWidth));lastTrendWidth=width;
+ const max=Math.max(1,...s.points.flatMap(p=>series.map(([k])=>p[k]))),x=i=>48+i*(width-76)/(s.points.length-1),y=n=>190-n/max*154;
+ let svg='<svg viewBox="0 0 '+width+' 230" role="img" aria-label="แนวโน้มจำนวนรายการรับเข้า เบิกออก และรับคืน"><title>จำนวนรายการต่อวัน สูงสุด '+max+' รายการ</title>';
+ for(let i=0;i<=4;i++){const n=max*i/4;svg+='<line x1="48" x2="'+(width-28)+'" y1="'+y(n)+'" y2="'+y(n)+'" class="di-grid"/><text x="40" y="'+(y(n)+4)+'" text-anchor="end">'+Number(n.toFixed(1))+'</text>';}
+ for(const [k,label,color] of series){svg+='<g class="di-trend-series"><polyline fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" points="'+s.points.map((p,i)=>x(i)+','+y(p[k])).join(' ')+'"/>';s.points.forEach((p,i)=>{svg+='<circle cx="'+x(i)+'" cy="'+y(p[k])+'" r="3" fill="'+color+'"><title>'+p.date+' · '+label+' '+p[k]+' รายการ</title></circle>';});svg+='</g>';}
+ for(const i of [0,Math.floor((s.points.length-1)/2),s.points.length-1])svg+='<text x="'+x(i)+'" y="220" text-anchor="middle">'+s.points[i].date.slice(5).split('-').reverse().join('/')+'</text>';
+ svg+='</svg>';chart.innerHTML='<div class="di-legend">'+series.map(([,label,color])=>'<span><i style="background:'+color+'"></i>'+label+'</span>').join('')+'</div>'+(s.transactions?'':'<p class="di-empty">ไม่มีรายการที่มีวันที่ในช่วงนี้</p>')+svg;
+}
+if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{
+ if(!trendData||!chart.clientWidth||Math.round(chart.clientWidth)===lastTrendWidth||resizeFrame)return;
+ resizeFrame=requestAnimationFrame(()=>{resizeFrame=0;cancelMotion();if(trendData&&chart.clientWidth)renderTrend(trendData);});
+}).observe(chart);
 function render(){
- if(!palletDataReady){stats.textContent='กำลังรอข้อมูลพาเลต';chart.textContent='ยังไม่แสดงกราฟจนกว่าจะโหลดข้อมูลครบ';mix.textContent='—';note.textContent='';last='';return;}
+ if(!palletDataReady){trendData=null;stats.textContent='กำลังรอข้อมูลพาเลต';chart.textContent='ยังไม่แสดงกราฟจนกว่าจะโหลดข้อมูลครบ';mix.textContent='—';note.textContent='';last='';return;}
  if(!dateKey(date.value)){date.setCustomValidity('กรุณาเลือกวันที่สิ้นสุด');date.reportValidity();return;}date.setCustomValidity('');
  const s=summarize(SLOT_ITEMS,date.value,Number(period.value)),key=JSON.stringify(s);if(last===key)return;last=key;
  const scope=document.getElementById('dashboardActivityScope');if(scope)scope.textContent=period.value+' วัน · ถึง '+date.value.split('-').reverse().join('/');
  stats.innerHTML=series.map(([k,label])=>'<div><small>'+label+'</small><strong>'+s.total[k].toLocaleString('en-US')+' <span>รายการ</span></strong></div>').join('');
- const max=Math.max(1,...s.points.flatMap(p=>series.map(([k])=>p[k]))),x=i=>48+i*604/(s.points.length-1),y=n=>190-n/max*154;
- let svg='<svg viewBox="0 0 680 230" role="img" aria-label="แนวโน้มจำนวนรายการรับเข้า เบิกออก และรับคืน"><title>จำนวนรายการต่อวัน สูงสุด '+max+' รายการ</title>';
- for(let i=0;i<=4;i++){const n=max*i/4;svg+='<line x1="48" x2="652" y1="'+y(n)+'" y2="'+y(n)+'" class="di-grid"/><text x="40" y="'+(y(n)+4)+'" text-anchor="end">'+Number(n.toFixed(1))+'</text>';}
- for(const [k,label,color] of series){svg+='<g class="di-trend-series"><polyline fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" points="'+s.points.map((p,i)=>x(i)+','+y(p[k])).join(' ')+'"/>';s.points.forEach((p,i)=>{svg+='<circle cx="'+x(i)+'" cy="'+y(p[k])+'" r="3" fill="'+color+'"><title>'+p.date+' · '+label+' '+p[k]+' รายการ</title></circle>';});svg+='</g>';}
- for(const i of [0,Math.floor((s.points.length-1)/2),s.points.length-1])svg+='<text x="'+x(i)+'" y="220" text-anchor="middle">'+s.points[i].date.slice(5).split('-').reverse().join('/')+'</text>';
- svg+='</svg>';chart.innerHTML='<div class="di-legend">'+series.map(([,label,color])=>'<span><i style="background:'+color+'"></i>'+label+'</span>').join('')+'</div>'+(s.transactions?'':'<p class="di-empty">ไม่มีรายการที่มีวันที่ในช่วงนี้</p>')+svg;
+ trendData=s;renderTrend(s);
  let offset=0;mix.innerHTML='<svg viewBox="0 0 160 160" role="img" aria-label="สัดส่วนกิจกรรมรวม '+s.transactions+' รายการ"><circle cx="80" cy="80" r="58" fill="none" stroke="var(--gridline)" stroke-width="18"/>'+series.map(([k,label,color])=>{const pct=s.transactions?s.total[k]/s.transactions*100:0,seg='<circle cx="80" cy="80" r="58" fill="none" stroke="'+color+'" stroke-width="18" pathLength="100" stroke-dasharray="'+pct+' '+(100-pct)+'" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 80 80)"><title>'+label+' '+pct.toFixed(1)+'%</title></circle>';offset+=pct;return seg;}).join('')+'<text x="80" y="80" text-anchor="middle" class="di-donut-value">'+s.transactions+'</text><text x="80" y="102" text-anchor="middle">รายการ</text></svg><ul>'+series.map(([k,label,color])=>'<li><i style="background:'+color+'"></i>'+label+'<b>'+(s.transactions?s.total[k]/s.transactions*100:0).toFixed(1)+'%</b></li>').join('')+'</ul>';
  host.querySelector('tbody').innerHTML=s.points.map(p=>'<tr><td>'+p.date+'</td><td>'+p.receive+'</td><td>'+p.issue+'</td><td>'+p.returns+'</td></tr>').join('');
  playMotion();

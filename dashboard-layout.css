@@ -64,7 +64,7 @@
 .viz-root .dashboard-main-grid .di-stats{margin:14px 0;gap:10px}
 .viz-root .dashboard-main-grid .di-stats>div{padding:10px 14px}
 .viz-root .dashboard-main-grid .di-stats strong{font-size:24px}
-.viz-root .dashboard-main-grid .di-trend svg{max-width:640px;margin-inline:auto}
+.viz-root .dashboard-main-grid .di-trend svg{width:100%;max-width:none;height:230px;margin-inline:0}
 .viz-root .dashboard-main-grid .di-detail{margin-top:10px;padding-top:8px}
 .viz-root .dashboard-building .building-gauge{width:min(100%,145px);margin-top:4px}
 .viz-root .dashboard-building .building-gauge-card{padding:6px 6px 4px}
