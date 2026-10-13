@@ -109,7 +109,7 @@
   function render() {
     ensureCurrentDay();
     const stockReady = stockSnapshotState === 'latest';
-    const reorderRows = stockReady ? PKReorder.evaluate(PK_ROP_DATA,STOCK.items).filter(row => row.status === 'alert') : [];
+    const reorderRows = stockReady ? (PKReorder.getRows ? PKReorder.getRows() : PKReorder.evaluate(PK_ROP_DATA,STOCK.items)).filter(row => row.status === 'alert') : [];
     const negative = stockReady ? negativeStock(STOCK.items) : [];
     const bomCount = stockReady ? Number(/^\s*([\d,]+)/.exec(document.getElementById('tabBadgeBompk')?.textContent || '')?.[1].replace(/,/g,'')) || 0 : 0;
     const syncProblem = document.getElementById('syncStatusBar')?.classList.contains('sync-error') || document.getElementById('syncStatusBar')?.classList.contains('sync-unavailable');
