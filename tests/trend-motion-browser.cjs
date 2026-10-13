@@ -22,9 +22,9 @@ const root=path.resolve(__dirname,'..');
  await page.waitForTimeout(1800);
 
  await page.evaluate(()=>{palletDataReady=true;Object.keys(SLOT_ITEMS).forEach(k=>delete SLOT_ITEMS[k]);Object.assign(SLOT_ITEMS,{A:{'A-1':[{qty:10,receiveDate:'2026-10-02',withdrawals:[{date:'2026-10-08',qty:3}],returns:[{date:'2026-10-07',qty:1}]}]}});PKDashboardInsights.refresh();});
- const host=page.locator('#dashboardInsights');await host.locator('input').fill('2026-10-08');await host.locator('input').dispatchEvent('change');
+ const host=page.locator('#dashboardInsights');await host.locator('#diToDate').fill('2026-10-08');await host.locator('#diToDate').dispatchEvent('change');
  assert.equal(await host.locator('.di-stats strong').first().textContent(),'1 รายการ');assert.equal(await host.locator('svg').count(),1);
- await host.locator('select').selectOption('7');assert.equal(await host.locator('tbody tr').count(),7);
+ await host.locator('#diFromDate').fill('2026-10-02');await host.locator('#diFromDate').dispatchEvent('change');assert.equal(await host.locator('tbody tr').count(),7);
 
  const before=await host.locator('.di-stats').textContent();
  await page.evaluate(()=>{const chart=document.querySelector('.di-trend');window.scrollTo({top:scrollY+chart.getBoundingClientRect().top-300,behavior:'instant'});PKDashboardInsights.animate();});
@@ -35,7 +35,7 @@ const root=path.resolve(__dirname,'..');
  await page.evaluate(async()=>{await Promise.all([...document.querySelectorAll('.di-trend-series')].flatMap(g=>g.getAnimations().map(a=>a.finished)));});
  assert.equal(await page.locator('.di-trend-series').first().evaluate(el=>getComputedStyle(el).clipPath),'none');assert.equal(await host.locator('.di-stats').textContent(),before);
  await page.evaluate(()=>PKDashboardInsights.refresh());assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.id==='pk-trend').length),0);
- await host.locator('select').selectOption('30');await page.waitForFunction(()=>document.getAnimations().some(a=>a.id==='pk-trend'));
+ await host.locator('#diFromDate').fill('2026-09-09');await host.locator('#diFromDate').dispatchEvent('change');await page.waitForFunction(()=>document.getAnimations().some(a=>a.id==='pk-trend'));
  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.di-trend-series').first().evaluate(el=>getComputedStyle(el).clipPath),'none');await page.evaluate(()=>PKDashboardInsights.animate());assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.id==='pk-trend').length),0);
  await page.emulateMedia({reducedMotion:'no-preference'});await page.evaluate(()=>PKDashboardInsights.animate());await page.evaluate(()=>activateTab(document.getElementById('tab-floorplan')));assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.id==='pk-trend').length),0);
  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS trend animation '+viewport.width+' reveal/filter/stable data/reduced motion/cancel');await page.close();

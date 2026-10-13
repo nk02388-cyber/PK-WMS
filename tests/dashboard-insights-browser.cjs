@@ -22,9 +22,15 @@ const root=path.resolve(__dirname,'..');
  await page.waitForTimeout(1800);
 
  await page.evaluate(()=>{palletDataReady=true;Object.keys(SLOT_ITEMS).forEach(k=>delete SLOT_ITEMS[k]);Object.assign(SLOT_ITEMS,{A:{'A-1':[{qty:10,receiveDate:'2026-10-02',withdrawals:[{date:'2026-10-08',qty:3}],returns:[{date:'2026-10-07',qty:1}]}]}});PKDashboardInsights.refresh();});
- const host=page.locator('#dashboardInsights');await host.locator('input').fill('2026-10-08');await host.locator('input').dispatchEvent('change');
+ const host=page.locator('#dashboardInsights');await host.locator('#diToDate').fill('2026-10-08');await host.locator('#diToDate').dispatchEvent('change');
  assert.equal(await host.locator('.di-stats strong').first().textContent(),'1 รายการ');assert.equal(await host.locator('svg').count(),1);
- await host.locator('select').selectOption('7');assert.equal(await host.locator('tbody tr').count(),7);assert.ok((await page.locator('#dashboardActivityScope').textContent()).includes('7 วัน'));assert.equal(await page.locator('#dashboardActivity .di-mix svg').count(),1);
+ await host.locator('#diFromDate').fill('2026-10-02');await host.locator('#diFromDate').dispatchEvent('change');assert.equal(await host.locator('tbody tr').count(),7);assert.ok((await page.locator('#dashboardActivityScope').textContent()).includes('02/10/2026 – 08/10/2026'));assert.equal(await page.locator('#dashboardActivity .di-mix svg').count(),1);
+ await host.locator('#diFromDate').fill('2026-10-08');await host.locator('#diFromDate').dispatchEvent('change');assert.equal(await host.locator('tbody tr').count(),1);
+ assert.equal(await host.locator('.di-trend').evaluate(el=>/NaN|Infinity/.test(el.innerHTML)),false);
+ const good=await host.locator('.di-stats').textContent();await host.locator('#diFromDate').fill('2026-10-09');await host.locator('#diFromDate').dispatchEvent('change');assert.equal(await host.locator('#diFromDate').evaluate(el=>el.validity.valid),false);assert.equal(await host.locator('.di-stats').textContent(),good);
+ await host.locator('#diFromDate').fill('');await host.locator('#diFromDate').dispatchEvent('change');assert.equal(await host.locator('#diFromDate').evaluate(el=>el.validity.valid),false);
+ await host.locator('#diFromDate').fill('2026-10-02');await host.locator('#diFromDate').dispatchEvent('change');assert.equal(await host.locator('#diFromDate').evaluate(el=>el.validity.valid),true);
+ assert.equal(await host.locator('select').count(),0);
  for(const theme of ['light','dark']){await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);await host.scrollIntoViewIfNeeded();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);await host.screenshot({path:'work/dashboard-insights-'+theme+'-'+viewport.width+'.png'});}
  await page.evaluate(()=>{Object.keys(SLOT_ITEMS).forEach(k=>delete SLOT_ITEMS[k]);PKDashboardInsights.refresh();});assert.equal(await host.locator('.di-empty').count(),1);
  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS insights charts '+viewport.width);await page.close();
