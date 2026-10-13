@@ -4105,7 +4105,10 @@ async function savePalletBatch(slots, dates = [], audit = {}) {
   if (!palletDataReady) throw new Error('ยังโหลดข้อมูลพาเลตไม่ครบ กรุณารีเฟรชก่อนแก้ไข');
   const metadata = slots.length ? palletAuditMetadata(audit.action, audit.document_no || '') : null;
   const auditedSlots = slots.map(slot => ({...slot, _audit:metadata}));
-  const { data, error } = await supabaseClient.rpc('save_pallet_changes', { p_slots: auditedSlots, p_dates: dates });
+  const rpcName = audit.action === 'import' ? 'import_pallet_changes' : 'save_pallet_changes';
+  const params = {p_slots:auditedSlots,p_dates:dates};
+  if (audit.action === 'import') params.p_pin = audit.pin;
+  const { data, error } = await supabaseClient.rpc(rpcName, params);
   if (error) {
     if (error.code === '40001') throw new Error('มีคนแก้ข้อมูลนี้แล้ว · ยังไม่ได้บันทึก กรุณาคัดลอกค่าที่กรอกไว้ แล้วรีเฟรชเพื่อตรวจข้อมูลล่าสุด');
     if (error.code === '42501') throw new Error('ระบบยังไม่อนุญาตให้บันทึก กรุณาติดต่อผู้ดูแล');
@@ -4309,9 +4312,9 @@ function guardPalletWrite(e) {
 for (const event of ['click','submit','change']) document.addEventListener(event,guardPalletWrite,true);
 
 // All imported proposals commit in one version-checked transaction.
-async function pushFullGeometryToRemote(slots, dates) {
+async function pushFullGeometryToRemote(slots, dates, pin) {
   // One RPC transaction: any conflict rolls back the entire import.
-  return savePalletBatch(slots,dates,{action:'import'});
+  return savePalletBatch(slots,dates,{action:'import',pin});
 }
 
 // ---------- Zone -> building-area grouping (stock dashboard) ----------
@@ -6710,7 +6713,25 @@ async function exportFloorplanExcel() {
 }
 document.getElementById('floorplanExcelExport').addEventListener('click',exportFloorplanExcel);
 
-function exportPalletStatus() {
+async function confirmPalletTransfer(action) {
+  if (!supabaseClient || !palletDataReady) throw new Error('กรุณารอโหลดข้อมูลให้ครบก่อน Import/Export');
+  const generation = stockLoadGeneration;
+  const pin = window.prompt(`กรอก PIN เดียวกับ Update Stock เพื่อยืนยัน ${action} ข้อมูลพาเลท`);
+  if (pin === null) return null;
+  const {data,error} = await supabaseClient.rpc('verify_pallet_transfer_pin',{p_pin:pin});
+  if (error) throw new Error(error.message || 'รหัสยืนยันไม่ถูกต้อง');
+  if (data !== true) throw new Error('ยังยืนยันรหัสไม่ได้ กรุณาลองใหม่');
+  if (generation !== stockLoadGeneration || !palletDataReady) throw new Error('บัญชีหรือข้อมูลเปลี่ยน กรุณาลองใหม่');
+  return pin;
+}
+let palletExportBusy = false;
+async function exportPalletStatus() {
+  if (palletExportBusy) return;
+  palletExportBusy = true;
+  const button = document.getElementById('floorplanZoomExportBtn');
+  button.disabled = true;
+  try {
+    if (await confirmPalletTransfer('Export') === null) return;
   const payload = {
     exported_at: new Date().toISOString(),
     source: 'combined_dashboard.html floor-plan pallet status',
@@ -6738,6 +6759,8 @@ function exportPalletStatus() {
   // can cancel the download before it begins. Release it shortly after the navigation starts.
   setTimeout(() => URL.revokeObjectURL(url), 1200);
   showFseFeedback('เตรียมไฟล์ข้อมูลสถานะสำหรับดาวน์โหลดแล้ว');
+  } catch (error) { alert('Export ไม่สำเร็จ · '+error.message); }
+  finally { palletExportBusy = false; button.disabled = false; }
 }
 document.getElementById('floorplanZoomExportBtn').addEventListener('click', exportPalletStatus);
 document.getElementById('floorplanZoomImportBtn').addEventListener('click', () => document.getElementById('floorplanZoomImportInput').click());
@@ -6750,6 +6773,8 @@ document.getElementById('floorplanZoomImportInput').addEventListener('change', a
   palletWriteBusy = true;
   try {
     if (!supabaseClient || !palletDataReady) throw new Error('กรุณารอโหลดข้อมูลให้ครบก่อนนำเข้า');
+    const pin = await confirmPalletTransfer('Import');
+    if (pin === null) return;
     const parsed = JSON.parse(await file.text());
     const incoming = parsed.pallet_status || parsed;
     if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');
@@ -6763,7 +6788,7 @@ document.getElementById('floorplanZoomImportInput').addEventListener('change', a
     const dates = parsed.receive_dates ? [...new Set([...dateVersions.keys(),...Object.keys(parsed.receive_dates)])].map(code=>({
       item_code:code,receive_date:parsed.receive_dates[code] || null,expected_version:dateVersions.get(code) || 0})) : [];
     setSyncStatus('connecting','กำลังตรวจเวอร์ชันและบันทึกไฟล์นำเข้า…');
-    await pushFullGeometryToRemote(slots,dates);
+    await pushFullGeometryToRemote(slots,dates,pin);
     if (editingSlot) closeSlotEdit();
     refreshAfterRemoteChange(null,null);
     setSyncStatus('connected','นำเข้าข้อมูลพาเลตครบแล้ว');

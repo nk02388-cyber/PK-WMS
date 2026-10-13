@@ -115,3 +115,5 @@ This removes fallback from the current website. Previously published Git commits
 | Long-term uptime/load capacity, backup restore guarantees | Unknown | No sustained production load/restore drill conducted |
 
 This document maps the current system. It does not authorize unrelated framework migrations or claim complete security certification. Source skill provenance: [docs/SKILLS.md](docs/SKILLS.md).
+
+Pallet JSON transfers (13 October 2026): Import and Export prompt for the same PIN as Update Stock. `verify_pallet_transfer_pin` checks floorplan permission and the server-held stock PIN hash; no PIN is persisted in browser storage. Import delegates to `import_pallet_changes`, which rechecks the PIN before the existing atomic `save_pallet_changes` transaction. Export gates the normal UI download; authorized pallet data remains readable by existing permissions and this is not an additional data-read authorization boundary. Regular pallet edits retain their existing guarded RPC.

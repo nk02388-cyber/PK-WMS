@@ -40,7 +40,7 @@ async function main(){
   await ctx.setReceiveDate('TEST','2026-09-05',0);assert.equal(ctx.RECEIVE_DATES.TEST,'2026-09-05');
   mode='conflict';await assert.rejects(ctx.setReceiveDate('TEST','2026-09-06',1),/คนแก้/);assert.equal(ctx.RECEIVE_DATES.TEST,'2026-09-05');
   assert.doesNotMatch(html,/\.from\('(?:pallet_slots|receive_dates)'\)\.(?:upsert|update|insert|delete)/);
-  assert.match(extract('pushFullGeometryToRemote'),/savePalletBatch\(slots,dates,\{action:'import'\}\)/);
+  assert.match(extract('pushFullGeometryToRemote'),/savePalletBatch\(slots,dates,\{action:'import',pin\}\)/);
   console.log('PASS: public versioned writes, server versions, all-or-nothing local changes, receive dates, stale events and editor baseline');
 }
 main().catch(e=>{console.error(e);process.exitCode=1});
