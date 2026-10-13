@@ -60,6 +60,9 @@
   let syncState = 'connecting';
   let busy = false;
   let refreshId = 0;
+  let refreshPending=null, refreshQueued=false, realtimeReady=false, realtimeTimer=null;
+  let lastAttempt=0, lastFetched=0;
+  const HEALTHY_REFRESH_MS=15*60_000, FALLBACK_REFRESH_MS=2*60_000;
   let editingVersion = 0;
   let selected = dateKey(new Date());
   let view = new Date(new Date().getFullYear(),new Date().getMonth(),1);
@@ -99,15 +102,26 @@
       if (saveError && saveError.code !== '40001') throw saveError;
     }
     try { localStorage.setItem(migratedKey,'1'); } catch (_) {}
+    return legacy.length>0;
   }
-  async function refreshRemote({migrate=false}={}) {
+  function refreshRemote({migrate=false,force=false}={}) {
+    if(refreshPending){if(force)refreshQueued=true;return refreshPending;}
+    lastAttempt=Date.now();
+    refreshPending=performRefresh(migrate).finally(()=>{
+      refreshPending=null;
+      if(refreshQueued&&!document.hidden){refreshQueued=false;refreshRemote();}
+    });
+    return refreshPending;
+  }
+  async function performRefresh(migrate) {
     const request=++refreshId;
     try {
       let rows=await fetchRows();
-      if (migrate) { await migrateLegacy(); rows=await fetchRows(); }
+      if (migrate && await migrateLegacy()) rows=await fetchRows();
       if (request!==refreshId) return;
       events=cleanEvents(rows.map(fromRow));
       versions=new Map(rows.map(row=>[row.id,Number(row.version)]));
+      lastFetched=Date.now();
       try { localStorage.setItem(storageKey,JSON.stringify(events)); } catch (_) {}
       setSyncState('ready','โหลดปฏิทินล่าสุดจากระบบแล้ว');
       notifyChange();
@@ -199,10 +213,10 @@
       const {error:deleteError}=await client.rpc('delete_calendar_event',{p_id:deleteId,p_expected_version:versions.get(deleteId)});
       if (deleteError) throw deleteError;
       if (byId('eventCalendarId').value === deleteId) resetForm();
-      await refreshRemote();
+      await refreshRemote({force:true});
     } catch (deleteError) {
       showError(deleteError.code === '40001' ? 'กิจกรรมถูกแก้ไขจากเครื่องอื่นแล้ว กรุณาตรวจข้อมูลล่าสุด' : `ลบกิจกรรมไม่สำเร็จ: ${deleteError.message}`);
-      await refreshRemote();
+      await refreshRemote({force:true});
     } finally { busy=false; setSyncState(syncState,syncStatus.textContent); }
   });
   byId('eventCalendarCancel').addEventListener('click',resetForm);
@@ -222,19 +236,38 @@
       selected = entry.date;
       view = new Date(Number(selected.slice(0,4)),Number(selected.slice(5,7))-1,1);
       resetForm();
-      await refreshRemote();
+      await refreshRemote({force:true});
     } catch (saveError) {
       showError(saveError.code === '40001' ? 'กิจกรรมถูกแก้ไขจากเครื่องอื่นแล้ว กรุณาตรวจข้อมูลล่าสุดก่อนบันทึกอีกครั้ง' : `บันทึกกิจกรรมไม่สำเร็จ: ${saveError.message}`);
-      await refreshRemote();
+      await refreshRemote({force:true});
     } finally { busy=false; setSyncState(syncState,syncStatus.textContent); }
   });
   root.addEventListener('storage',event => { if (event.key === storageKey && syncState !== 'ready') { events = readLegacy(); notifyChange(); } });
-  document.addEventListener('visibilitychange',() => { if (!document.hidden) refreshRemote(); });
-  setInterval(() => { if (!document.hidden) refreshRemote(); else notifyChange(); },30000);
+  function scheduleRealtimeRefresh(){
+    if(document.hidden){refreshQueued=true;return;}
+    clearTimeout(realtimeTimer);
+    realtimeTimer=setTimeout(()=>{realtimeTimer=null;refreshRemote({force:true});},180);
+  }
+  document.addEventListener('visibilitychange',() => {
+    if(document.hidden){clearTimeout(realtimeTimer);realtimeTimer=null;return;}
+    refreshQueued=false;refreshRemote({force:true});
+  });
+  root.addEventListener('wms:account-changed',()=>{++refreshId;lastFetched=0;if(document.hidden)refreshQueued=true;else refreshRemote({force:true});});
+  setInterval(() => {
+    // Local reminder times advance without a database read.
+    notifyChange();
+    if(document.hidden)return;
+    const now=Date.now();
+    if(realtimeReady&&syncState==='ready' ? now-lastFetched>=HEALTHY_REFRESH_MS : now-lastAttempt>=FALLBACK_REFRESH_MS)refreshRemote();
+  },30000);
   api.getDue = () => syncState === 'ready' ? dueEvents(events) : [];
   api.open = open;
   root.PKEvents = api;
   render();
   refreshRemote({migrate:true});
-  if (client?.channel) client.channel('bcl-event-calendar').on('postgres_changes',{event:'*',schema:'public',table:'event_calendar'},() => refreshRemote()).subscribe();
+  if (client?.channel) client.channel('bcl-event-calendar').on('postgres_changes',{event:'*',schema:'public',table:'event_calendar'},scheduleRealtimeRefresh).subscribe(status=>{
+    const wasReady=realtimeReady;
+    realtimeReady=status==='SUBSCRIBED';
+    if(realtimeReady&&!wasReady&&!document.hidden)refreshRemote();
+  });
 })(typeof window !== 'undefined' ? window : globalThis);
