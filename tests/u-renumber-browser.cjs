@@ -27,10 +27,12 @@ const root=path.resolve(__dirname,'..');
  assert.deepEqual(labels.filter(s=>s.startsWith('U-')),Array.from({length:29},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
  const slots=await page.evaluate(()=>ZONE_SLOTS.U);
  assert.equal(slots.length,29);
- assert.equal(slots.find(s=>s.code==='U-12').leftPct,slots.find(s=>s.code==='U-02').leftPct);
- assert.equal(slots.find(s=>s.code==='U-12').topPct,slots.find(s=>s.code==='U-09').topPct);
- assert.ok(slots.find(s=>s.code==='U-22').leftPct<slots.find(s=>s.code==='U-23').leftPct);
- assert.equal(slots.find(s=>s.code==='U-22').topPct,slots.find(s=>s.code==='U-23').topPct);
+ assert.equal(slots.find(s=>s.code==='U-14').leftPct,slots.find(s=>s.code==='U-02').leftPct);
+ assert.equal(slots.find(s=>s.code==='U-14').topPct,slots.find(s=>s.code==='U-11').topPct);
+ for(const [left,right] of [['U-03','U-04'],['U-21','U-22'],['U-26','U-27'],['U-28','U-29']]){
+  const a=slots.find(s=>s.code===left),b=slots.find(s=>s.code===right);assert.ok(a.leftPct<b.leftPct);assert.equal(a.topPct,b.topPct);
+ }
+ assert.ok(slots.find(s=>s.code==='U-03').topPct<slots.find(s=>s.code==='U-06').topPct);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);
  await page.screenshot({path:'work/u-renumber-'+viewport.width+'.png'});
 

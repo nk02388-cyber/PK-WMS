@@ -3413,6 +3413,15 @@ ZONE_SLOTS.U.push(
  {code:'U-29',leftPct:uLowerRight.leftPct,topPct:uLowerRight.topPct+uLowerGap},
 );
 
+
+// U final numbering includes the added central-rack rows in physical reading order.
+const U_FINAL_ORDER = [1,2,26,27,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,28,29,19,20,21,22,23,24,25];
+const uFinalByCode = new Map(ZONE_SLOTS.U.map(s => [s.code,s]));
+ZONE_SLOTS.U = U_FINAL_ORDER.map((oldNumber,index) => ({
+ ...uFinalByCode.get(`U-${String(oldNumber).padStart(2,'0')}`),
+ code:`U-${String(index+1).padStart(2,'0')}`,
+}));
+
 // M1: retire the two lower-right positions and add four in the marked aisle.
 // Geometry only: keep stored inventory/history attached to its original identity.
 const m1OriginalSlots = ZONE_SLOTS['M-1'];

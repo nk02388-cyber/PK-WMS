@@ -14,18 +14,19 @@ test('compact rows preserve every pallet code, count, row height and other zones
    const right=['U-02','U-06','U-25','U-17','U-19','U-26'];
    const left=['U-01','U-03','U-09','U-14','U-18','U-20'];
    order.forEach((old,i)=>{
-    const code=`U-${String(old).padStart(2,'0')}`,slot=changed.U[i];
+    const finalOrder=[1, 2, 26, 27, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 29, 19, 20, 21, 22, 23, 24, 25];
+    const code=`U-${String(old).padStart(2,'0')}`,slot=changed.U[finalOrder.indexOf(i+1)];
     if(right.includes(code)){
      assert.equal(slot.leftPct,slots.find(s=>s.code==='U-02').leftPct);
      assert.equal(slot.topPct,slots.find(s=>s.code===left[right.indexOf(code)]).topPct);
     }else{const source=slots.find(s=>s.code===code);assert.equal(slot.leftPct,source.leftPct);assert.equal(slot.topPct,source.topPct);}
    });
-   for(const [code,anchor,direction] of [['U-26','U-04',-1],['U-27','U-05',-1],['U-28','U-16',1],['U-29','U-17',1]]){
+   for(const [code,anchor,direction] of [['U-03','U-06',-1],['U-04','U-07',-1],['U-21','U-18',1],['U-22','U-19',1]]){
     const slot=changed.U.find(s=>s.code===code),a=changed.U.find(s=>s.code===anchor);
     assert.equal(slot.leftPct,a.leftPct);assert.ok((slot.topPct-a.topPct)*direction>.7);
    }
-   assert.equal(changed.U.find(s=>s.code==='U-26').topPct,changed.U.find(s=>s.code==='U-27').topPct);
-   assert.equal(changed.U.find(s=>s.code==='U-28').topPct,changed.U.find(s=>s.code==='U-29').topPct);
+   assert.equal(changed.U.find(s=>s.code==='U-03').topPct,changed.U.find(s=>s.code==='U-04').topPct);
+   assert.equal(changed.U.find(s=>s.code==='U-21').topPct,changed.U.find(s=>s.code==='U-22').topPct);
    const removed=slots.find(s=>s.code==='U-18');
    assert.equal(changed.U.some(s=>s.leftPct===slots.find(s=>s.code==='U-02').leftPct&&s.topPct===removed.topPct),false);
    continue;
