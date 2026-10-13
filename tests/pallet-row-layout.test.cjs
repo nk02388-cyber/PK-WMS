@@ -8,17 +8,21 @@ test('compact rows preserve every pallet code, count, row height and other zones
  const targets=new Set(['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1']);
  for(const [zone,slots] of Object.entries(original)){
   if(zone==='U'){
-   assert.equal(changed.U.length,26);
-   assert.deepEqual(changed.U.slice(0,24).map(s=>s.code),slots.map(s=>s.code));
+   const order=[1,2,3,4,5,6,7,8,9,10,11,25,12,13,14,15,16,17,18,20,26,21,23,22,24];
+   assert.equal(changed.U.length,25);
+   assert.deepEqual(Array.from(changed.U,s=>s.code),Array.from({length:25},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
    const right=['U-02','U-06','U-25','U-17','U-19','U-26'];
    const left=['U-01','U-03','U-09','U-14','U-18','U-20'];
-   right.forEach((code,i)=>{
-    const slot=changed.U.find(s=>s.code===code);
-    assert.equal(slot.leftPct,slots.find(s=>s.code==='U-02').leftPct);
-    assert.equal(slot.topPct,slots.find(s=>s.code===left[i]).topPct);
+   order.forEach((old,i)=>{
+    const code=`U-${String(old).padStart(2,'0')}`,slot=changed.U[i];
+    if(right.includes(code)){
+     assert.equal(slot.leftPct,slots.find(s=>s.code==='U-02').leftPct);
+     assert.equal(slot.topPct,slots.find(s=>s.code===left[right.indexOf(code)]).topPct);
+    }else{const source=slots.find(s=>s.code===code);assert.equal(slot.leftPct,source.leftPct);assert.equal(slot.topPct,source.topPct);}
    });
-   for(const slot of slots.filter(s=>!right.includes(s.code)))assert.deepEqual(changed.U.find(s=>s.code===slot.code),slot);
-   assert.equal(new Set(changed.U.map(s=>s.code)).size,26);
+   assert.equal(changed.U.some(s=>s.code==='U-26'),false);
+   const removed=slots.find(s=>s.code==='U-18');
+   assert.equal(changed.U.some(s=>s.leftPct===slots.find(s=>s.code==='U-02').leftPct&&s.topPct===removed.topPct),false);
    continue;
   }
   if(zone==='M-1'){
@@ -37,7 +41,7 @@ test('compact rows preserve every pallet code, count, row height and other zones
     assert.equal(find(code).topPct,find(neighbor).topPct);
    }
    for(const a of changed[zone])for(const b of changed[zone])if(a!==b)assert.ok(Math.abs(a.leftPct-b.leftPct)>=.65 || Math.abs(a.topPct-b.topPct)>=.95,'M1 cells must not overlap');
-   assert.match(html,/palletNo: 527,/);
+   assert.match(html,/palletNo: 526,/);
    continue;
   }
   assert.deepEqual(changed[zone].map(s=>s.code),slots.map(s=>s.code));

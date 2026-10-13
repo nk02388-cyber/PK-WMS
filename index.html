@@ -3386,6 +3386,18 @@ uRightAisle.forEach((code, index) => {
   slot.topPct = ZONE_SLOTS.U.find(left => left.code === uLeftAisle[index]).topPct;
 });
 
+
+// U: remove the empty lower-right position and number physical rows top-to-bottom.
+// Source identities map to the same coordinates; database migration preserves stock.
+const U_SLOT_ORDER = [1,2,3,4,5,6,7,8,9,10,11,25,12,13,14,15,16,17,18,20,26,21,23,22,24];
+const uRemoved = ZONE_SLOTS.U.find(slot => slot.code === 'U-19');
+PALLET_ROW_MASKS.push({left:uRemoved.leftPct-.4,right:uRemoved.leftPct+.5,top:uRemoved.topPct-.6,bottom:uRemoved.topPct+.65});
+const uOriginalByCode = new Map(ZONE_SLOTS.U.map(slot => [slot.code, slot]));
+ZONE_SLOTS.U = U_SLOT_ORDER.map((oldNumber, index) => ({
+  ...uOriginalByCode.get(`U-${String(oldNumber).padStart(2,'0')}`),
+  code:`U-${String(index+1).padStart(2,'0')}`,
+}));
+
 // M1: retire the two lower-right positions and add four in the marked aisle.
 // Geometry only: keep stored inventory/history attached to its original identity.
 const m1OriginalSlots = ZONE_SLOTS['M-1'];
@@ -4298,7 +4310,7 @@ const AREA_BUILDINGS = [
     // in two buildings) and push the total to 548, nowhere near his stated 503 -- confirmed with
     // him this means "J-1" (matching every other "-1"-suffixed zone in this list).
     zones: ['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1','I-1','J-1','K-1','L-1','M-1','N-1','O-1','P-1','Q-1','R-1','S-1','T-1','U'],
-    palletNo: 527, // Original 503 + 20 in T-1 + 2 in U + net 2 in M1.
+    palletNo: 526, // Original 503 + 20 in T-1 + net 1 in U + net 2 in M1.
   },
   {
     key: 'new',
