@@ -10,7 +10,7 @@ test('zero balances leave active rows but retain history, original indices and r
   fseSlotTitle:{},fseItemCount:{},fseItemsList:{},FSE_ITEMS_HEADER:'',
   editItemIndex:null,withdrawOpenIndex:null,returnOpenIndex:null,removeConfirmIndex:null,movementEdit:null,
   escapeHtml:value=>String(value??''),renderStockMovement:(item)=>`<p>LOG-${item.code}</p>`,renderMovementEditForm:()=>'',
-  renderSlotBalance:()=>'',updateAddBtnState(){},updateWithdrawBtnState(){},updateReturnBtnState(){},fmt3:String});
+  getStockMovement:()=>({rows:[]}),renderSlotBalance:()=>'',updateAddBtnState(){},updateWithdrawBtnState(){},updateReturnBtnState(){},fmt3:String});
  vm.runInContext(['getRemainingQty','getReturnableQty','renderReturnForm','renderSlotEdit'].map(extract).join('\n'),ctx);
  ctx.renderSlotEdit();
  const [active,archived]=ctx.fseItemsList.innerHTML.split('<details');
