@@ -131,3 +131,5 @@ Withdrawal/return recent tables are superseded by native input suggestions: quan
 Recent withdrawal/return input suggestions now span every loaded pallet and product, separated by action. Sort newest recordedAt first, falling back to movement date; each field exposes the newest five distinct nonempty values. Rendering preserves stock/history and never writes suggested values automatically.
 
 QR camera actions use the user-provided qr-code.png as a 28px CSS alpha mask, with green high-contrast buttons (46px minimum height), text labels and keyboard focus. Dark mode uses a pale green surface with dark ink. Camera handlers and lazy-loading stay unchanged.
+
+Entering the incoming/putaway sidebar menu slides its content in from the right by 40px over 380ms with a gentle fade, replacing the general upward card entry for this pane. Rapid navigation cancels previous motion; reduced-motion and hidden-document states remain still. The pane clips horizontal motion to avoid widening mobile pages.

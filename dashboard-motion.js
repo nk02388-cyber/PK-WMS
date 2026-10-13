@@ -45,6 +45,11 @@
   if(!enabled()||!pane||pane.id==='pane-floorplan'||pane.id==='pane-warehouse-operations')return;
   entryFrame=requestAnimationFrame(()=>{
    entryFrame=0;if(!visible(pane))return;
+   if(pane.id==='pane-incoming'){
+    const content=pane.querySelector('.incoming-panel');
+    animate(content,[{opacity:.65,transform:'translateX(40px)'},{opacity:1,transform:'translateX(0)'}],380);
+    return;
+   }
    const cards=[...pane.querySelectorAll('.filter-bar,.panel,.packaging-age-card,.speed-meter-card,.kpi-total-fixed')].filter(el=>{const r=el.getBoundingClientRect();return r.height&&r.top<innerHeight+80&&r.bottom>0;}).slice(0,8);
    for(const [index,card] of cards.entries())animate(card,[{opacity:.45,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],340,index*35);
    const selectedIcon=document.querySelector('#tabs .tab-btn.active .tab-icon');
