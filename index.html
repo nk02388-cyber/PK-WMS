@@ -5802,12 +5802,17 @@ function renderWithdrawForm(i, item, remaining) {
 }
 
 function renderReturnForm(i, item, returnable) {
+  const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const part = type => parts.find(p => p.type === type).value;
+  const today = `${part('year')}-${part('month')}-${part('day')}`;
+  const recent = getStockMovement(item).rows.filter(row => row.type === 'return').reverse().slice(0,5);
+  const recentHtml = recent.length ? `<div class="fw-recent"><strong>ประวัติรับคืนล่าสุด 5 รายการ</strong><div class="fw-recent-scroll"><table><thead><tr><th>วันที่</th><th>จำนวน</th><th>ผู้คืน</th><th>เลขเอกสาร</th></tr></thead><tbody>${recent.map(row => `<tr><td>${escapeHtml(formatMovementDate(row.date))}</td><td>${escapeHtml(String(row.qty))} ${escapeHtml(row.unit)}</td><td>${escapeHtml(row.by || '—')}</td><td>${escapeHtml(row.reference || '—')}</td></tr>`).join('')}</tbody></table></div></div>` : '<div class="fw-hint">ยังไม่มีประวัติการรับคืนสินค้านี้</div>';
   return `
     <div class="fse-return-form" data-idx="${i}">
       <table class="fw-table">
         <thead><tr><th>วันที่รับคืน</th><th>จำนวนรับคืน</th><th>หน่วย</th><th>ผู้คืน</th><th></th></tr></thead>
         <tbody><tr class="fw-entry-row">
-          <td><input type="date" class="fr-date" title="วันที่รับคืน"></td>
+          <td><input type="date" class="fr-date" title="วันที่รับคืน" value="${today}"></td>
           <td><input type="number" class="fr-qty" placeholder="จำนวน" min="0" max="${returnable}" step="any" inputmode="decimal"></td>
           <td><input type="text" class="fr-unit" placeholder="หน่วย" value="${escapeHtml(item.unit || '')}"></td>
           <td><input type="text" class="fr-by" placeholder="ชื่อผู้คืน"></td>
@@ -5816,6 +5821,7 @@ function renderReturnForm(i, item, returnable) {
       <label>เลขเอกสารรับคืน * <input type="text" class="fr-reference" placeholder="เลขใบรับคืน / เลขอ้างอิง" required></label>
       <div class="fw-actions"><button type="button" class="fr-save-btn" data-idx="${i}" disabled>ยืนยันรับคืน</button><button type="button" class="fr-cancel-btn" data-idx="${i}">ยกเลิก</button></div>
       <div class="fr-hint">รับคืนได้ไม่เกิน ${escapeHtml(String(returnable))}${item.unit ? ' ' + escapeHtml(item.unit) : ''}</div>
+      ${recentHtml}
     </div>`;
 }
 

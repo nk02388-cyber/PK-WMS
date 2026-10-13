@@ -31,7 +31,7 @@ assert.match(ctx.fseItemsList.innerHTML, /26\/08\/2026<\/td>[^]*?sm-withdraw">�
 assert.match(ctx.fseItemsList.innerHTML, /02\/09\/2026<\/td>[^]*?sm-return">รับคืน/);
 assert.doesNotMatch(ctx.fseItemsList.innerHTML, /2026-08-04|เมื่อ 2026|<Tester>/);
 assert.match(ctx.renderWithdrawForm(0, items[0], 15), /26\/08\/2026/, 'Latest withdrawals also appear beside the entry form');
-assert.doesNotMatch(ctx.renderReturnForm(0, items[0], 6), /02\/09\/2026/, 'Return form must not duplicate history');
+assert.match(ctx.renderReturnForm(0, items[0], 6), /02\/09\/2026/, 'Return form shows recent return history');
 assert.equal(JSON.stringify(items), before, 'Rendering must not alter stored dates or quantities');
 items.push({ code: 'DATE-ONLY', receiveDate: '2026-09-01' }, { code: 'OLD' });
 ctx.renderSlotEdit();
