@@ -3656,7 +3656,7 @@ const floorplanStage = document.getElementById('floorplanStage');
 let ovScale = 1, ovPanX = 0, ovPanY = 0;
 // Open both maps in the drawing's landscape orientation; rotation stays view-only.
 let mapRotation = 0;
-const OV_MIN = 1, OV_MAX = 6;
+const OV_MIN = 0.1, OV_MAX = 6;
 
 // Display the overview in the drawing's landscape orientation. Crop only the
 // blank page margins (including a small inset outside the drawing border). All original
@@ -3687,6 +3687,9 @@ function ovClamp(layout) {
   const minX = Math.min(0, width - contentW), minY = Math.min(0, height - contentH);
   ovPanX = Math.max(minX, Math.min(0, ovPanX));
   ovPanY = Math.max(minY, Math.min(0, ovPanY));
+  // Keep a reduced drawing centered on axes where it fits inside the viewport.
+  if (ovScale < 1 && contentW < width) ovPanX = (width - contentW) / 2;
+  if (ovScale < 1 && contentH < height) ovPanY = (height - contentH) / 2;
 }
 function ovApply() {
   const width = floorplanWrap.clientWidth;

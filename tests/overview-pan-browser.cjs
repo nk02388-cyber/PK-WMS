@@ -36,6 +36,17 @@ const root=path.resolve(__dirname,'..');
   const bounds=await page.evaluate(()=>{const img=floorplanStage.querySelector('.floorplan-image');const l=overviewPortraitLayout(floorplanWrap.clientWidth,img.naturalHeight/img.naturalWidth,mapRotation);return {pan:ovPanY,min:floorplanWrap.clientHeight-floorplanWrap.clientWidth/l.aspectRatio}});
   assert.ok(Math.abs(bounds.pan-bounds.min)<1,'drawing bottom reachable without blank overscroll');
  }
+
+ await page.evaluate(()=>ovReset());
+ await page.locator('#floorplanOverviewZoomOut').click();
+ assert.ok(await page.evaluate(()=>ovScale<1),'minus button zooms below 100%');
+ await page.evaluate(()=>{for(let i=0;i<30;i++)ovZoomAt(innerWidth/2,innerHeight/2,1/1.4)});
+ assert.equal(await page.evaluate(()=>ovScale),0.1);
+ assert.equal(await page.locator('#floorplanZoomLevel').textContent(),'10%');
+ const centered=await page.evaluate(()=>({x:ovPanX,w:floorplanWrap.clientWidth}));
+ assert.ok(Math.abs(centered.x-centered.w*.45)<1,'small drawing remains centered');
+ await page.locator('#floorplanOverviewZoomIn').click();assert.ok(await page.evaluate(()=>ovScale>0.1));
+ await page.locator('#floorplanOverviewZoomReset').click();assert.equal(await page.evaluate(()=>ovScale),1);
  await page.evaluate(()=>setOverviewFullscreen(false));await page.waitForTimeout(100);await page.evaluate(()=>ovReset());
  assert.ok(Math.abs(await page.evaluate(()=>ovPanY))<1,'normal fitted map remains clamped');
  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS rotated fullscreen mouse/touch and normal bounds '+viewport.width);await page.close();
