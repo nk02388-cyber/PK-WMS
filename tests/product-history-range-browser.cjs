@@ -1,0 +1,29 @@
+const fs=require('fs'),path=require('path');
+const {chromium,webkit}=require('C:/Users/ADMIN/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+(async()=>{
+ const browser=await (process.env.PK_AUDIT_BROWSER==='webkit'?webkit.launch({headless:true}):chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}));
+ const results=[];
+ try {
+  for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:768,height:1024}]){
+   const page=await browser.newPage({viewport});const errors=[];
+   page.on('pageerror',e=>errors.push(e.message));
+   await page.route('**/*',route=>{
+    const u=new URL(route.request().url());if(u.hostname!=='localhost')return route.abort();
+    const file=path.join(root,u.pathname==='/'?'index.html':u.pathname);
+    if(!fs.existsSync(file))return route.abort();let body=fs.readFileSync(file);
+    if(file.endsWith('index.html'))body=body.toString().replace(/const (SUPABASE_URL|STOCK_SUPABASE_URL) = '[^']*';/g,"const $1 = '';").replace(/<script src="account-status.js[^>]*><\/script>/,`<script>document.body.classList.remove('auth-pending','department-choosing');document.body.classList.add('auth-ready');document.querySelectorAll('[data-admin-only]').forEach(el=>el.hidden=false);window.getWmsIsAdmin=()=>true;window.getWmsCanAccess=()=>true;window.getWmsActorName=()=> 'QA';supabaseClient={rpc:async()=>({data:[]})};</script>`);
+    route.fulfill({body,contentType:file.endsWith('.html')?'text/html':file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':file.endsWith('.png')?'image/png':file.endsWith('.webp')?'image/webp':'image/jpeg'});
+   });
+   await page.clock.install({time:new Date('2026-10-14T10:00:00+07:00')});await page.goto('http://localhost/');
+
+
+ await page.evaluate(()=>{activateTab(document.getElementById('tab-product-history'));palletDataReady=true;SLOT_ITEMS['A']={'A-01':[{code:'QA-RANGE',name:'ทดสอบช่วงวันที่',qty:100,remainingQty:85,unit:'ชิ้น',receiveDate:'2026-09-30',withdrawals:[{date:'2026-10-01',qty:10},{date:'2026-10-14',qty:5},{date:'2026-10-15',qty:1}]}]};window.PKProductHistory.open('QA-RANGE')});
+ assert.equal(await page.locator('#productHistoryFrom').inputValue(),'2026-10-01');assert.equal(await page.locator('#productHistoryTo').inputValue(),'2026-10-14');
+ assert.equal(await page.locator('.product-history-table-wrap tbody tr').count(),2);assert.equal(await page.locator('.product-history-running').first().textContent(),'90');
+ await page.locator('#productHistoryFrom').fill('2026-09-30');assert.equal(await page.locator('.product-history-table-wrap tbody tr').count(),3);
+ await page.locator('#productHistoryTo').fill('2026-09-29');assert.equal(await page.locator('#productHistoryFrom').evaluate(e=>e.checkValidity()),false);
+ await page.locator('#productHistoryTo').fill('2026-10-15');assert.equal(await page.locator('.product-history-table-wrap tbody tr').count(),4);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.deepEqual(errors,[]);console.log('PASS history range/defaults/boundaries/validation/prior balance '+viewport.width);await page.close();
+ } }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

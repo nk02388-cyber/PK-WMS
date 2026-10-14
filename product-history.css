@@ -48,3 +48,9 @@
   .product-history-matches { grid-template-columns: 1fr; }
   .product-history-stock { grid-template-columns: 1fr; }
 }
+
+.product-history-dates { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.product-history-dates label { display:grid; gap:6px; color:var(--text-secondary); font-size:12px; }
+.product-history-dates input { box-sizing:border-box; width:145px; min-height:44px; padding:9px 12px; border:1px solid var(--border); border-radius:10px; background:var(--page-plane); color:var(--text-primary); font:inherit; font-size:14px; }
+.product-history-dates input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+@media(max-width:700px) { .product-history-section-head { flex-wrap:wrap; } .product-history-dates { justify-content:flex-start; } .product-history-dates input { font-size:16px; } }

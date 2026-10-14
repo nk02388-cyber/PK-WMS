@@ -142,3 +142,12 @@ test('stock card leaves balances unknown after incomplete records and compares o
   assert.equal(comparison[0].difference,0);
   assert.equal(reconcileStockCard([{date:'',type:'receive',qty:1,unit:'ขวด'}],[{unit:'ขวด',qty:5,known:true}], '24/09/2569')[0].difference,null);
 });
+const {defaultHistoryRange,filterHistoryRange}=require('../product-history.js');
+test('history range uses Bangkok current month and includes both boundaries',()=>{
+ assert.deepEqual(defaultHistoryRange(new Date('2026-09-30T18:00:00Z')),{from:'2026-10-01',to:'2026-10-01'});
+ const rows=[{date:'2026-09-30'},{date:'01/10/2569'},{date:'2026-10-14'},{date:'2026-10-15'},{date:''}];
+ assert.deepEqual(filterHistoryRange(rows,'2026-10-01','2026-10-14'),rows.slice(1,3));
+ assert.deepEqual(filterHistoryRange(rows,'2026-10-14','2026-10-01'),[]);
+ const ledger=stockCardRows([{date:'2026-09-30',type:'receive',qty:100,unit:'ชิ้น'},{date:'2026-10-01',type:'withdraw',qty:10,unit:'ชิ้น'}]);
+ assert.equal(filterHistoryRange(ledger,'2026-10-01','2026-10-14')[0].calculatedBalance,90);
+});
