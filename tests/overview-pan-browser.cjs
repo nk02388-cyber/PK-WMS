@@ -25,7 +25,7 @@ const root=path.resolve(__dirname,'..');
   await page.evaluate(r=>{mapRotation=r;ovReset()},rotation);
   const rect=await page.locator('#floorplanImageWrap').boundingBox();const x=rect.x+rect.width*.15,y=rect.y+rect.height*.7;
   await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y-100,{steps:8});await page.mouse.up();
-  const mouse=await page.evaluate(()=>ovPanY);assert.ok(mouse < -90,`mouse pans rotated ${rotation}: ${mouse}`);
+  assert.equal(await page.locator('.floorplan-image').evaluate(e=>getComputedStyle(e).userSelect),'none');assert.equal(await page.locator('.floorplan-image').getAttribute('draggable'),'false');assert.equal(await page.evaluate(()=>window.getSelection().type==='Range'),false,'drag never selects the drawing');const mouse=await page.evaluate(()=>ovPanY);assert.ok(mouse < -90,`mouse pans rotated ${rotation}: ${mouse}`);
   await page.evaluate(()=>ovReset());
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-100,id:1}]});
