@@ -8,6 +8,8 @@ Runtime tokens come from `reference-wms.css`, which overrides `haulix-theme.css`
 
 The Login and department chooser now follow the [BCL WMS Figma design](https://www.figma.com/design/t8DMP5EcoVqoPh72lJEJVF/BCL-WMS?node-id=3-12) (desktop nodes 3:11–3:12; mobile 3:13–3:14). `auth-redesign.css` loads last and scopes the final overrides to the authentication shell. Desktop uses a 530:910 split with a dark green brand story and a 480px content column. At 900px or below, the brand story is hidden and content starts at 32px with 24px side padding. Titles use 32px desktop / 26px mobile; controls are at least 44px. Department cards have no icons or trailing arrows. The warehouse SVG is the exported Figma asset; the existing BCL logo is reused. Light/dark themes, password visibility, Back, pending/error states and external RM/FG links remain supported.
 
+Overview map panning clamps against the cropped drawing's rendered width and height after rotation and zoom. Fullscreen viewport height is independent of that drawing height, so mouse/touch dragging remains available at 100% when a rotated drawing extends beyond the screen (14 October 2026).
+
 | Semantic token | Light | Dark | Role |
 |---|---|---|---|
 | `--page-plane` | #f1f3f5 | #15242b | Page canvas |

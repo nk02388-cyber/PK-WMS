@@ -3679,13 +3679,11 @@ function overviewPortraitLayout(viewWidth, imageAspect = 1700 / 2200, rotation =
   };
 }
 
-// transform never changes an element's own layout size, so floorplanWrap (overflow:hidden)
-// always reports the same unscaled box regardless of ovScale -- i.e. a fixed-size "viewport"
-// that the stage's scaled/panned content is clipped against. That's what makes the clamp below
-// simple: content size at the current scale is just viewport size * ovScale.
-function ovClamp() {
+// Fullscreen fixes the viewport height independently of the drawing. After rotation
+// the cropped drawing may be much taller; clamp against its actual rendered bounds.
+function ovClamp(layout) {
   const width = floorplanWrap.clientWidth, height = floorplanWrap.clientHeight;
-  const contentW = width * ovScale, contentH = height * ovScale;
+  const contentW = width * ovScale, contentH = width / layout.aspectRatio * ovScale;
   const minX = Math.min(0, width - contentW), minY = Math.min(0, height - contentH);
   ovPanX = Math.max(minX, Math.min(0, ovPanX));
   ovPanY = Math.max(minY, Math.min(0, ovPanY));
@@ -3699,7 +3697,7 @@ function ovApply() {
   floorplanWrap.style.aspectRatio = String(layout.aspectRatio);
   floorplanStage.style.width = layout.stageWidth + 'px';
   floorplanStage.style.setProperty('--map-label-rotation', `${-mapRotation}deg`);
-  ovClamp();
+  ovClamp(layout);
   floorplanStage.style.transform = `translate(${ovPanX}px, ${ovPanY}px) scale(${ovScale}) translate(${layout.offsetX}px, ${layout.offsetY}px) rotate(${mapRotation}deg)`;
   const level = document.getElementById('floorplanZoomLevel');
   if (level) level.textContent = `${Math.round(ovScale * 100)}%`;
