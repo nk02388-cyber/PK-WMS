@@ -61,8 +61,10 @@ test('compact rows preserve every pallet code, count, row height and other zones
    for(const slot of slots){
     const actual=current[order.indexOf(Number(slot.code.slice(3)))];
     assert.equal(actual.topPct,slot.topPct);
-    if(!['S1-01','S1-02'].includes(slot.code))assert.deepEqual({...actual,code:slot.code},slot);
+    if(Number(slot.code.slice(3))>=9)assert.deepEqual({...actual,code:slot.code},slot);
    }
+   for(const [lower,upper] of [[6,1],[7,2],[8,3]])assert.ok(Math.abs(current[lower-1].leftPct-current[upper-1].leftPct)<1e-9,'middle columns align with the top row');
+   for(let i=4;i<11;i++)assert.ok(Math.abs((current[i].leftPct-current[i-1].leftPct)-.728)<1e-9,'the entire middle row keeps equal spacing');
    for(const a of current)for(const b of current)if(a!==b)assert.ok(Math.abs(a.leftPct-b.leftPct)>=.65 || Math.abs(a.topPct-b.topPct)>=.95,'S1 cells must not overlap');
    continue;
   }

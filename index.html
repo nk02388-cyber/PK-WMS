@@ -3427,6 +3427,12 @@ ZONE_SLOTS['S-1'] = S1_FINAL_ORDER.map((oldNumber,index) => ({
   ...s1FinalByCode.get(`S1-${String(oldNumber).padStart(2,'0')}`),
   code:`S1-${String(index+1).padStart(2,'0')}`,
 }));
+// Align S1-06/07/08 with S1-01/02/03; move the entire eight-slot row together.
+const s1AlignedMiddle = ZONE_SLOTS['S-1'].filter(slot => Number(slot.code.slice(3)) >= 4 && Number(slot.code.slice(3)) <= 11);
+PALLET_ROW_MASKS.push({left:Math.min(...s1AlignedMiddle.map(slot=>slot.leftPct))-.43,right:Math.max(...s1AlignedMiddle.map(slot=>slot.leftPct))+.43,top:s1AlignedMiddle[0].topPct-.60,bottom:s1AlignedMiddle[0].topPct+.73});
+s1AlignedMiddle.forEach(slot => {
+  slot.leftPct = Number((s1UpperLeft.leftPct + (Number(slot.code.slice(3))-6)*s1UpperGap).toFixed(3));
+});
 
 // T-1 occupies the freed aisle at the right of the shortened old-building rows.
 // Number left-to-right from the new top row, then continue downward.
