@@ -7,12 +7,15 @@ const ctx=vm.createContext({
   btn:{textContent:'',setAttribute:(key,value)=>buttonAttrs.set(key,value)},
   localStorage:{setItem:(key,value)=>saved.push([key,value])}
 });
+const entryAttrs=[new Map(),new Map()];
+ctx.themeButtons=[ctx.btn,...entryAttrs.map(attrs=>({setAttribute:(key,value)=>attrs.set(key,value)}))];
 vm.runInContext(extract('applyDashboardTheme'),ctx);
 ctx.applyDashboardTheme('dark',true);
 assert.equal(attrs.get('data-theme'),'dark');
 assert.equal(buttonAttrs.get('aria-label'),'เปลี่ยนเป็นโหมดสว่าง');
 assert.equal(buttonAttrs.get('title'),'เปลี่ยนเป็นโหมดสว่าง');
 assert.equal(buttonAttrs.get('aria-pressed'),'true');
+for(const attrs of entryAttrs){assert.equal(attrs.get('aria-pressed'),'true');assert.equal(attrs.get('aria-label'),'เปลี่ยนเป็นโหมดสว่าง');}
 assert.deepEqual(saved,[['pk-dashboard-theme-haulix','dark']]);
 ctx.applyDashboardTheme('light',true);
 assert.equal(attrs.get('data-theme'),'light');

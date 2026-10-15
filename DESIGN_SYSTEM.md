@@ -134,3 +134,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 mobile header fix: account and notification menus at widths below 1024px use fixed viewport insets with border-box sizing. Their top/available height follow the actual header and visual viewport on resize/scroll, and contents scroll internally on short screens. Mobile account buttons have at least 44px height. Toasts show only the newest message near the safe bottom edge and are suppressed while account/notifications/calendar/navigation is open; bell entries and unread state remain intact. Evidence: tests/header-popovers-browser.cjs (Edge/WebKit at 320, 390, 430, 932 and 1440px; light/dark, resize and scroll). Physical iPhone verification remains user-side.
+
+
+15 October 2026 entry theme controls: compact department and User Login cards each expose a 44px sun/moon toggle at the top right. Both use the same explicit light/dark preference as the Dashboard, update accessible labels/pressed state together, persist through reload, and sync storage changes. Native button keyboard activation works without submitting Login. No new theme key or default-theme change is introduced. Evidence: tests/entry-theme-browser.cjs and tests/theme-toggle.test.cjs.

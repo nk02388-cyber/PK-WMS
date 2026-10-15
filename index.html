@@ -1985,7 +1985,7 @@ header.top .header-logo { border-radius: 14px; }
 }
 </style>
 <link rel="stylesheet" href="dashboard-shell.css?v=20260926-9">
-<link rel="stylesheet" href="account-login.css?v=20261015-popover1">
+<link rel="stylesheet" href="account-login.css?v=20261015-entrytheme1">
 <link rel="stylesheet" href="product-history.css?v=20261014-range1">
 <link rel="stylesheet" href="top-withdrawals.css?v=20260925-1">
 <link rel="stylesheet" href="notifications.css?v=20261015-popover1">
@@ -2010,6 +2010,10 @@ header.top .header-logo { border-radius: 14px; }
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
   <form class="auth-card" id="authLoginForm">
+    <div class="entry-theme-row"><button class="theme-toggle entry-theme-toggle" data-entry-theme-toggle type="button" aria-pressed="false" aria-label="เปลี่ยนเป็นโหมดมืด" title="เปลี่ยนเป็นโหมดมืด">
+        <span class="theme-option theme-option-sun" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></span>
+        <span class="theme-option theme-option-moon" aria-hidden="true"><svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.3 14.1A8.5 8.5 0 0 1 9.9 3.7 8.5 8.5 0 1 0 20.3 14.1Z"/></svg></span>
+      </button></div>
     <button type="button" class="auth-back" id="authChangeDepartment"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>เลือกแผนกอื่น</button>
     <div class="auth-brand"><img src="assets/bcl-logo-monochrome.png?v=2" alt="BIO-COSLAB" width="52" height="52"><div><strong>PK WMS</strong><span>BIO-COSLAB</span></div><span class="auth-department">คลังบรรจุภัณฑ์</span></div>
     <h1 id="authTitle">เข้าสู่ระบบ PK WMS</h1>
@@ -2025,6 +2029,10 @@ header.top .header-logo { border-radius: 14px; }
 </main>
 <main class="department-screen" id="departmentScreen" aria-labelledby="departmentTitle">
   <section class="department-card" id="departmentChooser">
+    <div class="entry-theme-row"><button class="theme-toggle entry-theme-toggle" data-entry-theme-toggle type="button" aria-pressed="false" aria-label="เปลี่ยนเป็นโหมดมืด" title="เปลี่ยนเป็นโหมดมืด">
+        <span class="theme-option theme-option-sun" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></span>
+        <span class="theme-option theme-option-moon" aria-hidden="true"><svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.3 14.1A8.5 8.5 0 0 1 9.9 3.7 8.5 8.5 0 1 0 20.3 14.1Z"/></svg></span>
+      </button></div>
     <div class="auth-brand department-brand"><img src="assets/bcl-logo-monochrome.png?v=2" alt="BIO-COSLAB" width="48" height="48"><div><strong>BCL WMS</strong><span>BIO-COSLAB</span></div><span class="auth-department">ระบบคลังสินค้า</span></div>
     <h1 id="departmentTitle">เลือกแผนกที่ต้องการเข้าใช้งาน</h1>
     <p class="department-intro" id="departmentWelcome">เลือกแผนกก่อนเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
@@ -10288,21 +10296,24 @@ syncBrandButtonStates();
 
 // ---------- Theme toggle ----------
 const btn = document.getElementById('themeToggle');
+const themeButtons = [btn, ...document.querySelectorAll('[data-entry-theme-toggle]')];
 function applyDashboardTheme(theme, persist = false) {
   const selected = theme === 'dark' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', selected);
-  btn.setAttribute('aria-pressed', selected === 'dark' ? 'true' : 'false');
-  btn.setAttribute('aria-label', selected === 'dark' ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
-  btn.setAttribute('title', selected === 'dark' ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
+  for (const button of themeButtons) {
+    button.setAttribute('aria-pressed', selected === 'dark' ? 'true' : 'false');
+    button.setAttribute('aria-label', selected === 'dark' ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
+    button.setAttribute('title', selected === 'dark' ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
+  }
   if (persist) {
     try { localStorage.setItem('pk-dashboard-theme-haulix', selected); }
     catch (_) { /* Theme still works for this page when storage is unavailable. */ }
   }
 }
 applyDashboardTheme(document.documentElement.getAttribute('data-theme'));
-btn.addEventListener('click', () => applyDashboardTheme(
+themeButtons.forEach(button => button.addEventListener('click', () => applyDashboardTheme(
   document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', true
-));
+)));
 window.addEventListener('storage', event => {
   if (event.key === 'pk-dashboard-theme-haulix' && (event.newValue === 'light' || event.newValue === 'dark')) applyDashboardTheme(event.newValue);
 });

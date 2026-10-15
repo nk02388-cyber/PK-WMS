@@ -112,3 +112,13 @@ body:not(.department-choosing) .department-screen { display: none; }
 .department-card .department-footer{padding-top:16px;border-top:1px solid #e7ebdf;color:#8a9583;text-align:center;font-size:11px}
 @media(max-width:480px){.department-screen{padding:16px}.department-card{padding:24px;gap:18px;border-radius:20px}.department-card h1{font-size:23px}.department-option{padding:14px;gap:12px;grid-template-columns:44px minmax(0,1fr) 28px;min-height:102px}.department-icon{width:44px;height:44px;border-radius:12px}.department-option strong{font-size:16px}.department-arrow{width:28px;height:28px}.department-brand{gap:9px}}
 @media(max-height:720px){.department-screen{align-items:start}.department-card{margin:auto 0}}
+
+/* Entry pages share the dashboard's theme preference and accessible toggle state. */
+.entry-theme-row { display:flex; justify-content:flex-end; }
+body.viz-root .entry-theme-toggle { display:inline-flex; align-items:center; justify-content:center; gap:2px; box-sizing:border-box; width:80px; height:44px; min-height:44px; margin:0; padding:4px; border:1px solid var(--border); border-radius:10px; background:var(--surface-1); color:var(--text-primary); cursor:pointer; }
+.entry-theme-toggle .theme-option { display:grid; place-items:center; width:32px; height:32px; border-radius:50%; }
+.entry-theme-toggle .theme-option svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.7; }
+:root[data-theme="light"] .entry-theme-toggle .theme-option-sun,
+:root[data-theme="dark"] .entry-theme-toggle .theme-option-moon { background:var(--series-1-wash); color:var(--series-1); }
+body.viz-root .entry-theme-toggle:hover { border-color:var(--series-1); background:var(--surface-1); }
+body.viz-root .entry-theme-toggle:focus-visible { outline:3px solid var(--focus-ring); outline-offset:3px; }
