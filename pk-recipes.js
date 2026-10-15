@@ -5,6 +5,9 @@
   const baseline=new Map(), recipes=new Map();
   let baselineCatalog=[];
   let ready=false, saving=false, generation=0, editingCode='', expectedVersion=0;
+  const BASELINE_REFRESH_MS=15*60_000, SAVED_REFRESH_MS=60_000;
+  let cachedBaseline=null, baselineLoadedAt=0, lastRefreshedAt=0, inFlight=null;
+  const paneVisible=()=>!document.hidden&&['pane-bompk','pane-bom-plan'].some(id=>$(id)&&!$(id).hidden);
   const isAdmin=()=>window.getWmsIsAdmin?.()===true;
   const allowed=()=>window.getWmsCanAccess?.('bompk') || window.getWmsCanAccess?.('bom-plan');
   const status=(message,error=false)=>{ $('pkRecipesStatus').textContent=message; $('pkRecipesStatus').className=error?'error':''; };
@@ -79,25 +82,35 @@
     for(const code of Object.keys(BOMPK.bom_detail))delete BOMPK.bom_detail[code];
     apply([]);
   }
-  async function refresh() {
+  function refresh(options={}) {
+    if(saving)return Promise.resolve();
+    if(inFlight)return inFlight;
+    const request=refreshNow(options);
+    inFlight=request;
+    request.finally(()=>{if(inFlight===request)inFlight=null;});
+    return request;
+  }
+  async function refreshNow({reuseBaseline=false}={}) {
     if(saving)return;
     const id=++generation;
     $('pkRecipeEditor').hidden=!isAdmin();
-    if(!client || !allowed()){ready=false;clearBaseline();newRecipe();return status('เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์ BOM เพื่อโหลดสูตร');}
+    if(!client || !allowed()){ready=false;cachedBaseline=null;baselineLoadedAt=0;clearBaseline();newRecipe();return status('เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์ BOM เพื่อโหลดสูตร');}
     try {
-      const [original,saved]=await Promise.all([client.rpc('get_pk_bom_baseline'),client.rpc('get_pk_recipes')]);
+      const useCache=reuseBaseline&&cachedBaseline&&Date.now()-baselineLoadedAt<BASELINE_REFRESH_MS;
+      const [original,saved]=await Promise.all([useCache?Promise.resolve({data:cachedBaseline}):client.rpc('get_pk_bom_baseline'),client.rpc('get_pk_recipes')]);
       if(id!==generation || !allowed())return;
       if(original.error)throw original.error;if(saved.error)throw saved.error;
       const data=original.data;
       if(!data || !data.bom_detail || typeof data.bom_detail!=='object' || !data.fg_catalog)throw new Error('ยังไม่มีต้นฉบับ BOM ในฐานข้อมูล');
       if(!Array.isArray(saved.data))throw new Error('ข้อมูลสูตรที่บันทึกไม่ถูกต้อง');
       for(const detail of Object.values(data.bom_detail))if(!detail || !Array.isArray(detail.lines))throw new Error('ข้อมูลต้นฉบับ BOM ไม่ถูกต้อง');
+      if(!useCache){cachedBaseline=data;baselineLoadedAt=Date.now();}
       baseline.clear();for(const [code,detail] of Object.entries(data.bom_detail))baseline.set(code,structuredClone(detail));
       baselineCatalog=Object.values(data.fg_catalog);BOMPK.assumptions=data.metadata?.assumptions||{};
       for(const code of Object.keys(BOMPK.bom_detail))delete BOMPK.bom_detail[code];
-      apply(saved.data);ready=true;$('pkRecipeSave').disabled=saving;
+      apply(saved.data);ready=true;lastRefreshedAt=Date.now();$('pkRecipeSave').disabled=saving;
       status('โหลด BOM จาก API แล้ว · '+baseline.size+' สูตรต้นฉบับ · '+recipes.size+' สูตรที่บันทึก');
-    }catch(error){if(id!==generation)return;ready=false;clearBaseline();$('pkRecipeSave').disabled=true;
+    }catch(error){if(id!==generation)return;ready=false;cachedBaseline=null;baselineLoadedAt=0;clearBaseline();$('pkRecipeSave').disabled=true;
       status('โหลดสูตรไม่ได้ · '+(error.message||'ตรวจสอบการเชื่อมต่อ')+' · กรุณาโหลดใหม่',true);}
   }
   $('pkRecipeForm').addEventListener('submit',async event=>{
@@ -139,13 +152,16 @@
       const details=document.createElement('details'),summary=document.createElement('summary'),pre=document.createElement('pre');summary.textContent='ดูสูตรเวอร์ชันนี้';pre.textContent=JSON.stringify(version.recipe,null,2);pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere';details.append(summary,pre);row.append(details);$('pkRecipeHistory').append(row);}
   };
   window.addEventListener('wms:account-changed',()=>{
-    ++generation;ready=false;clearBaseline();$('pkRecipeHistory').replaceChildren();
+    ++generation;inFlight=null;cachedBaseline=null;baselineLoadedAt=0;lastRefreshedAt=0;ready=false;clearBaseline();$('pkRecipeHistory').replaceChildren();
     $('pkRecipeEditor').hidden=!isAdmin();$('pkRecipeSave').disabled=true;
     if(saving){status('บัญชีเปลี่ยนแล้ว · กรุณาโหลดสูตรใหม่');return;}
     newRecipe();refresh();
   });
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden && !saving)refresh();});
-  setInterval(()=>{if(!document.hidden && !saving && allowed())refresh();},60000);
+  function refreshVisible(){if(paneVisible()&&!saving&&allowed()&&(!ready||Date.now()-lastRefreshedAt>=SAVED_REFRESH_MS))refresh({reuseBaseline:true});}
+  document.addEventListener('visibilitychange',refreshVisible);
+  const paneObserver=new MutationObserver(refreshVisible);
+  for(const id of ['pane-bompk','pane-bom-plan'])if($(id))paneObserver.observe($(id),{attributes:true,attributeFilter:['hidden']});
+  setInterval(refreshVisible,SAVED_REFRESH_MS);
   $('pkRecipeProducts').replaceChildren(...[...products().values()].map(item=>{const option=document.createElement('option');option.value=item.code;option.textContent=item.name;return option;}));
   newRecipe();refresh();
 })();

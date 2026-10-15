@@ -5,7 +5,18 @@ const crypto = require('node:crypto');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 // Snapshot of non-confidential layout/geometry assets after private API migration.
 // Deliberate asset updates must refresh this hash.
-const protectedContent = html.split(/\r?\n/).filter(line => line.length > 10000).join('\n');
+const planAssets = require('./fixtures/plan-assets.json');
+// Reconstruct the old embedded layout for the original snapshot comparison.
+// Also verify extracted file bytes, rather than blessing a changed snapshot hash.
+const embeddedAssets=planAssets.map(asset=>{const bytes=fs.readFileSync(path.join(__dirname,'..',asset.path));assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),asset.sha256);return {...asset,dataUrl:'data:image/jpeg;base64,'+bytes.toString('base64')};});
+const restored = html.split(/\r?\n/).map(line => {
+  for(const asset of embeddedAssets){
+    if(asset.path==='assets/floorplan-detail.jpg'&&!line.includes('id="floorplanZoomViewport"'))continue;
+    if(line.includes(asset.path))line=line.split(asset.path).join(asset.dataUrl);
+  }
+  return line;
+});
+const protectedContent = restored.filter(line => line.length > 10000).join('\n');
 assert.equal(crypto.createHash('sha256').update(protectedContent).digest('hex'),
   'cb0d3e5f7eb455a14698b4f9fb0ac8be4db2859db58ccb7320a081df60be0c65');
 // Same JPEG bytes moved out of HTML to avoid repeated base64 parsing/copying.

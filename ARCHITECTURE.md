@@ -134,3 +134,8 @@ Pallet JSON transfers (13 October 2026): Import and Export prompt for the same P
 
 
 Current repository evidence: [review ledger](docs/SKILL-REVIEW-2026-10-15.md). Authoring used architecture/data-ownership analysis only; backend implementation, security certification and migrations remain separate tasks. PostgreSQL/Supabase-specific guards are not a portable storage contract; another provider would require equivalent Auth/RLS/RPC behavior and validation. Static hosting can move to another HTTPS host only with equivalent rewrites, security headers and camera permission policy.
+
+
+## Performance follow-up — 15 October 2026
+
+Root embedded JPEGs now reference separately cacheable, byte-identical assets; image geometry and private-data APIs are unchanged. BOM automatic refresh is scoped to visible BOM/planning panes. Saved recipes refresh on the existing one-minute cadence there; the baseline response is reusable only in memory for up to 15 minutes. Manual refresh bypasses cache; concurrent refresh requests coalesce. Account change and load errors invalidate the baseline cache, and existing generation checks discard stale account replies. This reduces full-baseline network calls without introducing a public or persistent fallback. It is bounded caching, not a version-only RPC contract; see [implementation/validation](docs/REPORT-IMPROVEMENTS-2026-10-15.md).

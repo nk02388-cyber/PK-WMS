@@ -85,6 +85,7 @@ BOM เดิมย้ายครบและ stock/BOM โหลดผ่า�
 | FR-13 | ประวัติสินค้ามีตั้งแต่วันที่–ถึงวันที่ เริ่มวันที่ 1 เดือนปัจจุบันถึงวันนี้ในกรุงเทพฯ รวมขอบเขตทั้งสองวัน; ยอดสะสมอิงประวัติเต็ม | มีแล้ว | `tests/product-history.test.cjs`, `tests/product-history-range-browser.cjs` / ผู้พัฒนา |
 | FR-14 | Import/Export พาเลทขอ PIN เดียวกับ Update Stock; Import ตรวจ PIN/สิทธิ์/เวอร์ชันฝั่งเซิร์ฟเวอร์ | มีแล้วใน source/fixtures; metadata production ไม่ตรวจซ้ำในรอบนี้ | `tests/pallet-transfer-pin.test.mjs` / ผู้พัฒนา |
 | FR-15 | Excel/กล้อง QR โหลดไลบรารีเมื่อใช้งาน; ปฏิทินใช้ Realtime พร้อมลดการอ่านซ้ำ | มีแล้วใน source/fixtures | `tests/lazy-dependencies-browser.cjs`, `tests/calendar-realtime-browser.cjs` / ผู้พัฒนา |
+| FR-16 | รอบโหลด BOM อัตโนมัติทำเฉพาะเมนูที่เกี่ยวข้อง สูตรที่บันทึกตรวจทุกนาที; ต้นฉบับมี cache ในหน่วยความจำไม่เกิน 15 นาที; ปุ่มโหลดใหม่ bypass cache และเปลี่ยนบัญชีล้างข้อมูล | มีแล้วใน browser fixtures | `tests/bom-refresh-browser.cjs`, `tests/private-data-browser.cjs` / ผู้พัฒนา |
 
 ### User Experience
 

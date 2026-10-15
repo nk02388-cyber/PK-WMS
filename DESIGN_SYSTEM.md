@@ -128,3 +128,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 - 1.2 — 2026-10-15: Consolidated current component entries; restored compact Login/departments, documented grid icon, dated product history, 10–600% map zoom/rotated panning, selection suppression, lazy libraries and finite Motion. Removed contradictory current-vs-superseded design notes.
 - 1.1 — 2026-10-09: Defined presentation states and distinguished requirements from observed coverage.
 - 1.0 — 2026-10-09: Established reference WMS tokens/components with design-system-doc. Source provenance: docs/SKILLS.md.
+
+
+15 October 2026 performance follow-up: reference/map JPEGs use asset URLs instead of embedded base64, with identical source bytes. BOM automatic refresh respects active BOM/planning panes and reuses baseline data in memory for up to 15 minutes; manual refresh remains available. No component layout, map geometry or visual tokens change. Evidence: [implementation report](docs/REPORT-IMPROVEMENTS-2026-10-15.md).
