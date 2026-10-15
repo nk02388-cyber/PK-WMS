@@ -152,3 +152,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 sound profile: UI hover uses a short filtered square-wave bleep; activation combines two brief bleeps and a triangle bass hit for an original early-2000s game-menu character. Envelope levels use a 2× multiplier (200%). Existing gesture unlock, hover throttling, synthetic/disabled silence, cross-tab mute and preference persistence remain; QR confirmation is separate. No game recording or external audio file is loaded. Evidence: tests/ui-sound-browser.cjs, including real Web Audio unlock; perceived loudness on hardware is not measured.
+
+
+15 October 2026 latest sound profile: use short local menu navigation/confirmation excerpts, loaded and decoded once after an enabled gesture. The prior synthesized profile is retained only for failed/unsupported sample loading. Level multiplier stays 2× with hover/click balancing; mute behavior is unchanged. Attribution, excerpt timings, hashes and validation: [UI audio sources](docs/UI-AUDIO-SOURCES.md).
