@@ -143,3 +143,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 mobile notification placement update: notification popover is bottom-anchored with safe-area margins and up to 60dvh height; transient toasts remain at the bottom. The account menu retains the right half below the header. This overrides the earlier left-half notification placement only below 1024px; desktop is unchanged.
+
+
+15 October 2026 latest placement: mobile notification menu returns to the left half beside the right-half account menu below the header. Only transient toast messages stay bottom-anchored. Desktop is unchanged; this supersedes the bottom-anchored notification-menu entry above.
