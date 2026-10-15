@@ -9,7 +9,8 @@ Thai packaging warehouse system for BIO-COSLAB. BCL WMS is the department-select
 | Area | Start here |
 |---|---|
 | Bootstrap, authorized stock loading, floorplan | `index.html` |
-| Login, Admin settings, names/PINs/avatars | `account-status.js`, `supabase/functions/pk-user-access/index.ts` |
+| Login/settings | `account-status.js`, `supabase/functions/pk-user-access/index.ts` |
+| Product history / date filters | `product-history.js`, `product-history.css` |
 | Dashboard charts/layout/motion | `dashboard-insights.js`, `dashboard-layout.css`, `dashboard-motion.js` |
 | Sidebar, touch map, pallet copy | `sidebar-toggle.js`, `floorplan-mobile-controls.css`, `slot-copy.js`, `slot-copy-core.js` |
 | Recipes and packaging planning | `pk-recipes.js`, `pk-recipes-core.js`, `supabase-pk-recipes.sql`, `supabase-private-bom.sql` |
@@ -19,9 +20,9 @@ Thai packaging warehouse system for BIO-COSLAB. BCL WMS is the department-select
 
 ## Baseline setup
 
-Use PowerShell, Git and Node.js; this root-level static site has no package.json and no build step. Preview with an HTTP server rather than file://. Existing browser tests use Playwright and installed Edge/WebKit; runtime paths and browser environment flags are recorded in their source. Local SQL fixtures need the sibling `pg-testing` runtime.
+Use PowerShell, Git and Node.js. No root package.json/build step. Preview over HTTP. Browser tests record Playwright/Edge/WebKit paths and flags in their source. SQL fixtures need the sibling `pg-testing` runtime.
 
-Run `node --test tests/*.test.cjs tests/*.test.mjs` for the existing regression suite. Choose the focused browser check for the changed feature, such as `node tests/auth-flow-browser.cjs` for Login or `node tests/security-headers-browser.cjs` for CSP/dependency loading. Do not invent npm install/build commands.
+Run `node --test --test-concurrency=1 tests/*.test.cjs tests/*.test.mjs` for regression (SQL fixtures share runtime paths). Use the affected browser check, e.g. `node tests/auth-flow-browser.cjs` for Login or `node tests/security-headers-browser.cjs` for CSP/dependency loading. No npm install/build.
 
 ## Top-level principles
 

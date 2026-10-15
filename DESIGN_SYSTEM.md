@@ -1,14 +1,14 @@
 # PK WMS — Design System
 
-Version 1.1, 9 October 2026. Current implementation reference for [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). This documents the final reference WMS theme, not the earlier charcoal/lime theme.
+Version 1.2, 15 October 2026. Current visual contract for [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). Code baseline: `bf518e7`. This document consolidates superseded design notes into the current behavior; it does not redesign the product.
 
-## Foundations
+## Overview and use
 
-Runtime tokens come from `reference-wms.css`, which overrides `haulix-theme.css`. `dashboard-layout.css` sets Dashboard layout. Feature CSS owns local controls; inspect computed styles after all stylesheets load. `DESIGN.md` is a compatibility pointer to this document rather than a second palette.
+Use these patterns for PK WMS inventory workflows and shared login/department navigation. A component represents a specific action and data source; styling must preserve units, history, loading/error states and accessible names. Do not apply PK account assumptions to the separate RM/FG applications. Authoring skills described in [docs/SKILLS.md](docs/SKILLS.md) are not browser plugins.
 
-The department chooser follows the [BCL WMS Figma design](https://www.figma.com/design/t8DMP5EcoVqoPh72lJEJVF/BCL-WMS?node-id=3-12) (desktop node 3:12; mobile 3:14). `auth-redesign.css` loads last and scopes the final overrides to the department chooser. Desktop uses a 530:910 split with a dark green brand story and a 480px content column. At 900px or below, the brand story is hidden and content starts at 32px with 24px side padding. Titles use 32px desktop / 26px mobile; controls are at least 44px. Department cards have no icons or trailing arrows. The warehouse SVG is the exported Figma asset; the existing BCL logo is reused. Light/dark themes, password visibility, Back, pending/error states and external RM/FG links remain supported.
+## Foundations and CSS ownership
 
-Overview map panning clamps against the cropped drawing's rendered width and height after rotation and zoom. Fullscreen viewport height is independent of that drawing height, so mouse/touch dragging remains available at 100% when a rotated drawing extends beyond the screen (14 October 2026).
+`account-login.css` defines compact entry cards; `haulix-theme.css` and then `reference-wms.css` establish final themes. Feature styles such as `dashboard-layout.css`, `product-history.css` and `floorplan-mobile-controls.css` own their scoped layout. `typography.css` contains important type overrides: inspect computed styles rather than assuming a late font-size wins. `auth-redesign.css` remains an unused historical file and is not linked by the current page. The Figma split-screen design is superseded. `DESIGN.md` points here instead of maintaining a second palette.
 
 | Semantic token | Light | Dark | Role |
 |---|---|---|---|
@@ -29,119 +29,102 @@ Default theme is dark; users explicitly select light/dark and preference persist
 
 Noto Sans Thai is served locally through `typography.css`. Use the existing type scale: 22px page title, 18px section title, generally 14px body/control text; mobile pallet form fields use 16px to avoid browser zoom. Main panel/control radii are 14px/10px. Dashboard gap/padding: 18px/22px desktop, 12px/16px mobile. Prefer 44px interactive touch targets; existing smaller controls need individual checks rather than a blanket accessibility compliance claim.
 
-## Layout and component anatomy
+## Component entries
 
-```mermaid
-flowchart TD
-  Header[Header: sidebar toggle / product / status / stock update / calendar / notices / theme / avatar]
-  Overview[Overview: stock value / total Storage capacity / activity distribution; packaging-age strip below]
-  Trend[Movement trend: date controls / summaries / plot / daily rows]
-  Side[Building gauges]
-  Details[Stock value distributions and tables]
-  Header --> Overview
-  Overview --> Trend
-  Overview --> Side
-  Trend --> Details
-  Side --> Details
-```
+### Login and department chooser
 
-Dashboard cards prioritize values with labels, context and units. Do not flatten different units into one total. Empty/error states must remain distinct from zero activity. Tables scroll inside their region on narrow screens; they must not widen the page.
+**Overview/use:** compact cards for selecting the warehouse application and signing into PK. Do not use them as evidence of shared RM/FG identity.
 
-## Component specifications
+**Anatomy:** department card contains BCL logo/name, heading/instructions, three icon choices, separate-account note and footer. Login card contains department switch, logo/product badge, username, password/PIN with reveal button, help/error/loading, submit and footer. The department switch uses a decorative four-square SVG plus visible text; no arrow.
 
-| Component | Anatomy / variants | States and usage | Accessibility |
-|---|---|---|---|
-| Sidebar | Logo, icon, menu label, optional badge; 64px rail or full width; mobile drawer | Default collapsed; icon rows retain equal height. BOM and Cycle Counts labels wrap with badges on a separate row when expanded. Desktop hover/focus navigation expands over the page while reserving a constant 64px rail; content position and width remain unchanged during this temporary expansion. The toggle pins a 278px sidebar and slides the main page alongside it; closing with the toggle restores the 64px rail. Pointer hover expands the whole sidebar temporarily; pointer leave restores the collapsed rail. Keyboard focus also reveals the full navigation. Toggle pins expansion. No floating menu-name labels. Active uses nav tokens. | Accessible toggle name/expanded state; drawer Escape/backdrop close, focus restoration and inert background |
-| Header icon button | 20–21px line SVG in consistent control; optional count badge | Stock update matches calendar/notification controls. Hover/focus/disabled/loading should preserve shape. No duplicate full-text stock update bar. | Name through aria-label/title; count meaningful to screen readers |
-| Account/profile | Avatar or initials, name/role, Settings actions | Change name/PIN/password/avatar in Settings; avatar menu can show account, change department and logout. No avatar-upload action there. | Buttons have names; input errors use status; photo does not replace text identity |
-| Gauge | Track, ordered color bands, dotted needle, percentage, used/total context | Same visual grammar for total and per-building capacity. Full arc green→yellow→red left-to-right. Needle settles on actual percent; bands are not three unrelated gauges. | Numeric text and denominator remain readable without color; SVG should not duplicate the spoken label |
-| Trend chart | Date/period controls, legends, lines/points, daily rows | Same source summary as activity donut. Finite reveal on entry/update. Do not show a fabricated trend for empty periods. | Legends and daily data provide text access; controls keyboard-operable |
-| Stock card/form | Product context, history rows, quantity/unit, action buttons | Dark surfaces/text from tokens; distinguish receive/issue/return beyond color. No dark text on dark row backgrounds. | Label all fields; errors visible; horizontal scroll region focusable |
-| Map controls | Zoom %, minus/plus, rotate, reset, fullscreen; separate map viewport | Normal mobile reserves space outside map; fullscreen arrangement must preserve usable map height. Do not overlay an oversized wrapping toolbar on zones. | Touch and keyboard controls, named buttons, focus preserved when changing layout |
+**Variants/states:** light/dark; required fields, password visibility, pending, rejected credentials, network failure, success and Back. Back clears the password and invalidates delayed login results. Existing sessions can enter PK after department selection. Avatar upload remains in Settings only.
 
-## Data presentation states
+**Tokens:** surfaces/borders/text/accent/focus use the foundation tokens. Cards use existing compact geometry from account-login.css, including a 440px maximum login card, responsive padding and 50px input/action baseline. Reference and typography overrides determine final rendering.
 
-Use these states for Dashboard, stock and BOM data panels. These are component requirements; existing status notices implement part of this contract. Dedicated panel placeholders still require implementation if introduced in a later UI change.
+**Accessibility:** native form/labels/autocomplete, Enter submits; reveal has accessible name and pressed state; error uses alert, loading uses status. Decorative SVGs are hidden from assistive technology. No new contrast certification is implied.
 
-| State | Display and actions | Tokens / accessible behavior |
-|---|---|---|
-| Locked | Explain Login/menu access; do not display privileged prior-account values | surface-1, text-secondary; keep Login/navigation available |
-| Loading | Show a status near the relevant panel; do not label an unloaded value as confirmed zero | text-muted; status announcement should not repeatedly interrupt focus |
-| Error | Explain load failure and offer retry; do not substitute public fallback | text-primary on surface-1; error text plus named retry control |
-| Empty | State that the loaded result has no records in the selected period | text-secondary; preserve date/search controls |
-| Ready | Show actual value with unit, denominator and data date where applicable | text-primary; gauges/charts provide numeric/text alternatives |
+**Related:** account Settings, mobile navigation. Evidence: tests/auth-flow-browser.cjs and tests/department-login.test.cjs.
 
-Related components: header freshness notice, gauge, trend chart, stock tables and BOM load status. Use the existing component specifications above for their shared anatomy and variants.
+### Dashboard and dates
+
+**Anatomy:** overview stock value / total capacity / activity distribution; full-width packaging-age strip; movement trend beside building capacity; lower value distributions. Primary overview weights are 1.15 / 1.05 / 0.9 with 270px desktop cards, 20px gaps, 44–56px value, 210px total gauge, 180px building gauges and 140px activity donut. Donut legend aligns right at up to 210px, with a 24px gap. At 1100px and below activity uses a full row; at 600px primary cards stack at 240px and donut uses 120px/16px gap.
+
+**Variants/states:** one green→yellow→red capacity arc and dotted needle grammar for total/buildings, numeric used/total/available values from the same capacity calculation. Trend uses full container width and a 230px SVG height; text/markers do not stretch. Building cards align top/bottom with movement analysis above 1250px. Category bars use gauge green #5aa77d; warehouse bars use #78b0c9 and #5c95af hover. These are current chart-specific values, not new global theme tokens.
+
+**Date controls:** two labeled date fields, From and To, start at the first day of the current Bangkok month through today. Trend, totals, daily rows and donut share the inclusive interval. Empty/reversed dates preserve the last valid chart and show validation. Single-day plots center points without duplicated labels.
+
+**Accessibility:** units, percentage/denominator and text legends remain available without interpreting color. Daily rows provide a text alternative. Date controls are keyboard-operable; browser fixtures do not establish full screen-reader or physical-device coverage.
+
+**Related:** product-history range, freshness header. Sources: dashboard-insights.js, dashboard-layout.css, dashboard-motion.js.
+
+### Product-history date range
+
+**Overview/use:** filter retained movements for a selected product; do not treat these as the current stock snapshot.
+
+**Anatomy:** product/stock context → history heading and filtered count → From/To date controls → table or empty/loading message → full-history reconciliation and explanatory notes.
+
+**States:** default current Bangkok month through today; inclusive valid range, invalid range, no matches, loading/failure, pagination. Selection persists while switching products in the current page session. Undated rows are excluded from a dated result and disclosed. Filter runs after full-history running balances, so a selected range does not reset balances to zero. The stock comparison remains based on complete retained history and snapshot date.
+
+**Tokens:** page-plane date background, border, text-primary/secondary, focus-ring; 145px date fields with at least 44px height and 10px radius. Narrow layouts wrap controls and use 16px input text.
+
+**Accessibility:** explicit From/To labels, native date inputs, required validation with a Thai error for missing/reversed range, focus restored after rerender. Table scrolls horizontally inside its own region.
+
+**Related:** stock card and Dashboard dates. Evidence: tests/product-history.test.cjs, tests/product-history-range-browser.cjs.
+
+### Sidebar and map
+
+**Sidebar anatomy/states:** 64px icon rail with company logo, menu labels/badges and toggle. Desktop pointer hover or keyboard focus expands the whole navigation over content; reserved rail width stays constant. Toggle pins 278px navigation and slides content alongside it. Long menu rows use stable 262px label layout, switching between 44px/68px without height animation. No floating menu-name labels. Mobile uses a drawer with backdrop, focus trapping/restoration, Escape and inert background.
+
+**Map anatomy:** zoom percentage, minus/plus, rotate, reset and fullscreen toolbar; cropped drawing and all pallet overlays share one presentation transform. Normal mobile controls reserve space above the map; fullscreen preserves available map height. Zoom range is 10–600%; reset returns to 100%. After rotation, dragging clamps to actual drawing bounds rather than screen height. Reduced drawings are centered on axes where they fit. Pointer gestures do not select text/images or trigger blue selection; dragging/pinching must not select a zone. Map selection suppression is scoped to the overview and zone viewport, not transaction forms.
+
+**Accessibility:** named native controls remain keyboard-operable alongside mouse/pinch gestures; preserve focus and reduced-motion settings. Geometry and pallet identities must remain unchanged by presentation transforms.
+
+**Related:** pallet detail/transaction forms and copy destination. Evidence: tests/sidebar-hover-browser.cjs, tests/sidebar-browser.cjs, tests/overview-pan-browser.cjs, tests/overview-pan-bounds.test.cjs, tests/zoom-portrait.test.cjs.
+
+### Transaction forms, scanning and feedback
+
+Withdrawal/return date defaults are today in Bangkok. Quantity, actor and document inputs expose native datalist suggestions from the latest five distinct nonempty values across loaded pallets/products, separated by action. Selecting a suggestion fills only that field; historical rows are not rewritten. Separate recent-history tables are superseded. Browser controls popup appearance.
+
+QR camera actions use the supplied qr-code.png as a 28px alpha mask with a green high-contrast button, text and focus indicator (46px minimum height). Camera and Excel libraries load only on use. Import/Export asks for the stock PIN; import authorization belongs on the server, not the button appearance.
+
+Quiet synthesized hover/click tones begin after user interaction; disabled/inert/synthetic events remain silent, hover is throttled, and mute preference syncs across browser tabs. QR confirmation sound remains separate. No continuous audio is intended.
 
 ## Motion
 
-Use existing finite animation routines rather than adding a dependency. Desktop sidebar width and mobile drawer use 280ms `cubic-bezier(.22,1,.36,1)`; menu names and badges fade in over 200ms; hover expansion uses the same desktop transition with a 120ms pointer-leave delay. Gauge/progress and trend reveals are approximately 1100ms where currently implemented. These are implementation values, not permission to animate every element continuously.
+Motion 14.1.1 is vendored locally with its MIT license. Finite page entries use a 20–40px horizontal slide and fade over 320–380ms; incoming/putaway content uses 40px/380ms. Bounded staggering avoids long delays. Native browser animation is the fallback. Rapid navigation, hidden document and reduced-motion cancel animation and restore inline properties. Sidebar uses its own 280ms slide and 200ms label fade, with a 120ms pointer-leave delay; do not stack a second menu-label translation. Gauge/trend effects finish at the actual value.
 
-Honor `prefers-reduced-motion: reduce`; cancel stale chart animations when data or view changes. Avoid display/layout jumps while labels fade. Gauge colors stay in green/yellow/red order regardless of percentage. Changing a date must update both chart and summary data, not only animate old data.
+## Data presentation states
+
+| State | User-facing behavior |
+|---|---|
+| Locked | Explain login/menu access; clear privileged prior-account data |
+| Loading | Show status; unloaded is not confirmed zero |
+| Error | Visible failure/retry; do not substitute a public stock/BOM fallback |
+| Empty | State no loaded records match; preserve search/date controls |
+| Ready | Actual values with units, denominator and data date |
+
+These are shared requirements; coverage varies by feature. New placeholders are not claimed implemented simply because listed here.
 
 ## Correct and incorrect usage
 
 | Correct | Incorrect and reason |
 |---|---|
-| Point at the sidebar and expand its menus | Restore floating labels; superseded by automatic sidebar expansion |
-| Use one capacity gauge grammar for buildings and total | Mix old thick colored dial with new dotted-needle gauges |
-| Use icon stock update beside calendar with accessible name | Repeat a full-width update bar and header button |
-| Display profile photo in header and edit in Settings | Restore upload button in account dropdown |
-| Use final theme tokens on stock-card headings | Reuse old hardcoded dark text on dark backgrounds |
-| Reserve controls above/beside mobile map | Put a tall wrapping toolbar across pallet zones |
+| Use compact Login and department cards | Restore superseded split Figma screen without a new request |
+| Hover expands sidebar over content; toggle pins it | Shift the page on hover or add floating menu tooltips |
+| Filter movements after full running-balance calculation | Reset running balance to zero at the selected start date |
+| Read snapshot date and movement dates separately | Claim a filtered movement total is current stock |
+| Pan the drawing using its rotated rendered bounds | Clamp every zoom level to viewport height |
+| Reserve map toolbar space on mobile | Place a tall wrapping toolbar across pallet zones |
+| Edit avatar in Settings | Add an upload action to the header account dropdown |
 
 ## Validation and governance
 
-For affected components select existing browser tests: sidebar/hover, dashboard layout, building gauge, trend motion, map controls, settings and theme. Include relevant mobile/light/dark/reduced-motion states. Audit reported passing browser fixtures, not physical-device coverage or full WCAG certification. Measure contrast for changed pairs and check keyboard/screen-reader names before claiming accessibility compliance.
+Use affected browser fixtures and matching unit/SQL tests. Include mobile/light/dark and reduced motion where relevant. Check focus, labels, overflow and contrast for changed components; do not claim full WCAG certification or physical-device testing from fixtures. [Review ledger](docs/SKILL-REVIEW-2026-10-15.md) records this revision's evidence and limitations.
 
-Update this document with component changes; keep [PRD.md](PRD.md) requirements and [ARCHITECTURE.md](ARCHITECTURE.md) ownership aligned. Source evidence: `reference-wms.css`, `sidebar-toggle.css`, `dashboard-layout.css`, `dashboard-motion.js`, `typography.css`, `account-status.js`, `floorplan-mobile-controls.css`.
+Keep PRD behavior, architecture ownership and final CSS precedence synchronized. Do not add a dependency or alter business data solely to match a documentation example.
 
 ## Changelog
 
-- 1.1 — 2026-10-09: Defined locked/loading/error/empty/ready presentation requirements and separated them from currently verified UI behavior.
-
-- 1.0 — 2026-10-09: Documented current reference WMS tokens/components, mobile behavior and motion; replaced stale green/lime design guidance with a compatibility link. Created with `design-system-doc`; sources in [docs/SKILLS.md](docs/SKILLS.md).
-
-Movement analysis uses compact 18px desktop/16px mobile card padding, a full-width trend SVG with a fixed 230px height, 145px building gauges and a 105px activity donut. Text, date controls, chart data and motion remain unchanged.
-
-Desktop sidebar labels keep a 262px menu-row layout while the navigation width animates. Menu labels and brand text fade in without translation; the navigation slides open/closed; long-menu rows switch between 44px and 68px without a height animation. Reduced-motion preferences disable these transitions.
-
-Dashboard primary KPIs: stock-value and total-capacity cards lead the page alongside activity distribution at 270px desktop height, with a 44-56px stock value, 210px gauge and 36px capacity percentage. Packaging age follows as a full-width strip with three columns on wide screens. At 600px and below, the two primary cards stack at 240px height. Data sources, chart animations and sidebar behaviour are preserved.
-
-Above 1250px, movement analysis and the building card share aligned top/bottom edges. Building gauges are 180px, the combined-capacity summary wraps inline, and the activity donut sits in the top overview. At narrower widths the existing responsive stacking remains.
-
-Activity distribution now sits in the top overview beside stock value and Storage capacity. At 1100px and below it occupies a separate full-width overview row; mobile keeps it above the packaging-age strip. The former lower-right activity card is removed, preserving its existing data and period controls.
-
-Trend chart horizontal coordinates use the container width so the plot fills its card without scaling text or markers. Resize redraws reuse the existing summary and do not scan stock history again.
-
-Final proportion pass (13 October): overview weights 1.15 / 1.05 / 0.9, shared 270px desktop card height, 20px card gaps, 120px activity donut, and 180px building gauges (up to 160px on mobile). Building labels use explicit 8-16px spacing, and tablet building cards use the full row. Total capacity includes both used/total and available positions from the same computed capacity. Recommended hierarchy: usable space and stock value first, aged pallets next, movement analysis as supporting evidence.
-
-UI feedback sounds (13 October 2026): quiet synthesized sine tones distinguish mouse hover (40ms) and activation (70ms). Audio is initialized after a user gesture, with no external asset or background playback. Disabled/inert controls and synthetic events remain silent. Mouse hover is throttled and child transitions do not repeat sound; touch and keyboard activation use the click tone. Users can mute from the account panel or Settings; the browser-local preference syncs across tabs. QR scan confirmation remains separate.
-
-Activity distribution (13 October 2026): overview donut SVG grows to 140px with a 24px gap; the legend aligns to the right with a maximum width of 210px. At 600px and below, use 120px with a 16px gap to keep labels and percentages readable.
-
-Movement date filters (13 October 2026): replace preset duration with labeled From/To dates, defaulting to the first day of the current month through today in Bangkok. Trend, totals, daily rows and activity distribution share the selected inclusive range; reversed/empty dates show validation and preserve the last valid chart. Single-day charts center their points without duplicate axis labels.
-
-Category-value horizontal bars use #5aa77d, matching the green capacity-gauge band, in both light and dark themes (13 October 2026).
-
-Warehouse-value bars use a deeper blue #78b0c9 with #5c95af on hover; category bars keep their gauge-matched green (13 October 2026).
-
-Pallet withdrawal entry defaults to today in Bangkok and shows up to five latest withdrawals for the selected product, with date, quantity/unit, actor and document. Values are escaped; no historical data is overwritten.
-
-Pallet return entry also defaults to today in Bangkok and shows up to five latest returns for the selected product, newest first, with date, quantity/unit, returner and reference. Empty histories show an explicit message.
-
-Withdrawal/return recent tables are superseded by native input suggestions: quantity, actor and document inputs have datalists of distinct values from the latest five matching movements of the selected product. Selection fills only that input. Today defaults remain; no separate history table or empty-history message is shown. Browser controls the suggestion popup appearance.
-
-Recent withdrawal/return input suggestions now span every loaded pallet and product, separated by action. Sort newest recordedAt first, falling back to movement date; each field exposes the newest five distinct nonempty values. Rendering preserves stock/history and never writes suggested values automatically.
-
-QR camera actions use the user-provided qr-code.png as a 28px CSS alpha mask, with green high-contrast buttons (46px minimum height), text labels and keyboard focus. Dark mode uses a pale green surface with dark ink. Camera handlers and lazy-loading stay unchanged.
-
-Entering the incoming/putaway sidebar menu slides its content in from the right by 40px over 380ms with a gentle fade, replacing the general upward card entry for this pane. Rapid navigation cancels previous motion; reduced-motion and hidden-document states remain still. The pane clips horizontal motion to avoid widening mobile pages.
-
-Motion 14.1.1 (MIT) is vendored locally from the official npm release. Page entries use Motion animateMini with short 20–40px horizontal slide and fade (320–380ms), bounded card staggering, and no looping. Receive/putaway/history steps share the same entry rhythm. Hidden views, rapid navigation and reduced-motion cancel and restore inline properties. Existing sidebar slide/fade and value-correct gauge/trend effects remain.
-
-Overview zoom supports 10%–600% through +/- buttons, wheel and pinch. Drawings reduced below 100% are centered on axes where they fit; Reset returns to 100%.
-
-15 October 2026: User Login restored to the compact card before the Figma redesign, using account-login.css and reference-wms.css. auth-redesign.css now styles only the department chooser, which retains the Figma layout. Authentication behavior and all subsequent map/history changes are preserved.
-
-15 October 2026: Department selection is also restored to the compact card before Figma, with PK/RM/FG icons and original labels. The auth-redesign.css override is no longer loaded; both entry screens use account-login.css and reference-wms.css.
+- 1.2 — 2026-10-15: Consolidated current component entries; restored compact Login/departments, documented grid icon, dated product history, 10–600% map zoom/rotated panning, selection suppression, lazy libraries and finite Motion. Removed contradictory current-vs-superseded design notes.
+- 1.1 — 2026-10-09: Defined presentation states and distinguished requirements from observed coverage.
+- 1.0 — 2026-10-09: Established reference WMS tokens/components with design-system-doc. Source provenance: docs/SKILLS.md.

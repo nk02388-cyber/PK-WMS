@@ -1,6 +1,6 @@
 # PK WMS — architecture
 
-Evidence baseline: 9 October 2026. **Observed** means code/config/database metadata was inspected; **proposed** means not yet shipped; **unknown** means not measured. Product contract: [PRD.md](PRD.md). Visual contract: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). Agent entry: [AGENTS.md](AGENTS.md).
+Repository review: 15 October 2026 at `bf518e7`; live database evidence remains dated 9 October 2026. **Observed** means code/config/database metadata was inspected; **proposed** means not yet shipped; **unknown** means not measured. Product contract: [PRD.md](PRD.md). Visual contract: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). Agent entry: [AGENTS.md](AGENTS.md).
 
 ## Product vision and principles
 
@@ -54,9 +54,9 @@ flowchart LR
 | Drafts/preferences | Browser local/session storage | Counts, BOM drafts and calendar fallback contain business work; targeted cleanup preserves them |
 | Receipt plan | Referenced Google Sheets export | Network refresh/freshness is separate from inventory snapshot time |
 
-The schema and database installed today are authoritative for API guards. Some early root SQL scripts still show superseded anon grants; do not replay a single old script in isolation and assume it matches the deployed permission model.
+The deployed schema and database, when inspected directly, are authoritative for API guards. Some early root SQL scripts still show superseded anon grants; do not replay a single old script in isolation and assume it matches the deployed permission model.
 
-## Stock and BOM API contract — verified live
+## Stock and BOM API contract — live verification dated 9 October 2026
 
 Base API: `https://zgsxbuckjrplkpvtlbmn.supabase.co/rest/v1/rpc/`.
 
@@ -104,16 +104,33 @@ Imported the complete original and Operations formula variants into a private ve
 
 This removes fallback from the current website. Previously published Git commits, old deployments and third-party copies were not erased. The separate public withdrawal catalog remains an explicit integration decision.
 
+## Browser-derived views and load boundaries — observed in source
+
+- The compact department/login shell is restored. RM is proxied to a separate app; FG is an external app. Selecting a department does not unify their accounts.
+- Product-history date filtering runs on already loaded pallet history. It defaults to the current Bangkok month through today, filters inclusively after calculating the full ledger, and does not rewrite source movements or stock balances. Undated rows are excluded from a dated view and disclosed in UI copy.
+- Overview rotation/zoom/pan is presentation state. The cropped drawing's actual bounds constrain dragging in fullscreen; reduced views are centered when smaller than the viewport. Geometry and pallet identities are unchanged.
+- The library loader caches pending loads for Excel and QR libraries. Local Motion is a runtime dependency for finite entry effects, with native animation fallback. These are different from authoring skills, which do not run in the browser.
+- Calendar has a local 30-second reminder tick, not an unconditional database read every 30 seconds. Visible healthy Realtime sessions have a 15-minute refresh threshold; fallback uses 2 minutes. Change notifications debounce for 180ms; requests coalesce, hidden-page reads pause, visibility restoration forces refresh.
+
+## Coupling and ownership assessment
+
+**Observed:** UI geometry, inventory projections and many workflows share the root HTML and browser globals. Feature modules access this shared state; Operations has a separate frame but the same deployment and database gateway. **Inferred:** this increases change propagation and the need for focused cross-feature fixtures. It is not evidence that a framework migration is required.
+
+**Observed:** stock snapshots, retained pallet movements and external receipt plans are separate facts with different timestamps. Their totals are not interchangeable. No universal offline authority or cross-service atomic transaction is established. **Unknown:** sustained concurrency/load capacity and Auth/profile/Storage compensation under every partial failure. This review does not exercise production writes or revalidate deployed SQL grants.
+
 ## Evidence ledger and limits
 
 | Claim | Classification | Evidence |
 |---|---|---|
 | Static site with Supabase and no root build | Observed | Root HTML, feature modules, config and README |
 | Guarded stock/recipe reads | Observed | Live function definitions and role EXECUTE metadata on 9 October |
-| 96 unit tests and browser checks passed at audit | Reported with artifacts | [Audit report](docs/SECURITY-AUDIT-2026-10-09.md) |
+| Regression 111/111 and focused Login/map/history browser checks pass on 15 October | Observed in local fixtures | [Current review](docs/SKILL-REVIEW-2026-10-15.md); live DB assertions remain historical |
 | Current stock/BOM fallback removed; baseline migrated | Observed | Source diff, 104 database content checks and private API browser tests; migration report |
 | Long-term uptime/load capacity, backup restore guarantees | Unknown | No sustained production load/restore drill conducted |
 
 This document maps the current system. It does not authorize unrelated framework migrations or claim complete security certification. Source skill provenance: [docs/SKILLS.md](docs/SKILLS.md).
 
 Pallet JSON transfers (13 October 2026): Import and Export prompt for the same PIN as Update Stock. `verify_pallet_transfer_pin` checks floorplan permission and the server-held stock PIN hash; no PIN is persisted in browser storage. Import delegates to `import_pallet_changes`, which rechecks the PIN before the existing atomic `save_pallet_changes` transaction. Export gates the normal UI download; authorized pallet data remains readable by existing permissions and this is not an additional data-read authorization boundary. Regular pallet edits retain their existing guarded RPC.
+
+
+Current repository evidence: [review ledger](docs/SKILL-REVIEW-2026-10-15.md). Authoring used architecture/data-ownership analysis only; backend implementation, security certification and migrations remain separate tasks. PostgreSQL/Supabase-specific guards are not a portable storage contract; another provider would require equivalent Auth/RLS/RPC behavior and validation. Static hosting can move to another HTTPS host only with equivalent rewrites, security headers and camera permission policy.

@@ -12,12 +12,12 @@ function setup(centered=false) {
   const bind=vm.runInNewContext(`(${source})`,{window:{addEventListener:(type,fn)=>windowEvents[type]=fn},requestAnimationFrame:fn=>{frames.set(++nextFrame,fn);return nextFrame},cancelAnimationFrame:id=>frames.delete(id)});
   const controller=bind(viewport,{read:()=>state,write:(scale,panX,panY)=>{writes++;state={scale,panX,panY}},
     limits:()=>({min:1,max:6}),centered,target:'.pin',ignore:'.controls',dragClass:'dragging',tap:()=>taps++});
-  const send=(type,id,x,y,extra={})=>events[type]({type,pointerId:id,clientX:x,clientY:y,button:0,target:{closest:s=>s==='.pin'?{}:null},...extra});
+  const send=(type,id,x,y,extra={})=>{const event={type,pointerId:id,clientX:x,clientY:y,button:0,defaultPrevented:false,preventDefault(){this.defaultPrevented=true},target:{closest:s=>s==='.pin'?{}:null},...extra};events[type](event);return event;};
   return {send,controller,windowEvents,captures,classes,flush,get writes(){return writes},get state(){flush();return state},get taps(){return taps}};
 }
 for(const centered of [false,true]) {
   const g=setup(centered);
-  g.send('pointerdown',1,110,220);g.send('pointerdown',2,210,220);
+  assert.equal(g.send('pointerdown',1,110,220).defaultPrevented,true,'Map owns pointer gesture instead of native selection');g.send('pointerdown',2,210,220);
   g.send('pointermove',1,60,220);g.send('pointermove',2,260,220);
   assert.equal(g.state.scale,2,'Spread doubles scale');
   const originX=centered?210:10,originY=centered?320:20;

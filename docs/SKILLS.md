@@ -31,3 +31,8 @@ All four skills were reapplied: deliver-prd added release acceptance, agents-md-
 The user supplied `C:/Users/ADMIN/Downloads/Compressed/kien-thai-main.zip`, SHA-256 `a5a570d84cb7a43e6389c749592a058ec5acf118ae2fddebdafdd47c5cd673cc`. The archive's `skills/kien-thai/SKILL.md`, eight references and the companion `kode-thai` audit-loop instructions were read. Only the text references were copied to ignored `work/kien-thai-reference/`; no archive scripts, external model routing or third-party automation were run. This is use of a supplied reference, not a new global skill installation.
 
 Applied the Explainer register to warehouse instructions and status messages, preserving product names, identifiers, numeric quantities, units and operational meaning. Short action labels and the existing greeting voice retain their UI roles. Review iterations, rule traces, tests and limits are recorded in [the language review](KIEN-THAI-REVIEW-2026-10-10.md).
+
+
+## Follow-up application — 15 October 2026
+
+Reapplied all four local skill sources to the current PK WMS repository. Updated PRD requirements/verification, the concise AGENTS index, component design documentation and architecture evidence boundaries. Current compact login/departments, Sidebar overlay/pinning, map zoom/panning and date-range history supersede older descriptions. The [review ledger](SKILL-REVIEW-2026-10-15.md) records observed/inferred/unknown claims, test evidence and limits. This was documentation maintenance plus a gesture-test event-mock correction, with no application or production-data changes.

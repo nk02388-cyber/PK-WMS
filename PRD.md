@@ -1,7 +1,8 @@
 ---
 artifact: prd
-version: "1.1"
+version: "1.2"
 created: 2026-10-09
+updated: 2026-10-15
 status: current-baseline-with-proposed-follow-ups
 ---
 
@@ -27,7 +28,7 @@ status: current-baseline-with-proposed-follow-ups
 
 | เป้าหมาย | Baseline ที่มีหลักฐาน | เกณฑ์งานถัดไป | จุดตรวจ |
 |---|---|---|---|
-| รักษาพฤติกรรมเดิม | Audit 9 ต.ค. 2026: 96 tests ผ่าน | ชุดทดสอบที่เกี่ยวข้องผ่าน ไม่มี regression ใหม่ | ก่อนส่ง release |
+| รักษาพฤติกรรมเดิม | 15 ต.ค. 2026: regression 111/111 ผ่าน ดู review ledger | ชุดทดสอบที่เกี่ยวข้องผ่าน ไม่มี regression ใหม่ | ก่อนส่ง release |
 | ใช้งานมือถือได้ | Audit: Login/settings ที่ 390px และเมนูที่ 390/768/1440px ผ่าน | ไม่มี page overflow หรือ toolbar บังแผนผังใน viewport ที่ทดสอบ | เมื่อแก้ layout |
 | ข้อมูลและสิทธิ์เชื่อถือได้ | สต็อกและ BOM โหลดผ่าน API ที่ตรวจสิทธิ์ ถอดข้อมูลสำรองจาก static assets ของเว็บปัจจุบันแล้ว | ทดสอบปฏิเสธผู้ไม่มีสิทธิ์ และรักษาจำนวน/หน่วย/เวอร์ชัน | เมื่อแก้ข้อมูล/API |
 | เอกสารพร้อมส่งต่องาน | จัดทำ baseline ใน release นี้ | ลิงก์ภายในครบ แยก observed/proposed/unknown ชัด | เมื่อเปลี่ยนข้อกำหนด |
@@ -67,7 +68,7 @@ BOM เดิมย้ายครบและ stock/BOM โหลดผ่า�
 | FR-1 | เลือก PK ก่อน Login; เปลี่ยนแผนกล้างรหัสที่ค้าง และไม่ยอมรับผล Login ที่มาช้า | มีแล้ว | `tests/auth-flow-browser.cjs` / ผู้พัฒนา |
 | FR-2 | เมนูตามสิทธิ์; API ต้องปฏิเสธบัญชีไม่ active/ไม่มีสิทธิ์ | มี guard; ตรวจเพิ่มต่อ endpoint | credential/SQL fixtures และ server policy review / ผู้พัฒนา |
 | FR-3 | ทุกช่องค้นหาที่รองรับค้นคำบางส่วน ใช้ข้อมูลฟิลด์ของหน้านั้น ไม่จับข้อความ HTML ที่ไม่ได้ตั้งใจ | มีแล้ว | `tests/all-keyword-search-browser.cjs`, `tests/operations-keyword-browser.cjs` / ผู้พัฒนา |
-| FR-4 | Sidebar เริ่มย่อ เก็บโลโก้; hover/focus เปิดเฉพาะชื่อเมนูนั้น; กด toggle เปิดทั้งแถบอย่างสมูท | มีแล้ว | `tests/sidebar-hover-browser.cjs`, `tests/sidebar-browser.cjs` / ผู้พัฒนา |
+| FR-4 | Sidebar เริ่มย่อ เก็บโลโก้; hover/focus เปิดทั้งแถบทับเนื้อหา; toggle ตรึงแถบและขยับเนื้อหาหลัก | มีแล้ว | `tests/sidebar-hover-browser.cjs`, `tests/sidebar-browser.cjs` / ผู้พัฒนา |
 | FR-5 | มือถือมี drawer และแผนผังที่ controls ไม่บดบัง; ซูม/หมุน/fullscreen ใช้งานได้ | มีแล้วใน browser fixtures | `tests/map-controls-browser.cjs`, ตรวจเครื่องจริงเพิ่มเติม / ผู้พัฒนาและผู้ใช้ |
 | FR-6 | คัดลอกพาเลทไปโซนเดิมได้เมื่อเงื่อนไขถูกต้อง; ไม่ลบข้อมูลต้นทาง; ปฏิเสธ source เวอร์ชันเก่า | มีแล้ว | `tests/slot-self-copy-browser.cjs` / ผู้พัฒนา |
 | FR-7 | Settings จัดการชื่อ บัญชี Admin สิทธิ์ PIN/รหัส และ avatar; Header แสดงรูป แต่แก้รูปเฉพาะ Settings | มีแล้ว | `tests/settings-browser.cjs`, backend credential/avatar fixtures / ผู้พัฒนา |
@@ -75,9 +76,19 @@ BOM เดิมย้ายครบและ stock/BOM โหลดผ่า�
 | FR-9 | Animation มีจุดจบตรงค่าจริงและเคารพ reduced motion | มีแล้ว | `tests/trend-motion-browser.cjs`, `tests/building-gauge-browser.cjs` / ผู้พัฒนา |
 | FR-10 | สต็อก/BOM ของเว็บไซต์ปัจจุบันโหลดผ่าน API หลัง Login และไม่มี fallback ใน static assets | ทำแล้วสำหรับ stock/BOM; สำเนาเก่าและ catalog ภายนอกยังต้องตัดสินใจ | ตรวจ coverage สูตร, anonymous static fetch, API allow/deny และ invariant สต็อก / ผู้พัฒนา; เจ้าของคลังอนุมัติเทียบข้อมูล |
 
+ข้อกำหนดที่ตรวจเพิ่ม ณ 15 ตุลาคม 2026:
+
+| ID | ข้อกำหนด | สถานะ | วิธีตรวจ / ผู้ตรวจ |
+|---|---|---|---|
+| FR-11 | Login และเลือกแผนกใช้การ์ดเดิม ปุ่มเลือกแผนกอื่นใช้ไอคอนตาราง; RM/FG เปิดระบบแยก | มีแล้ว | `tests/auth-flow-browser.cjs` / ผู้พัฒนา |
+| FR-12 | ผังหลักย่อได้ 10–600%; หมุนเต็มจอแล้วลากเมาส์/นิ้วได้; ไม่เกิดการเลือกภาพสีน้ำเงิน; Reset กลับ 100% | มีแล้วใน browser fixtures | `tests/overview-pan-browser.cjs`, `tests/overview-pan-bounds.test.cjs` / ผู้พัฒนา; เครื่องจริงโดยผู้ใช้ |
+| FR-13 | ประวัติสินค้ามีตั้งแต่วันที่–ถึงวันที่ เริ่มวันที่ 1 เดือนปัจจุบันถึงวันนี้ในกรุงเทพฯ รวมขอบเขตทั้งสองวัน; ยอดสะสมอิงประวัติเต็ม | มีแล้ว | `tests/product-history.test.cjs`, `tests/product-history-range-browser.cjs` / ผู้พัฒนา |
+| FR-14 | Import/Export พาเลทขอ PIN เดียวกับ Update Stock; Import ตรวจ PIN/สิทธิ์/เวอร์ชันฝั่งเซิร์ฟเวอร์ | มีแล้วใน source/fixtures; metadata production ไม่ตรวจซ้ำในรอบนี้ | `tests/pallet-transfer-pin.test.mjs` / ผู้พัฒนา |
+| FR-15 | Excel/กล้อง QR โหลดไลบรารีเมื่อใช้งาน; ปฏิทินใช้ Realtime พร้อมลดการอ่านซ้ำ | มีแล้วใน source/fixtures | `tests/lazy-dependencies-browser.cjs`, `tests/calendar-realtime-browser.cjs` / ผู้พัฒนา |
+
 ### User Experience
 
-ใช้ไทยเป็นหลัก Noto Sans Thai และ tokens ใน [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) ลำดับ Dashboard คือภาพรวม → แนวโน้ม → ความจุตามอาคาร/สัดส่วนกิจกรรม → รายละเอียด stock value ปุ่มอัปเดตสต็อกเป็น icon ใน header ข้างปฏิทิน บอกชื่อปุ่มผ่าน accessible label
+ใช้ไทยเป็นหลัก Noto Sans Thai และ tokens ใน [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) ลำดับ Dashboard คือภาพรวมมูลค่า/ความจุ/สัดส่วนกิจกรรม → อายุบรรจุภัณฑ์ → แนวโน้มและความจุตามอาคาร → รายละเอียด stock value ปุ่มอัปเดตสต็อกเป็น icon ใน header ข้างปฏิทิน บอกชื่อปุ่มผ่าน accessible label
 
 ### Edge Cases
 
@@ -132,6 +143,10 @@ BOM เดิมย้ายครบและ stock/BOM โหลดผ่า�
 ## Open Questions
 
 เจ้าของคลังต้องยืนยันว่า catalog รหัส/ชื่อ/หน่วยสำหรับแอปเบิกสินค้าควรเปิดสาธารณะหรือไม่; ต้องการเก็บข้อมูล offline ระดับใด; provider backup/rate limits ปัจจุบันเป็นอย่างไร รายละเอียดอยู่ใน Audit
+
+## Revision history
+
+- 1.2 — 15 ตุลาคม 2026: ตรวจข้อกำหนดกับโค้ดรุ่นปัจจุบัน เพิ่ม FR-11–15 และแก้คำอธิบาย Sidebar/ลำดับ Dashboard ดู [ผลตรวจด้วย 4 สกิล](docs/SKILL-REVIEW-2026-10-15.md)
 
 ## Appendix
 
