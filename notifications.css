@@ -43,6 +43,19 @@ body.sidebar-drawer-open .notification-toast-stack { display: none; }
     max-height: var(--header-popover-available, calc(100dvh - var(--sticky-header-h, 100px) - 36px));
     overflow: auto; overscroll-behavior: contain; text-align: left;
   }
+  .viz-root #notificationPanel {
+    right: calc(50% + 6px);
+    padding: 12px;
+  }
+  .viz-root #accountPanel {
+    left: calc(50% + 6px);
+    padding: 12px;
+  }
+  .viz-root #notificationPanel .notification-panel-head { flex-wrap: wrap; gap: 8px; }
+  .viz-root #notificationPanel .notification-panel-head h2 { font-size: 16px !important; }
+  .viz-root #notificationPanel .notification-panel-actions { flex-wrap: wrap; gap: 8px; }
+  .viz-root #notificationPanel .notification-item { box-sizing: border-box; min-width: 0; white-space: normal; }
+  .viz-root :is(#accountPanel, #notificationPanel) :is(button, strong, small, span) { overflow-wrap: anywhere; }
   .notification-toast-stack {
     top: auto; bottom: max(12px, env(safe-area-inset-bottom));
     left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));

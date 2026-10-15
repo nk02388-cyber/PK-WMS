@@ -137,3 +137,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 entry theme controls: compact department and User Login cards each expose a 44px sun/moon toggle at the top right. Both use the same explicit light/dark preference as the Dashboard, update accessible labels/pressed state together, persist through reload, and sync storage changes. Native button keyboard activation works without submitting Login. No new theme key or default-theme change is introduced. Evidence: tests/entry-theme-browser.cjs and tests/theme-toggle.test.cjs.
+
+
+15 October 2026 header menu placement: below 1024px, notification popover occupies the left half and account popover the right half, separated by 12px and retaining 12px outer/safe-area margins. Controls and notification cards wrap inside each column; short screens retain internal scrolling. Existing button/outside-click/Escape behavior and desktop placement remain. Validated with half-column and content-overflow assertions in tests/header-popovers-browser.cjs on Edge and WebKit.
