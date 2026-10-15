@@ -131,3 +131,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 performance follow-up: reference/map JPEGs use asset URLs instead of embedded base64, with identical source bytes. BOM automatic refresh respects active BOM/planning panes and reuses baseline data in memory for up to 15 minutes; manual refresh remains available. No component layout, map geometry or visual tokens change. Evidence: [implementation report](docs/REPORT-IMPROVEMENTS-2026-10-15.md).
+
+
+15 October 2026 mobile header fix: account and notification menus at widths below 1024px use fixed viewport insets with border-box sizing. Their top/available height follow the actual header and visual viewport on resize/scroll, and contents scroll internally on short screens. Mobile account buttons have at least 44px height. Toasts show only the newest message near the safe bottom edge and are suppressed while account/notifications/calendar/navigation is open; bell entries and unread state remain intact. Evidence: tests/header-popovers-browser.cjs (Edge/WebKit at 320, 390, 430, 932 and 1440px; light/dark, resize and scroll). Physical iPhone verification remains user-side.

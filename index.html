@@ -1985,10 +1985,10 @@ header.top .header-logo { border-radius: 14px; }
 }
 </style>
 <link rel="stylesheet" href="dashboard-shell.css?v=20260926-9">
-<link rel="stylesheet" href="account-login.css?v=20261002-deptdesign1">
+<link rel="stylesheet" href="account-login.css?v=20261015-popover1">
 <link rel="stylesheet" href="product-history.css?v=20261014-range1">
 <link rel="stylesheet" href="top-withdrawals.css?v=20260925-1">
-<link rel="stylesheet" href="notifications.css?v=20260926-1">
+<link rel="stylesheet" href="notifications.css?v=20261015-popover1">
 <link rel="stylesheet" href="event-calendar.css?v=20260926-3">
 <link rel="stylesheet" href="cycle-counts.css?v=20260926-2">
 <link rel="stylesheet" href="scrap-inventory.css?v=20260926-1">
@@ -3220,10 +3220,23 @@ function updateStickyOffsets() {
   const headerH = header.getBoundingClientRect().height;
   const tabsH = tabsEl.getBoundingClientRect().height;
   document.documentElement.style.setProperty('--sticky-header-h', headerH + 'px');
+  const visual = window.visualViewport;
+  const viewTop = visual?.offsetTop || 0, viewHeight = visual?.height || window.innerHeight;
+  const popoverTop = Math.max(viewTop + 8, Math.min(header.getBoundingClientRect().bottom + 8, viewTop + viewHeight - 96));
+  document.documentElement.style.setProperty('--header-popover-top', popoverTop + 'px');
+  document.documentElement.style.setProperty('--header-popover-available', Math.max(64, viewTop + viewHeight - popoverTop - 12) + 'px');
   document.documentElement.style.setProperty('--sticky-stack-h', (headerH + (window.matchMedia('(min-width: 1024px)').matches ? 0 : tabsH)) + 'px');
 }
 updateStickyOffsets();
 window.addEventListener('resize', updateStickyOffsets);
+let stickyOffsetFrame = 0;
+function scheduleStickyOffsets() {
+  if (!stickyOffsetFrame) stickyOffsetFrame = requestAnimationFrame(() => { stickyOffsetFrame = 0; updateStickyOffsets(); });
+}
+window.addEventListener('scroll', scheduleStickyOffsets, {passive:true});
+window.visualViewport?.addEventListener('resize', scheduleStickyOffsets);
+window.visualViewport?.addEventListener('scroll', scheduleStickyOffsets);
+new ResizeObserver(scheduleStickyOffsets).observe(document.querySelector('header.top'));
 
 // ---------- Floor plan (ชั้น 2) -- Zone Area, per "Layout PK Zone 2nd Floor" ----------
 // ZONE_MAP: { zoneCode: warehouseCode }, extracted straight from the source workbook's

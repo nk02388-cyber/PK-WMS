@@ -31,5 +31,24 @@
 .notification-toast small { margin-top: 4px; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
 @keyframes notification-toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes notification-toast-out { to { opacity: 0; transform: translateY(-8px); } }
-@media (max-width: 700px) { .notification-toast-stack { left: 12px; right: 12px; width: auto; } }
+/* Transient messages must not cover header menus or the mobile navigation. */
+body:has(#accountPanel:not([hidden]), #notificationPanel:not([hidden]), #eventCalendarDialog[open]) .notification-toast-stack,
+body.sidebar-drawer-open .notification-toast-stack { display: none; }
+@media (max-width: 1023px) {
+  .viz-root :is(#accountPanel, #notificationPanel) {
+    position: fixed; box-sizing: border-box;
+    top: var(--header-popover-top, calc(var(--sticky-header-h, 100px) + 20px));
+    left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));
+    width: auto; min-width: 0; max-width: none;
+    max-height: var(--header-popover-available, calc(100dvh - var(--sticky-header-h, 100px) - 36px));
+    overflow: auto; overscroll-behavior: contain; text-align: left;
+  }
+  .notification-toast-stack {
+    top: auto; bottom: max(12px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));
+    width: auto; max-height: 32dvh; overflow: hidden;
+  }
+  .notification-toast-stack .notification-toast:not(:last-child) { display: none; }
+  .viz-root #accountPanel button { min-height: 44px; white-space: normal; }
+}
 @media (prefers-reduced-motion: reduce) { .notification-toast { animation: none; } }

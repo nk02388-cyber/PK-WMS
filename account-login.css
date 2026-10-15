@@ -31,7 +31,7 @@ body:not(.department-choosing) .department-screen { display: none; }
 .auth-card button:disabled, #accountCreateForm button:disabled { opacity: .55; cursor: wait; }
 .auth-card #authLoading { color: #56637a; font-size: 12px; }
 .auth-card .auth-error { color: #b4232c; }
-.account-panel { width: min(430px, calc(100vw - 24px)); max-width: none; max-height: min(75vh, 650px); overflow: auto; gap: 12px; }
+.account-panel { box-sizing: border-box; width: min(430px, calc(100vw - 24px)); max-width: none; max-height: min(75vh, 650px); overflow: auto; gap: 12px; }
 .account-panel #accountAdmin[hidden] { display: none; }
 .account-panel h3 { margin: 4px 0; font-size: 14px; }
 #accountCreateForm { display: grid; gap: 10px; }
