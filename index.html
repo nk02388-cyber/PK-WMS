@@ -3419,6 +3419,14 @@ ZONE_SLOTS['S-1'].push(
 );
 // Remove the old printed Zone S1 sign behind the two added positions.
 PALLET_ROW_MASKS.push({left:s1MiddleLeft.leftPct-2*s1MiddleGap-.48,right:s1MiddleLeft.leftPct-.35,top:s1MiddleLeft.topPct-.59,bottom:s1MiddleLeft.topPct+.59});
+// Read each physical row left-to-right, then continue downward.
+// The matching database migration carries inventory/audit/putaway identities.
+const S1_FINAL_ORDER = [1,2,15,16,17,3,4,5,6,7,8,9,10,11,12,13,14];
+const s1FinalByCode = new Map(ZONE_SLOTS['S-1'].map(slot => [slot.code,slot]));
+ZONE_SLOTS['S-1'] = S1_FINAL_ORDER.map((oldNumber,index) => ({
+  ...s1FinalByCode.get(`S1-${String(oldNumber).padStart(2,'0')}`),
+  code:`S1-${String(index+1).padStart(2,'0')}`,
+}));
 
 // T-1 occupies the freed aisle at the right of the shortened old-building rows.
 // Number left-to-right from the new top row, then continue downward.
