@@ -149,3 +149,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 stock-card reconciliation: Scrap/ตัดจำหน่าย is treated as outbound in product-history running balances and comparisons, matching the pallet ledger. Unknown comparisons show reason counts for missing/invalid movement dates, quantities, unsupported movement types, invalid snapshot date, or unavailable stock for the unit. Unknown values are never coerced to zero; no historical records are changed. Tests: product-history.test.cjs, product-history-range-browser.cjs.
+
+
+15 October 2026 sound profile: UI hover uses a short filtered square-wave bleep; activation combines two brief bleeps and a triangle bass hit for an original early-2000s game-menu character. Envelope levels use a 2× multiplier (200%). Existing gesture unlock, hover throttling, synthetic/disabled silence, cross-tab mute and preference persistence remain; QR confirmation is separate. No game recording or external audio file is loaded. Evidence: tests/ui-sound-browser.cjs, including real Web Audio unlock; perceived loudness on hardware is not measured.

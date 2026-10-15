@@ -19,6 +19,7 @@ const root = path.resolve(__dirname, '..');
         window.AudioContext = class {
           constructor() { window.contexts++; this.state='running'; this.currentTime=1; this.destination={}; }
           createOscillator() { const tone={frequency:{setValueAtTime(v){tone.frequencyValue=v;},exponentialRampToValueAtTime(){}},connect(){},disconnect(){},start(){window.tones.push(tone.frequencyValue);},stop(){this.onended?.();}}; return tone; }
+          createBiquadFilter() {return {frequency:{setValueAtTime(){}},Q:{setValueAtTime(){}},connect(){},disconnect(){}};}
           createGain() { return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}}; }
         };
       });
@@ -31,20 +32,20 @@ const root = path.resolve(__dirname, '..');
       if (!mobile) await button.hover();
       assert.equal(await page.evaluate(()=>window.contexts),0,'no startup/initial-hover AudioContext');
       if (mobile) await button.tap(); else await button.click();
-      assert.deepEqual(await page.evaluate(()=>window.tones),[660]);
+      assert.deepEqual(await page.evaluate(()=>window.tones),[520,780,130]);
       if (!mobile) {
         await page.mouse.move(900,700);await page.waitForTimeout(90);await button.hover();
-        assert.deepEqual(await page.evaluate(()=>window.tones),[660,880]);
+        assert.deepEqual(await page.evaluate(()=>window.tones),[520,780,130,1040]);
         await button.locator('span').hover();
-        assert.equal(await page.evaluate(()=>window.tones.length),2,'child hover does not repeat');
+        assert.equal(await page.evaluate(()=>window.tones.length),4,'child hover does not repeat');
         await page.locator('#soundDisabled').hover();
-        assert.equal(await page.evaluate(()=>window.tones.length),2,'disabled silent');
+        assert.equal(await page.evaluate(()=>window.tones.length),4,'disabled silent');
       }
       const before = await page.evaluate(()=>window.tones.length);
       await button.evaluate(el=>el.click());
       assert.equal(await page.evaluate(()=>window.tones.length),before,'synthetic clicks silent');
       await button.focus();await page.keyboard.press('Enter');
-      assert.equal(await page.evaluate(()=>window.tones.at(-1)),660,'keyboard activation sounds');
+      assert.equal(await page.evaluate(()=>window.tones.at(-1)),130,'keyboard activation sounds');
       // Reveal preference controls without invoking real account actions.
       await page.evaluate(()=>{document.getElementById('accountPanel').hidden=false;});
       await page.locator('#uiSoundToggle').click();
@@ -58,7 +59,7 @@ const root = path.resolve(__dirname, '..');
       await page.evaluate(()=>{document.getElementById('accountPanel').hidden=false;});
       await page.locator('#uiSoundToggle').click();
       assert.equal(await page.locator('#uiSoundEnabled').isChecked(),true);
-      assert.deepEqual(await page.evaluate(()=>window.tones),[660],'unmute confirms once');
+      assert.deepEqual(await page.evaluate(()=>window.tones),[520,780,130],'unmute confirms once');
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no page overflow');
       assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);
       console.log(`PASS UI sound ${mobile?'touch':'desktop'}: hover/click/keyboard/mute/persistence/no overflow`);

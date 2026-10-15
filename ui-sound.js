@@ -24,21 +24,34 @@
       if (audio.state === 'suspended') audio.resume().catch(() => {});
     } catch {}
   }
+  // Original early-2000s game-menu timbre: filtered bleeps plus a short bass hit.
+  // Envelope levels are 200% of the previous UI sound profile; no audio assets load.
+  function synthesizeMenuSound(context, kind) {
+    const volume = 2, now = context.currentTime;
+    function note(type, from, to, delay, duration, level, cutoff) {
+      const start = now + delay;
+      const tone = context.createOscillator(), gain = context.createGain(), filter = context.createBiquadFilter();
+      tone.type = type;
+      tone.frequency.setValueAtTime(from, start);
+      tone.frequency.exponentialRampToValueAtTime(to, start + duration * .75);
+      filter.type = 'lowpass'; filter.frequency.setValueAtTime(cutoff, start); filter.Q.setValueAtTime(.7, start);
+      gain.gain.setValueAtTime(.0001, start);
+      gain.gain.exponentialRampToValueAtTime(level * volume, start + .003);
+      gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      tone.connect(filter); filter.connect(gain); gain.connect(context.destination);
+      tone.onended = () => { tone.disconnect(); filter.disconnect(); gain.disconnect(); };
+      tone.start(start); tone.stop(start + duration + .005);
+    }
+    if (kind === 'hover') note('square', 1040, 520, 0, .045, .018, 1800);
+    else {
+      note('square', 520, 390, 0, .05, .028, 1600);
+      note('square', 780, 1040, .055, .07, .028, 1800);
+      note('triangle', 130, 65, 0, .10, .012, 500);
+    }
+  }
   function play(kind) {
     if (!enabled || !unlocked || document.hidden || !audio || audio.state !== 'running') return;
-    try {
-      const hover = kind === 'hover', now = audio.currentTime;
-      const tone = audio.createOscillator(), gain = audio.createGain();
-      tone.type = 'sine';
-      tone.frequency.setValueAtTime(hover ? 880 : 660, now);
-      tone.frequency.exponentialRampToValueAtTime(hover ? 1100 : 990, now + .025);
-      gain.gain.setValueAtTime(.0001, now);
-      gain.gain.exponentialRampToValueAtTime(hover ? .018 : .04, now + .004);
-      gain.gain.exponentialRampToValueAtTime(.0001, now + (hover ? .035 : .065));
-      tone.connect(gain); gain.connect(audio.destination);
-      tone.onended = () => { tone.disconnect(); gain.disconnect(); };
-      tone.start(now); tone.stop(now + (hover ? .04 : .07));
-    } catch {}
+    try { synthesizeMenuSound(audio, kind); } catch {}
   }
   function control(event) {
     const el = event.target.closest?.(controls);
