@@ -25,5 +25,9 @@ const root=path.resolve(__dirname,'..');
  await page.locator('#productHistoryFrom').fill('2026-09-30');assert.equal(await page.locator('.product-history-table-wrap tbody tr').count(),3);
  await page.locator('#productHistoryTo').fill('2026-09-29');assert.equal(await page.locator('#productHistoryFrom').evaluate(e=>e.checkValidity()),false);
  await page.locator('#productHistoryTo').fill('2026-10-15');assert.equal(await page.locator('.product-history-table-wrap tbody tr').count(),4);
+
+ await page.evaluate(()=>{const item=SLOT_ITEMS['A']['A-01'][0];item.scraps=[{date:'2026-10-03',qty:4,unit:'ชิ้น',reason:'ทดสอบ'}];STOCK.items=[{code:'QA-RANGE',name:'ทดสอบช่วงวันที่',qty:80,unit:'ชิ้น',wh:'200'}];STOCK.report_date='15 ต.ค. 69';PKProductHistory.refresh()});
+ const scrap=page.locator('.product-history-table-wrap tbody tr').filter({hasText:'Scrap'});assert.equal(await scrap.count(),1);assert.equal(await scrap.locator('td').nth(6).textContent(),'4');assert.ok((await page.locator('.product-history-reconcile').textContent()).includes('ผลต่าง (บันทึก − สต็อก) 0'));
+ await page.evaluate(()=>{SLOT_ITEMS['A']['A-01'][0].receiveDate='';PKProductHistory.refresh()});assert.ok((await page.locator('.product-history-reconcile-reason').textContent()).includes('ประวัติไม่มีวันที่หรือวันที่ไม่ถูกต้อง 1 รายการ'));assert.ok((await page.locator('.product-history-reconcile').textContent()).includes('คำนวณไม่ได้'));
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.deepEqual(errors,[]);console.log('PASS history range/defaults/boundaries/validation/prior balance '+viewport.width);await page.close();
  } }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

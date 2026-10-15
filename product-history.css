@@ -54,3 +54,6 @@
 .product-history-dates input { box-sizing:border-box; width:145px; min-height:44px; padding:9px 12px; border:1px solid var(--border); border-radius:10px; background:var(--page-plane); color:var(--text-primary); font:inherit; font-size:14px; }
 .product-history-dates input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
 @media(max-width:700px) { .product-history-section-head { flex-wrap:wrap; } .product-history-dates { justify-content:flex-start; } .product-history-dates input { font-size:16px; } }
+
+.product-history-reconcile-reason { display:block; margin-top:5px; color:var(--text-secondary); line-height:1.6; overflow-wrap:anywhere; }
+.product-history-type-scrap { color:var(--status-critical); }

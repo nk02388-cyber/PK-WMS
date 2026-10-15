@@ -146,3 +146,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 latest placement: mobile notification menu returns to the left half beside the right-half account menu below the header. Only transient toast messages stay bottom-anchored. Desktop is unchanged; this supersedes the bottom-anchored notification-menu entry above.
+
+
+15 October 2026 stock-card reconciliation: Scrap/ตัดจำหน่าย is treated as outbound in product-history running balances and comparisons, matching the pallet ledger. Unknown comparisons show reason counts for missing/invalid movement dates, quantities, unsupported movement types, invalid snapshot date, or unavailable stock for the unit. Unknown values are never coerced to zero; no historical records are changed. Tests: product-history.test.cjs, product-history-range-browser.cjs.

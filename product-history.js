@@ -156,7 +156,7 @@
       const qty = row.qty == null || String(row.qty).trim() === '' ? null : Number(row.qty);
       const validQty = Number.isFinite(qty) && qty >= 0 ? qty : null;
       const inbound = row.type === 'receive' || row.type === 'return' || row.type === 'transfer_in';
-      const outbound = row.type === 'withdraw' || row.type === 'transfer_out';
+      const outbound = row.type === 'withdraw' || row.type === 'transfer_out' || row.type === 'scrap';
       const dated = movementDateNumber(row.date) != null;
       const previous = running.get(unit) ?? 0;
       let calculatedBalance = null;
@@ -174,20 +174,20 @@
     const cutoff = movementDateNumber(reportDate);
     const units = new Map((balances || []).map(row => [String(row.unit || '').trim() || 'ไม่ระบุหน่วย', {
       unit:String(row.unit || '').trim() || 'ไม่ระบุหน่วย', stockQty:row.known && Number.isFinite(row.qty) ? row.qty : null,
-      recordedNet:0, complete:cutoff != null,
+      recordedNet:0, complete:cutoff != null, issues:cutoff == null ? {snapshotDate:1} : {},
     }]));
     for (const row of movements || []) {
       const unit = String(row.unit || '').trim() || 'ไม่ระบุหน่วย';
-      if (!units.has(unit)) units.set(unit,{unit,stockQty:null,recordedNet:0,complete:cutoff != null});
+      if (!units.has(unit)) units.set(unit,{unit,stockQty:null,recordedNet:0,complete:cutoff != null,issues:cutoff == null ? {snapshotDate:1} : {}});
       const summary = units.get(unit);
       const date = movementDateNumber(row.date);
-      if (date == null) { summary.complete = false; continue; }
+      if (date == null) { summary.complete = false; summary.issues.movementDate=(summary.issues.movementDate||0)+1; continue; }
       if (cutoff == null || date > cutoff) continue;
       const qty = row.qty == null || String(row.qty).trim() === '' ? null : Number(row.qty);
-      if (!Number.isFinite(qty) || qty < 0) { summary.complete = false; continue; }
+      if (!Number.isFinite(qty) || qty < 0) { summary.complete = false; summary.issues.quantity=(summary.issues.quantity||0)+1; continue; }
       if (row.type === 'receive' || row.type === 'return' || row.type === 'transfer_in') summary.recordedNet += qty;
-      else if (row.type === 'withdraw' || row.type === 'transfer_out') summary.recordedNet -= qty;
-      else if (row.type !== 'move') summary.complete = false;
+      else if (row.type === 'withdraw' || row.type === 'transfer_out' || row.type === 'scrap') summary.recordedNet -= qty;
+      else if (row.type !== 'move') {summary.complete = false;summary.issues.movementType=(summary.issues.movementType||0)+1;}
     }
     return [...units.values()].map(row => {
       const recordedNet = Number(row.recordedNet.toFixed(8));
@@ -196,8 +196,18 @@
     }).sort((a,b) => a.unit.localeCompare(b.unit,'th'));
   }
 
+  function reconciliationReasons(row) {
+    const issues=row.issues || {}, reasons=[];
+    if(issues.snapshotDate)reasons.push('วันที่อ้างอิงสต็อกไม่ครบหรืออ่านไม่ได้');
+    if(issues.movementDate)reasons.push(`ประวัติไม่มีวันที่หรือวันที่ไม่ถูกต้อง ${issues.movementDate} รายการ`);
+    if(issues.quantity)reasons.push(`ประวัติไม่มีจำนวนหรือจำนวนไม่ถูกต้อง ${issues.quantity} รายการ`);
+    if(issues.movementType)reasons.push(`ประเภทรายการที่ยังไม่รองรับ ${issues.movementType} รายการ`);
+    if(row.stockQty == null)reasons.push('ไม่พบยอดสต็อกที่ยืนยันได้สำหรับหน่วยนี้');
+    return reasons;
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {buildCatalog, searchCatalog, collectMovements, summarizeStock, summarizeBalances, stockCardRows, reconcileStockCard, formatRecordedTime, defaultHistoryRange, filterHistoryRange};
+    module.exports = {buildCatalog, searchCatalog, collectMovements, summarizeStock, summarizeBalances, stockCardRows, reconcileStockCard, formatRecordedTime, defaultHistoryRange, filterHistoryRange, reconciliationReasons};
     return;
   }
 
@@ -231,11 +241,11 @@
       <section class="product-history-section"><div class="product-history-section-head"><h3>ประวัติการเคลื่อนไหวบนพาเลต</h3><span>${loading ? (syncFailed ? 'โหลดข้อมูลไม่สำเร็จ' : 'กำลังโหลดข้อมูลพาเลต…') : `${fmt(cardRows.length)} รายการ`}</span></div>
         <div class="product-history-dates"><label for="productHistoryFrom">ตั้งแต่วันที่<input type="date" id="productHistoryFrom" value="${escape(historyRange.from)}" required></label><label for="productHistoryTo">ถึงวันที่<input type="date" id="productHistoryTo" value="${escape(historyRange.to)}" required></label></div>
         ${loading ? `<p class="product-history-empty">${syncFailed ? 'โหลดข้อมูลพาเลตไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ' : 'กำลังโหลดข้อมูลพาเลต กรุณารอสักครู่'}</p>` : cardRows.length ? `<div class="product-history-table-wrap"><table><thead><tr><th>วันที่</th><th>บันทึกเมื่อ</th><th>รายการ</th><th>โซน / ตำแหน่ง</th><th>Lot / PK No.</th><th class="num">รับเข้า</th><th class="num">จ่ายออก</th><th class="num">ยอดสะสมตามบันทึก</th><th>หน่วย</th><th>ผู้ส่งสินค้า</th><th>ผู้ทำรายการ</th><th>เลขเอกสาร</th></tr></thead><tbody>${cardRows.slice(0,shown).map(row => `<tr><td>${escape(formatMovementDate(row.date))}</td><td>${escape(formatRecordedTime(row.recordedAt))}</td><td><span class="product-history-type product-history-type-${escape(row.type)}">${escape(row.label)}</span></td><td>${escape(row.zone)} / ${escape(row.slot)}</td><td>${escape(row.lotNo || '—')}</td><td class="num">${row.received == null ? '—' : fmt(row.received)}</td><td class="num">${row.issued == null ? '—' : fmt(row.issued)}</td><td class="num product-history-running">${row.calculatedBalance == null ? '—' : fmt(row.calculatedBalance)}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.supplierName || '—')}</td><td>${escape(row.by || '—')}</td><td>${escape(row.reference || '—')}</td></tr>`).join('')}</tbody></table></div>${cardRows.length > shown ? `<button class="product-history-more" type="button">แสดงเพิ่มเติม (${fmt(cardRows.length-shown)} รายการ)</button>` : ''}` : '<p class="product-history-empty">ไม่พบประวัติการเคลื่อนไหวบนพาเลตในช่วงวันที่ที่เลือก</p>'}
-        ${!loading && movements.length ? `<div class="product-history-reconcile"><strong>เทียบกับสต็อก ณ ${escape(stockDate)}</strong>${reconciliation.map(row => `<p>หน่วย ${escape(row.unit)} · สุทธิตามบันทึก ${row.complete ? fmt(row.recordedNet) : 'คำนวณไม่ได้'} · สต็อก ${row.stockQty == null ? 'ไม่ทราบ' : fmt(row.stockQty)} · <span class="${row.difference == null ? '' : row.difference === 0 ? 'is-matched' : 'is-different'}">ผลต่าง (บันทึก − สต็อก) ${row.difference == null ? 'คำนวณไม่ได้' : `${row.difference > 0 ? '+' : ''}${fmt(row.difference)}`}</span></p>`).join('')}</div><p class="product-history-note">ยอดสะสมเริ่มจาก 0 และนับเฉพาะรายการพาเลตที่ยังมีบันทึก หากผลต่างไม่เป็น 0 แสดงว่ายอดตามประวัติยังไม่ตรงกับยอดสต็อก ณ วันอ้างอิง จึงไม่ควรใช้ยอดสะสมแทนยอดสต็อกจริง</p>` : ''}
+        ${!loading && movements.length ? `<div class="product-history-reconcile"><strong>เทียบกับสต็อก ณ ${escape(stockDate)}</strong>${reconciliation.map(row => `<p>หน่วย ${escape(row.unit)} · สุทธิตามบันทึก ${row.complete ? fmt(row.recordedNet) : 'คำนวณไม่ได้'} · สต็อก ${row.stockQty == null ? 'ไม่ทราบ' : fmt(row.stockQty)} · <span class="${row.difference == null ? '' : row.difference === 0 ? 'is-matched' : 'is-different'}">ผลต่าง (บันทึก − สต็อก) ${row.difference == null ? 'คำนวณไม่ได้' : `${row.difference > 0 ? '+' : ''}${fmt(row.difference)}`}</span>${reconciliationReasons(row).length ? `<small class="product-history-reconcile-reason">สาเหตุ: ${escape(reconciliationReasons(row).join(' · '))}</small>` : ''}</p>`).join('')}</div><p class="product-history-note">ยอดสะสมเริ่มจาก 0 และนับเฉพาะรายการพาเลตที่ยังมีบันทึก หากผลต่างไม่เป็น 0 แสดงว่ายอดตามประวัติยังไม่ตรงกับยอดสต็อก ณ วันอ้างอิง จึงไม่ควรใช้ยอดสะสมแทนยอดสต็อกจริง</p>` : ''}
         ${movements.some(row => row.supplierSource === 'latest') ? '<p class="product-history-note">ชื่อผู้ส่งสินค้าบางรายการอ้างอิงจากการรับเข้าล่าสุดของรหัสสินค้า ไม่ได้ยืนยันผู้ส่งสินค้าของรายการย้อนหลัง</p>' : ''}
         <p class="product-history-note">กรองตามวันที่รายการ รวมวันเริ่มต้นและวันสิ้นสุด เรียงจากเก่าไปใหม่ รายการที่ไม่ระบุวันที่จะไม่แสดงในช่วงวันที่ ยอดสะสมและการเทียบสต็อกคำนวณจากประวัติทั้งหมด</p>
         <p class="product-history-note">คอลัมน์ “บันทึกเมื่อ” แสดงวันและเวลาไทยที่ระบบบันทึก อาจต่างจากวันที่รายการ เครื่องหมาย “—” หมายถึงไม่มีเวลาบันทึกในข้อมูลย้อนหลัง</p>
-        <p class="product-history-note">รายการรับเข้า เบิก รับคืน และย้าย อ้างอิงบันทึกพาเลตในระบบ สต็อกที่อัปเดตเป็นยอดคงเหลือ ไม่ใช่ประวัติรายการ</p></section>`;
+        <p class="product-history-note">รายการรับเข้า เบิก รับคืน ย้าย และตัดจำหน่าย อ้างอิงบันทึกพาเลตในระบบ สต็อกที่อัปเดตเป็นยอดคงเหลือ ไม่ใช่ประวัติรายการ</p></section>`;
     for (const id of ['productHistoryFrom','productHistoryTo']) {
       detailEl.querySelector(`#${id}`).addEventListener('change', () => {
         const from = detailEl.querySelector('#productHistoryFrom');

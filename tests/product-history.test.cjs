@@ -151,3 +151,15 @@ test('history range uses Bangkok current month and includes both boundaries',()=
  const ledger=stockCardRows([{date:'2026-09-30',type:'receive',qty:100,unit:'ชิ้น'},{date:'2026-10-01',type:'withdraw',qty:10,unit:'ชิ้น'}]);
  assert.equal(filterHistoryRange(ledger,'2026-10-01','2026-10-14')[0].calculatedBalance,90);
 });
+const {reconciliationReasons}=require('../product-history.js');
+test('scrap is an outbound movement in running balance and snapshot comparison',()=>{
+ const rows=[{date:'2026-10-01',type:'receive',qty:100,unit:'ขวด'},{date:'2026-10-02',type:'scrap',qty:10,unit:'ขวด'},{date:'2026-10-16',type:'scrap',qty:2,unit:'ขวด'}];
+ assert.deepEqual(stockCardRows(rows).map(x=>[x.issued,x.calculatedBalance]),[[null,100],[10,90],[2,88]]);
+ const comparison=reconcileStockCard(rows,[{unit:'ขวด',qty:90,known:true}],'15 ต.ค. 69')[0];
+ assert.equal(comparison.complete,true);assert.equal(comparison.recordedNet,90);assert.equal(comparison.difference,0);assert.deepEqual(reconciliationReasons(comparison),[]);
+});
+test('unavailable comparisons explain missing dates quantities types and snapshot data',()=>{
+ const rows=[{date:'',type:'receive',qty:10,unit:'ขวด'},{date:'2026-10-01',type:'withdraw',qty:null,unit:'ขวด'},{date:'2026-10-02',type:'unsupported',qty:1,unit:'ขวด'}];
+ const result=reconcileStockCard(rows,[{unit:'ขวด',qty:48461,known:true}],'15 ต.ค. 69')[0];assert.equal(result.difference,null);assert.deepEqual(result.issues,{movementDate:1,quantity:1,movementType:1});assert.equal(reconciliationReasons(result).length,3);
+ const missing=reconcileStockCard([],[{unit:'ขวด',qty:0,known:false}],null)[0];assert.deepEqual(reconciliationReasons(missing),['วันที่อ้างอิงสต็อกไม่ครบหรืออ่านไม่ได้','ไม่พบยอดสต็อกที่ยืนยันได้สำหรับหน่วยนี้']);
+});
