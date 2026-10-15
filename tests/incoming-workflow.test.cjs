@@ -41,7 +41,10 @@ assert.doesNotMatch(sql,/\bslot_code\s+text\s*:=/,'PL/pgSQL local variables must
 assert.match(sql,/insert into public\.pallet_slots[\s\S]*update public\.incoming_pallets set status='stored'/,'stock and tag status must change in one transaction');
 const locs=[...sql.matchAll(/\('[A-Z][A-Z0-9-]*','[A-Z][A-Z0-9-]*',2,(\d+)\)/g)];
 assert.equal(locs.length,40);
-assert.equal(locs.reduce((count,match)=>count+Number(match[1]),0),1001,'all mapped floor-plan locations must be available for putaway');
+assert.equal(locs.reduce((count,match)=>count+Number(match[1]),0),1004,'baseline putaway seed includes the three added S1 locations');
+assert.match(sql,/\('S-1','S1-',2,17\)/);
+const s1Locations=fs.readFileSync(path.join(__dirname,'..','supabase-s1-locations.sql'),'utf8');
+for(const code of ['S1-15','S1-16','S1-17'])assert.ok(s1Locations.includes(`('S-1','${code}')`),'existing installations can register each new S1 position');
 const batchSql=fs.readFileSync(path.join(__dirname,'..','supabase-incoming-batches.sql'),'utf8');
 assert.match(batchSql,/create unique index if not exists incoming_pallets_batch_index_idx/);
 assert.match(batchSql,/total_from_tags <> p_total_quantity/);

@@ -3402,6 +3402,24 @@ function compactPalletRows(slotsByZone, pins) {
 }
 compactPalletRows(ZONE_SLOTS, ZONE_PINS);
 
+// S1: fit three equal pallets in the top bay, keeping existing stock identities.
+const s1UpperLeft = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-01');
+const s1UpperRight = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-02');
+const s1UpperGap = s1UpperRight.leftPct - s1UpperLeft.leftPct;
+PALLET_ROW_MASKS.push({left:s1UpperLeft.leftPct-.43,right:s1UpperRight.leftPct+.43,top:s1UpperLeft.topPct-.60,bottom:s1UpperLeft.topPct+.73});
+s1UpperLeft.leftPct -= s1UpperGap / 2;
+s1UpperRight.leftPct -= s1UpperGap / 2;
+ZONE_SLOTS['S-1'].push({code:'S1-15',leftPct:s1UpperRight.leftPct+s1UpperGap,topPct:s1UpperLeft.topPct});
+// Extend the six-position middle row into the marked free area on its left.
+const s1MiddleLeft = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-03');
+const s1MiddleGap = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-04').leftPct - s1MiddleLeft.leftPct;
+ZONE_SLOTS['S-1'].push(
+  {code:'S1-16',leftPct:s1MiddleLeft.leftPct-2*s1MiddleGap,topPct:s1MiddleLeft.topPct},
+  {code:'S1-17',leftPct:s1MiddleLeft.leftPct-s1MiddleGap,topPct:s1MiddleLeft.topPct},
+);
+// Remove the old printed Zone S1 sign behind the two added positions.
+PALLET_ROW_MASKS.push({left:s1MiddleLeft.leftPct-2*s1MiddleGap-.48,right:s1MiddleLeft.leftPct-.35,top:s1MiddleLeft.topPct-.59,bottom:s1MiddleLeft.topPct+.59});
+
 // T-1 occupies the freed aisle at the right of the shortened old-building rows.
 // Number left-to-right from the new top row, then continue downward.
 const t1RowGap = (45.096 - 36.39) / 8;

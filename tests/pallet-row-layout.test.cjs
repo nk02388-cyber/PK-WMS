@@ -50,6 +50,20 @@ test('compact rows preserve every pallet code, count, row height and other zones
    assert.match(html,/palletNo: 530,/);
    continue;
   }
+  if(zone==='S-1'){
+   const current=changed[zone],top=slots[0].topPct,middle=slots.find(s=>s.code==='S1-03').topPct;
+   assert.equal(current.length,17);
+   assert.equal(new Set(current.map(s=>s.code)).size,17);
+   assert.equal(current.filter(s=>s.topPct===top).length,3);
+   assert.equal(current.filter(s=>s.topPct===middle).length,8);
+   for(const slot of slots){
+    const actual=current.find(s=>s.code===slot.code);
+    assert.equal(actual.topPct,slot.topPct);
+    if(!['S1-01','S1-02'].includes(slot.code))assert.deepEqual(actual,slot);
+   }
+   for(const a of current)for(const b of current)if(a!==b)assert.ok(Math.abs(a.leftPct-b.leftPct)>=.65 || Math.abs(a.topPct-b.topPct)>=.95,'S1 cells must not overlap');
+   continue;
+  }
   assert.deepEqual(changed[zone].map(s=>s.code),slots.map(s=>s.code));
   assert.deepEqual(changed[zone].map(s=>s.topPct),slots.map(s=>s.topPct));
   if(!targets.has(zone)){assert.deepEqual(changed[zone],slots);continue}
