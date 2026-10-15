@@ -140,3 +140,6 @@ Keep PRD behavior, architecture ownership and final CSS precedence synchronized.
 
 
 15 October 2026 header menu placement: below 1024px, notification popover occupies the left half and account popover the right half, separated by 12px and retaining 12px outer/safe-area margins. Controls and notification cards wrap inside each column; short screens retain internal scrolling. Existing button/outside-click/Escape behavior and desktop placement remain. Validated with half-column and content-overflow assertions in tests/header-popovers-browser.cjs on Edge and WebKit.
+
+
+15 October 2026 mobile notification placement update: notification popover is bottom-anchored with safe-area margins and up to 60dvh height; transient toasts remain at the bottom. The account menu retains the right half below the header. This overrides the earlier left-half notification placement only below 1024px; desktop is unchanged.

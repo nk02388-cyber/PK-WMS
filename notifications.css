@@ -44,7 +44,10 @@ body.sidebar-drawer-open .notification-toast-stack { display: none; }
     overflow: auto; overscroll-behavior: contain; text-align: left;
   }
   .viz-root #notificationPanel {
-    right: calc(50% + 6px);
+    top: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    right: max(12px, env(safe-area-inset-right));
+    max-height: min(60dvh, var(--header-popover-available, 60dvh));
     padding: 12px;
   }
   .viz-root #accountPanel {
