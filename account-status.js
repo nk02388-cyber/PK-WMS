@@ -127,7 +127,7 @@
       showStage(profile ? 'auth-ready' : 'auth-pending');
     } else {
       const changed = !document.body.classList.contains('department-choosing');
-      $('departmentWelcome').textContent = 'เลือกคลังที่ต้องการ เพื่อเข้าสู่พื้นที่ทำงาน';
+      $('departmentWelcome').textContent = 'เลือกแผนกก่อนเข้าสู่ระบบเพื่อดำเนินการต่อ';
       showStage('department-choosing');
       if (changed) document.querySelector('.department-option').focus();
     }

@@ -143,3 +143,5 @@ Motion 14.1.1 (MIT) is vendored locally from the official npm release. Page entr
 Overview zoom supports 10%–600% through +/- buttons, wheel and pinch. Drawings reduced below 100% are centered on axes where they fit; Reset returns to 100%.
 
 15 October 2026: User Login restored to the compact card before the Figma redesign, using account-login.css and reference-wms.css. auth-redesign.css now styles only the department chooser, which retains the Figma layout. Authentication behavior and all subsequent map/history changes are preserved.
+
+15 October 2026: Department selection is also restored to the compact card before Figma, with PK/RM/FG icons and original labels. The auth-redesign.css override is no longer loaded; both entry screens use account-login.css and reference-wms.css.
