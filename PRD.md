@@ -152,3 +152,13 @@ BOM เดิมย้ายครบและ stock/BOM โหลดผ่า�
 ## Appendix
 
 [AGENTS.md](AGENTS.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) · [Skill provenance](docs/SKILLS.md)
+
+## 15 October 2026 — ROP pallet-use review
+
+Implemented: each reorder row opens a read-only usage review over all currently loaded pallet ledgers for that code, preserving the exact unit. Default: 56 calendar days ending today in Bangkok, inclusive. Dates are editable. Show gross withdrawals, returns, net and gross daily average. Receipts, transfers, location moves and Scrap are not usage demand. Whole/split moves must not duplicate historical withdrawals.
+
+ROP remains the workbook rule and available stock remains the latest authorized Update Stock snapshot. Do not subtract pallet events from that snapshot: its business cutoff and reconciliation are insufficient for safe automatic adjustment. Do not replace the notification threshold from incomplete pallet history.
+
+A scenario accepts user-entered positive integer lead days and nonnegative safety quantity (zero must be explicit). Preview = ceiling(gross withdrawal average per calendar day × lead days + safety quantity). No assumed lead time or safety stock. No preview when date, quantity or unit is unknown, no withdrawal exists, or sync is failing. Gross withdrawals are conservative: returns can refer to earlier periods; the preview can overstate consumption. State coverage is unverified even if no malformed records are found. Preview never updates stock, orders, saved rules or alert counts. No server migration or inventory writes.
+
+Acceptance evidence: tests/reorder-usage.test.cjs (boundaries, units, invalid values, real whole/split moves, unchanged stock/rules), tests/reorder-usage-browser.cjs (desktop/mobile, scenario, invalid-data blocking, live refresh, no overflow).

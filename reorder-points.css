@@ -23,5 +23,20 @@
 .reorder-status[data-status="review"]{background:#fff0ca;color:#5c4300}
 :root[data-theme="dark"] .reorder-status[data-status="review"]{background:#3b300f;color:#f1c21b}
 .reorder-empty{text-align:center!important;color:var(--text-secondary)}
+.reorder-usage[hidden]{display:none}
+.reorder-usage{padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--page-plane);display:grid;gap:12px;min-width:0}
+.reorder-usage-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.reorder-usage h3{margin:0;font-size:16px;overflow-wrap:anywhere}
+.reorder-usage-inputs,.reorder-usage-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.reorder-usage-inputs label{display:grid;gap:6px;font-size:12px;min-width:0}
+.reorder-usage-inputs input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface-1);color:var(--text-primary);font:inherit}
+.reorder-usage-open,.reorder-usage-head button{min-height:44px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-1);color:var(--series-1);font:inherit;cursor:pointer}
+.reorder-usage-open{display:block;margin-top:6px}
+.reorder-usage-metrics>div{padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-1);font-size:12px}
+.reorder-usage-metrics strong{display:block;font-size:20px;margin-top:5px}
+.reorder-usage-output p{font-size:13px;line-height:1.6;margin:10px 0 0;overflow-wrap:anywhere}
+.reorder-usage-warning{color:var(--status-critical)}
+.reorder-usage input:focus-visible,.reorder-usage button:focus-visible,.reorder-usage-open:focus-visible{outline:3px solid var(--focus-ring,#e0ce9c);outline-offset:2px}
+@media(max-width:700px){.reorder-usage-inputs,.reorder-usage-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.reorder-usage-inputs input{font-size:16px}}
 .reorder-controls input:focus-visible,.reorder-controls select:focus-visible,.reorder-code:focus-visible{outline:3px solid var(--focus-ring,#e0ce9c);outline-offset:2px}
 @media(max-width:700px){.reorder-panel{padding:16px}.reorder-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.reorder-controls select{flex:1 1 100%}.reorder-controls input{font-size:16px}}

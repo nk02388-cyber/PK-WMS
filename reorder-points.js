@@ -79,11 +79,12 @@
     summary.innerHTML = `<div><strong>${trusted ? fmt(totals.alert) : '—'}</strong><span>ถึงจุดสั่งซื้อ</span></div><div><strong>${trusted ? fmt(totals.review) : '—'}</strong><span>ควรทบทวนเกณฑ์</span></div><div><strong>${trusted ? fmt(totals.unmatched) : '—'}</strong><span>จับคู่สต็อกไม่ได้</span></div><div><strong>${fmt(rows.length)}</strong><span>รหัสในไฟล์</span></div>`;
     // Keep summary/badge fresh without rebuilding an invisible 200-row table.
     if (panel.hidden) return;
+    root.PKReorderUsage?.refresh();
     const matching = searchRows(rows,query.value,filter.value);
     countLabel.textContent = `แสดง ${fmt(matching.length)} จาก ${fmt(rows.length)} รหัส`;
     const nextHtml = matching.length ? matching.slice(0,200).map(row => {
       const label = trusted ? {alert:'ถึงจุดสั่งซื้อ',review:'ทบทวนเกณฑ์',normal:'ปกติ',unmatched:'จับคู่ไม่ได้'}[row.status] : 'รอสต็อกล่าสุด';
-      return `<tr><td><button type="button" class="reorder-code" data-code="${escape(row.code)}">${escape(row.code)}</button><small>${escape(row.name)}</small></td><td>${escape(row.supplier || '—')}</td><td class="num">${row.available == null ? '—' : fmt(row.available)}</td><td class="num">${fmt(row.rop)}</td><td class="num">${row.gap == null ? '—' : fmt(row.gap)}</td><td>${escape(row.unit)}</td><td><span class="reorder-status" data-status="${row.status}">${label}</span><small>${escape(row.pattern)}${row.historyWeeks != null ? ` · ${fmt(row.historyWeeks)} สัปดาห์` : ''}</small></td></tr>`;
+      return `<tr><td><button type="button" class="reorder-code" data-code="${escape(row.code)}">${escape(row.code)}</button><small>${escape(row.name)}</small><button type="button" class="reorder-usage-open" data-usage-code="${escape(row.code)}" data-usage-unit="${escape(row.unit)}" aria-label="วิเคราะห์การใช้ ${escape(row.code)}">วิเคราะห์การใช้</button></td><td>${escape(row.supplier || '—')}</td><td class="num">${row.available == null ? '—' : fmt(row.available)}</td><td class="num">${fmt(row.rop)}</td><td class="num">${row.gap == null ? '—' : fmt(row.gap)}</td><td>${escape(row.unit)}</td><td><span class="reorder-status" data-status="${row.status}">${label}</span><small>${escape(row.pattern)}${row.historyWeeks != null ? ` · ${fmt(row.historyWeeks)} สัปดาห์` : ''}</small></td></tr>`;
     }).join('') : '<tr><td colspan="7" class="reorder-empty">ไม่พบรายการตามเงื่อนไข</td></tr>';
     if(nextHtml!==tableHtml){body.innerHTML=nextHtml;tableHtml=nextHtml;}
     if (matching.length > 200) countLabel.textContent += ' · ตารางแสดง 200 รายการแรก โปรดค้นหาเพื่อเจาะจง';
@@ -93,12 +94,14 @@
   filter.addEventListener('change',()=>{clearTimeout(searchTimer);render();});
   new MutationObserver(()=>{if(!panel.hidden){clearTimeout(searchTimer);render();}}).observe(panel,{attributes:true,attributeFilter:['hidden']});
   body.addEventListener('click',event => {
+    const usage = event.target.closest('[data-usage-code]');
+    if (usage) { root.PKReorderUsage?.open(usage.dataset.usageCode,usage.dataset.usageUnit); return; }
     const code = event.target.closest('[data-code]')?.dataset.code;
     if (!code) return;
     document.getElementById('tab-product-history')?.click();
     root.PKProductHistory?.open(code);
   });
-  api.refresh = () => {cachedRows=null;render();};
+  api.refresh = () => {cachedRows=null;render();root.PKReorderUsage?.refresh();};
   api.open = code => { document.getElementById('tab-reorder')?.click(); query.value=code || ''; filter.value='all'; render(); };
   render();
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1992,7 +1992,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="event-calendar.css?v=20260926-3">
 <link rel="stylesheet" href="cycle-counts.css?v=20260926-2">
 <link rel="stylesheet" href="scrap-inventory.css?v=20260926-1">
-<link rel="stylesheet" href="reorder-points.css?v=20260926-1">
+<link rel="stylesheet" href="reorder-points.css?v=20261015-usage1">
 <link rel="stylesheet" href="wms-operations.css?v=20261006-noto1">
 <link rel="stylesheet" href="haulix-theme.css?v=20261006-navgreen1">
 <link rel="stylesheet" href="bom-results.css?v=20261006-1">
@@ -2136,7 +2136,19 @@ header.top .header-logo { border-radius: 14px; }
       <h2 id="reorderTitle">จุดสั่งซื้อสินค้า</h2>
       <p class="reorder-notice" id="reorderNotice"></p>
       <p class="reorder-notice">แจ้งเตือนเฉพาะสินค้าที่ใช้สม่ำเสมอหรือเป็นช่วงและมีประวัติอย่างน้อย 8 สัปดาห์ · ไม่นับสต็อกคลัง Hold, รอทำลาย และนำกลับมาใช้ใหม่</p>
+      <p class="reorder-notice">ROP แจ้งเตือนยังอ้างอิงไฟล์เดิม · กด “วิเคราะห์การใช้” ที่สินค้าเพื่อดูเบิก–รับคืนจากทุกพาเลทและทดลอง ROP โดยไม่หักซ้ำจาก Update Stock</p>
       <div class="reorder-summary" id="reorderSummary" aria-label="สรุปจุดสั่งซื้อ"></div>
+      <section class="reorder-usage" id="reorderUsage" aria-labelledby="reorderUsageTitle" hidden>
+        <div class="reorder-usage-head"><h3 id="reorderUsageTitle" tabindex="-1">การใช้จากพาเลท</h3><button id="reorderUsageClose" type="button">ปิดการวิเคราะห์</button></div>
+        <p class="reorder-notice">ข้อมูลประกอบการทบทวนเท่านั้น ไม่เปลี่ยน ROP หรือยอดสต็อก · เริ่มต้นย้อนหลัง 56 วัน รวมวันนี้</p>
+        <div class="reorder-usage-inputs">
+          <label>ตั้งแต่วันที่<input type="date" id="reorderUsageFrom" required></label>
+          <label>ถึงวันที่<input type="date" id="reorderUsageTo" required></label>
+          <label>วันรอสินค้า<input type="number" id="reorderLeadDays" min="1" step="1" placeholder="กรอกจำนวนวัน"></label>
+          <label>สต็อกสำรอง (หน่วยสินค้า)<input type="number" id="reorderSafetyQty" min="0" step="any" placeholder="กรอกจำนวน หรือ 0"></label>
+        </div>
+        <div id="reorderUsageOutput" class="reorder-usage-output" aria-live="polite"></div>
+      </section>
       <div class="reorder-controls"><input id="reorderSearch" type="search" aria-label="ค้นหารหัส ชื่อสินค้า หรือผู้ขาย" placeholder="ค้นหารหัส ชื่อสินค้า หรือผู้ขาย"><select id="reorderFilter" aria-label="กรองสถานะจุดสั่งซื้อ"><option value="all">ทุกสถานะ</option><option value="alert">ถึงจุดสั่งซื้อ</option><option value="review">ทบทวนเกณฑ์</option><option value="unmatched">จับคู่สต็อกไม่ได้</option><option value="normal">ปกติ</option></select></div>
       <p class="reorder-count" id="reorderCount"></p>
       <div class="reorder-table-wrap"><table class="reorder-table"><thead><tr><th>สินค้า</th><th>ผู้ขายหลัก</th><th class="num">สต็อกที่ใช้ได้</th><th class="num">ROP</th><th class="num">ขาดจาก ROP</th><th>หน่วย</th><th>สถานะ / รูปแบบใช้</th></tr></thead><tbody id="reorderRows"></tbody></table></div>
@@ -4246,6 +4258,7 @@ function refreshAfterRemoteChange(zoneCode, slotCode) {
   if (typeof renderStockReconciliation === 'function') renderStockReconciliation();
   window.PKDaily?.refresh();
   window.PKProductHistory?.refresh();
+  window.PKReorderUsage?.refresh();
   window.PKNotifications?.refreshStock();
   window.PKTopWithdrawals?.refresh();
   window.PKDashboardInsights?.refresh();
@@ -10340,7 +10353,8 @@ window.addEventListener('pageshow', () => {
 <script src="top-withdrawals.js?v=20260925-2"></script>
 <script src="dashboard-insights.js?v=20261013-monthstart1"></script>
 <script src="reorder-points-data.js?v=20260924-1"></script>
-<script src="reorder-points.js?v=20261013-perf1"></script>
+<script src="reorder-points.js?v=20261015-usage1"></script>
+<script src="reorder-usage.js?v=20261015-usage1"></script>
 <link rel="stylesheet" href="action-confirmation.css?v=20261008-2">
 <script src="action-confirmation.js?v=2"></script>
 <script src="event-calendar.js?v=20261013-realtime1"></script>
