@@ -102,7 +102,7 @@
   $('authTogglePassword').addEventListener('click', () => {
     const visible = $('authPassword').type === 'password';
     $('authPassword').type = visible ? 'text' : 'password';
-    $('authTogglePassword').textContent = visible ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน';
+    $('authTogglePassword').textContent = visible ? 'ซ่อน' : 'แสดง';
     $('authTogglePassword').setAttribute('aria-label', visible ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน');
     $('authTogglePassword').setAttribute('aria-pressed', String(visible));
   });
@@ -363,7 +363,7 @@
   $('authChangeDepartment').addEventListener('click', () => {
     ++loginAttempt;loginBusy=false;$('authSubmit').disabled=false;$('authSubmit').textContent='เข้าสู่ระบบ';
     saveDepartment(null); showError(''); $('authPassword').value = '';
-    $('authPassword').type = 'password'; $('authTogglePassword').textContent = 'แสดงรหัสผ่าน';
+    $('authPassword').type = 'password'; $('authTogglePassword').textContent = 'แสดง';
     $('authTogglePassword').setAttribute('aria-label', 'แสดงรหัสผ่าน');
     $('authTogglePassword').setAttribute('aria-pressed', 'false'); showDepartment();
   });

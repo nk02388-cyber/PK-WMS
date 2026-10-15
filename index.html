@@ -2006,27 +2006,23 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
 <link rel="stylesheet" href="dashboard-layout.css?v=20261013-activity2">
-<link rel="stylesheet" href="auth-redesign.css?v=20261013-figma1">
+<link rel="stylesheet" href="auth-redesign.css?v=20261015-loginrollback1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
-  <aside class="auth-story" aria-hidden="true"><span>BIO-COSLAB</span><h2>จัดการคลัง<br>อย่างมั่นใจ</h2><p>รับเข้า จัดเก็บ และติดตามสินค้า<br>ในพื้นที่ทำงานเดียวกัน</p><img src="assets/auth-warehouse.svg" alt="" width="330" height="190"></aside>
-  <div class="auth-content">
   <form class="auth-card" id="authLoginForm">
-    <div class="auth-brand"><img src="assets/bcl-logo-monochrome.png?v=2" alt="BIO-COSLAB" width="52" height="52"><div><strong>BCL WMS</strong><span>BIO-COSLAB</span></div></div>
-    <button type="button" class="auth-back" id="authChangeDepartment">เลือกแผนกอื่น</button>
+    <button type="button" class="auth-back" id="authChangeDepartment"><span aria-hidden="true">←</span> เลือกแผนกอื่น</button>
+    <div class="auth-brand"><img src="assets/bcl-logo-monochrome.png?v=2" alt="BIO-COSLAB" width="52" height="52"><div><strong>PK WMS</strong><span>BIO-COSLAB</span></div><span class="auth-department">คลังบรรจุภัณฑ์</span></div>
     <h1 id="authTitle">เข้าสู่ระบบ PK WMS</h1>
-    <p class="auth-intro">ใช้บัญชีที่ได้รับสิทธิ์เพื่อเริ่มต้นทำงาน</p>
+    <p class="auth-intro">เข้าสู่ระบบเพื่อจัดการคลังบรรจุภัณฑ์</p>
     <label for="authUsername">ชื่อผู้ใช้<input id="authUsername" name="username" autocomplete="username" placeholder="กรอกชื่อผู้ใช้" required></label>
-    <label for="authPassword">รหัสผ่าน / PIN<input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่านหรือ PIN" required></label>
-    <button id="authTogglePassword" type="button" aria-label="แสดงรหัสผ่าน" aria-pressed="false">แสดงรหัสผ่าน</button>
+    <label for="authPassword">รหัสผ่าน / PIN<span class="auth-password-field"><input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่านหรือ PIN" required><button id="authTogglePassword" type="button" aria-label="แสดงรหัสผ่าน" aria-pressed="false">แสดง</button></span></label>
+    <p class="auth-help">ใช้ PIN 6 หลักหรือรหัสผ่านตามที่ตั้งไว้สำหรับบัญชี</p>
     <p class="auth-error" id="authError" role="alert" hidden></p>
     <button id="authSubmit" type="submit">เข้าสู่ระบบ</button>
     <span id="authLoading" role="status">กำลังตรวจสอบบัญชี…</span>
-    <p class="auth-help">หากเข้าใช้งานไม่ได้ กรุณาติดต่อผู้ดูแลระบบ</p>
-    <p class="auth-footer">ระบบจัดการคลังสินค้าของ BIO-COSLAB</p>
+    <p class="auth-footer">ระบบจัดการคลังสินค้าบรรจุภัณฑ์ของ BIO-COSLAB</p>
   </form>
-  </div>
 </main>
 <main class="department-screen" id="departmentScreen" aria-labelledby="departmentTitle">
   <aside class="auth-story" aria-hidden="true"><span>BIO-COSLAB</span><h2>เลือกคลัง<br>เริ่มงานของคุณ</h2><p>รับเข้า จัดเก็บ และติดตามสินค้า<br>ในพื้นที่ทำงานเดียวกัน</p><img src="assets/auth-warehouse.svg" alt="" width="330" height="190"></aside>
@@ -10332,7 +10328,7 @@ window.addEventListener('pageshow', () => {
 <script src="notifications.js?v=20261013-reorder1"></script>
 <script src="receipt-plan.js?v=20261013-lazy1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
-<script src="account-status.js?v=20261013-figma1"></script>
+<script src="account-status.js?v=20261015-loginrollback1"></script>
 <link rel="stylesheet" href="warehouse-operations-pin.css?v=20261008-2">
 <script src="warehouse-operations.js?v=20261002-pin2"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
