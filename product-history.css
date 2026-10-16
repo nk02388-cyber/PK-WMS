@@ -3,8 +3,8 @@
 .product-history-search-label { color: var(--text-primary); font-size: 13px; font-weight: 700; }
 .product-history-search-row { display: flex; gap: 10px; }
 .product-history-search-row input { flex: 1; min-width: 0; min-height: 46px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface-1); color: var(--text-primary); font: inherit; }
-.product-history-search-row button, .product-history-more { min-height: 46px; padding: 9px 14px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface-1); color: var(--text-primary); font: inherit; font-weight: 700; cursor: pointer; }
-.product-history-search-row input:focus-visible, .product-history-search-row button:focus-visible, .product-history-match:focus-visible, .product-history-more:focus-visible { outline: 3px solid var(--focus-ring, #e0ce9c); outline-offset: 2px; }
+.product-history-search-row button, .product-history-more, .product-history-all { min-height: 46px; padding: 9px 14px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface-1); color: var(--text-primary); font: inherit; font-weight: 700; cursor: pointer; }
+.product-history-search-row input:focus-visible, .product-history-search-row button:focus-visible, .product-history-match:focus-visible, .product-history-more:focus-visible, .product-history-all:focus-visible { outline: 3px solid var(--focus-ring, #e0ce9c); outline-offset: 2px; }
 .product-history-status, .product-history-note { margin: 0; color: var(--text-secondary); font-size: 12px; }
 .product-history-matches { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; max-height: 270px; overflow-y: auto; }
 .product-history-match { display: grid; gap: 3px; min-width: 0; padding: 11px 13px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface-1); color: var(--text-primary); text-align: left; cursor: pointer; }
@@ -57,3 +57,6 @@
 
 .product-history-reconcile-reason { display:block; margin-top:5px; color:var(--text-secondary); line-height:1.6; overflow-wrap:anywhere; }
 .product-history-type-scrap { color:var(--status-critical); }
+
+.product-history-all { align-self:end; white-space:nowrap; cursor:pointer; }
+.product-history-all[aria-pressed="true"] { border-color:var(--series-1); color:var(--series-1); }
