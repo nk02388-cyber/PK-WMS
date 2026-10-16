@@ -1,5 +1,7 @@
 /* Hallmark · genre: modern-minimal · macrostructure: workbench / compact entry · design-system: DESIGN.md · designed-as-app
  * Pre-emit critique: P4 H4 E4 S5 R5 V4. Shared PK WMS tokens, no new theme. */
+/* Contain translated pane entries; wide tables retain their own scroll regions. */
+.viz-root .tab-pane{overflow-x:clip}
 
 /* Keep transaction state colors and validation; give every field room to read. */
 .viz-root :is(.fse-withdraw-form,.fse-return-form){padding:16px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--surface-1);box-shadow:none}

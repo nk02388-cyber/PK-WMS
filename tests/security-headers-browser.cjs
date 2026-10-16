@@ -19,7 +19,8 @@ const root=path.resolve(__dirname,'..');
   await page.route('https://**/*',r=>r.abort());
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
   await page.locator('.department-pk').click();await page.locator('#authUsername').waitFor({state:'visible'});
-  const result=await page.evaluate(()=>{
+  const result=await page.evaluate(async()=>{
+   await PKDependencies.excel();
    const wb=XLSX.utils.book_new(),data=[['สินค้า','จำนวน'],['PK ทดสอบ',123.5]];
    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Stock');
    const encoded=XLSX.write(wb,{type:'array',bookType:'xlsx'}),decoded=XLSX.read(encoded,{type:'array'});

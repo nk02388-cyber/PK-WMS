@@ -1,6 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require('C:/Users/ADMIN/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const root=path.resolve(__dirname,'..');
+const testPin='54321',testHash=require('node:crypto').createHash('sha256').update(testPin).digest('hex');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const tabs=html.slice(html.indexOf('const tabButtons ='),html.indexOf("document.getElementById('tabBadgeStock').textContent"));
 const fixture=`<div id="tabs"><button class="tab-btn active" data-tab="stock" id="stock">Dashboard</button><button class="tab-btn" data-tab="warehouse-operations" id="tab-warehouse-operations" hidden>ใบเบิกบรรจุภัณฑ์</button></div><div id="pane-stock" class="tab-pane"></div><div id="pane-warehouse-operations" class="tab-pane" hidden><iframe id="warehouseOperationsFrame"></iframe></div><div id="dashboardContent"></div>`;
@@ -12,7 +13,8 @@ const fixture=`<div id="tabs"><button class="tab-btn active" data-tab="stock" id
   await page.goto('http://localhost:8787');
   await page.evaluate(()=>{window.admin=true;window.getWmsIsAdmin=()=>window.admin;window.getWmsCanAccess=()=>true});
   await page.addScriptTag({content:tabs});
-  await page.addScriptTag({path:path.join(root,'warehouse-operations.js')});
+  // Exercise the real UI with an isolated test PIN; never require a production credential.
+  await page.addScriptTag({content:fs.readFileSync(path.join(root,'warehouse-operations.js'),'utf8').replace(/const pinHash='[^']+';/,"const pinHash='"+testHash+"';")});
   const input=page.locator('#warehousePinInput'),dialog=page.locator('dialog');
   await page.locator('#tab-warehouse-operations').click();await dialog.waitFor({state:'visible'});
   assert.equal(await input.evaluate(el=>el===document.activeElement),true);
@@ -22,7 +24,7 @@ const fixture=`<div id="tabs"><button class="tab-btn active" data-tab="stock" id
   assert.equal(await page.locator('#pane-warehouse-operations').isVisible(),false);
   await page.getByRole('button',{name:'ยกเลิก',exact:true}).click();await dialog.waitFor({state:'hidden'});
   await page.locator('#tab-warehouse-operations').focus();await page.keyboard.press('Enter');
-  await input.fill(process.env.PK_OPS_TEST_PIN);await input.press('Enter');
+  await input.fill(testPin);await input.press('Enter');
   await page.locator('#pane-warehouse-operations').waitFor({state:'visible'});
   assert.equal(await page.locator('iframe').getAttribute('src'),'/operations/');
   await page.locator('#stock').click();await page.locator('#pane-warehouse-operations').waitFor({state:'hidden'});

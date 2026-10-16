@@ -1662,7 +1662,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
   }
   /* Movement history is secondary text; action labels also convey meaning without color. */
   .fse-item-row { --movement-in: var(--status-good); --movement-out: var(--status-critical); }
@@ -2006,7 +2006,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
 <link rel="stylesheet" href="dashboard-layout.css?v=20261016-hallmark1">
-<link rel="stylesheet" href="wms-workbench.css?v=20261016-2">
+<link rel="stylesheet" href="wms-workbench.css?v=20261016-paneclip1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -10427,7 +10427,7 @@ window.addEventListener('pageshow', () => {
 <script src="warehouse-operations.js?v=20261002-pin2"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
 <script src="pk-recipes-core.js?v=20261002-1"></script>
-<script src="keyword-picker.js?v=20261008-1"></script>
+<script src="keyword-picker.js?v=20261016-active-reset1"></script>
 <script src="pk-recipes.js?v=20261015-refresh1"></script>
 <script src="cycle-counts-core.js?v=20260926-1"></script>
 <script src="cycle-counts.js?v=20261010-kien1"></script>
