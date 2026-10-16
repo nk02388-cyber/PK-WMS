@@ -1,0 +1,77 @@
+/* Hallmark · genre: modern-minimal · macrostructure: workbench / compact entry · design-system: DESIGN.md · designed-as-app
+ * Pre-emit critique: P4 H4 E4 S5 R5 V4. Shared PK WMS tokens, no new theme. */
+.viz-root .dashboard-actions{margin-bottom:var(--dash-gap);padding:18px 22px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--surface-1)}
+.dashboard-actions-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.dashboard-actions-head h2{margin:0;font-size:18px;color:var(--text-primary)}
+.dashboard-actions-head p{margin:4px 0 0;font-size:13px;color:var(--text-secondary)}
+.dashboard-actions-head button{flex:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);background:var(--surface-2);color:var(--series-1);cursor:pointer}
+.dashboard-action-items{display:grid;gap:8px;max-height:280px;overflow:auto;overscroll-behavior:contain}
+.dashboard-action-items .notification-item{border-width:0 0 1px;border-radius:0;background:transparent;padding:12px 4px}
+.dashboard-action-items .notification-item[data-tone="critical"] strong{color:var(--status-critical)}
+.dashboard-action-items .notification-item strong{font-size:14px}
+.dashboard-action-items .notification-item small{font-size:13px}
+.dashboard-action-items .notification-item:hover{background:var(--series-1-wash)}
+.dashboard-actions button:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+/* Keep transaction state colors and validation; give every field room to read. */
+.viz-root :is(.fse-withdraw-form,.fse-return-form){padding:16px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--surface-1);box-shadow:none}
+.viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-table{table-layout:fixed;font-variant-numeric:tabular-nums}
+.viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-table :is(th,td){padding:10px 8px;vertical-align:top}
+.viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-table th:last-child{width:0;padding:0}
+.viz-root :is(.fse-withdraw-form,.fse-return-form) input{min-width:0;min-height:44px;padding:10px 12px;font-size:16px}
+.viz-root :is(.fse-withdraw-form,.fse-return-form) input:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.viz-root :is(.fse-withdraw-form,.fse-return-form) :is(.fw-hint,.fr-hint){font-size:13px;line-height:1.6;color:var(--text-secondary)}
+.viz-root :is(.fse-withdraw-form,.fse-return-form)>.fw-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.viz-root :is(.fse-withdraw-form,.fse-return-form)>.fw-actions button{min-height:44px;padding:10px 16px}
+.viz-root :is(.fw-save-btn,.fr-save-btn):not(:disabled){background:var(--series-1);border-color:var(--series-1);color:var(--on-accent)}
+.viz-root .incoming-form-group h4 span,.viz-root .incoming-nav-number{background:var(--series-1-wash);color:var(--series-1)}
+.viz-root .incoming-view-nav button[aria-pressed=true] .incoming-nav-number{background:var(--surface-1);color:var(--series-1)}
+.viz-root .incoming-fields label{gap:8px;line-height:1.6}
+.viz-root .incoming-fields :is(input,select){box-sizing:border-box;min-height:48px;padding:10px 12px;font-size:16px}
+.viz-root .incoming-list table{font-variant-numeric:tabular-nums}
+.viz-root .incoming-list :is(th,td){padding:12px;line-height:1.6}
+.viz-root .incoming-list thead th{position:sticky;top:0;z-index:1;background:var(--surface-2)}
+.viz-root .incoming-step .incoming-primary:not(:disabled){background:var(--series-1)!important;border-color:var(--series-1)!important;color:var(--on-accent)!important}
+
+/* Entry screens retain the compact flow while matching the dashboard's surfaces. */
+.viz-root :is(.auth-card,.department-card){box-sizing:border-box;border-radius:var(--radius-panel);box-shadow:none;padding:28px;gap:18px}
+.viz-root :is(.auth-card h1,.department-card h1){margin:0;font-size:24px;line-height:1.5}
+.viz-root .auth-card label{color:var(--text-primary)}
+.viz-root .auth-card input::placeholder{color:var(--text-muted)}
+.viz-root :is(.auth-card input,.auth-card #authSubmit,.department-option){border-radius:var(--radius-control)}
+.viz-root .auth-card #authSubmit:hover:not(:disabled){background:var(--series-1);filter:brightness(.94)}
+.viz-root .auth-card .auth-error{background:var(--surface-2);border-color:var(--status-critical)}
+.viz-root :is(.auth-help,.auth-footer,.department-card .department-note,.department-card .department-footer){font-size:13px;line-height:1.6}
+.viz-root .department-option{min-height:88px;padding:14px 16px}
+.viz-root .department-pk{background:var(--series-1-wash);border-color:var(--series-1)}
+.viz-root .department-pk :is(.department-icon,.department-arrow){background:var(--surface-1);color:var(--series-1)}
+.viz-root .department-option small{font-size:13px}
+.viz-root .auth-back{min-height:44px}
+.viz-root :is(.auth-card,.department-card) .entry-theme-toggle{background:var(--surface-2);color:var(--text-primary);border-color:var(--border)}
+
+@media(max-width:600px){
+ .viz-root .dashboard-actions{padding:16px}
+ .dashboard-actions-head{align-items:flex-start;flex-direction:column}
+ .dashboard-actions-head button{width:100%}
+ .dashboard-action-items{max-height:176px}
+ .viz-root :is(.fse-withdraw-form,.fse-return-form){padding:12px}
+ .viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-entry-row{grid-template-columns:minmax(0,1fr)}
+ .viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-entry-row td{padding:0}
+ .viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-entry-row td::before{font-size:13px;line-height:1.5}
+ .viz-root :is(.fse-withdraw-form,.fse-return-form)>.fw-actions button{flex:1 1 auto;white-space:nowrap}
+ .viz-root :is(.auth-screen,.department-screen){padding:16px}
+ .viz-root :is(.auth-card,.department-card){padding:20px}
+ .viz-root .auth-brand{flex-wrap:wrap;padding-bottom:16px}
+ .viz-root .auth-department{margin-left:0}
+ .viz-root .incoming-step{padding:16px}
+ .viz-root #incomingCreate{width:100%}
+}
+@media(max-width:1023px){
+ .viz-root :is(#accountPanel,#notificationPanel){padding:10px;border-radius:var(--radius-panel)}
+ .viz-root #notificationPanel .notification-panel-actions{display:grid;grid-template-columns:1fr;width:100%;gap:4px}
+ .viz-root #notificationPanel .notification-panel-actions button{min-height:44px;text-align:left;padding:8px 0}
+ .viz-root #notificationPanel .notification-item{padding:10px 8px}
+ .viz-root #notificationPanel .notification-item small{font-size:13px;line-height:1.6}
+ .viz-root #accountPanel{gap:12px;font-size:13px}
+ .viz-root #accountPanel button{padding:10px 6px;line-height:1.5}
+}

@@ -2006,6 +2006,7 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="dashboard-insights.css?v=20261008-1">
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
 <link rel="stylesheet" href="dashboard-layout.css?v=20261016-hallmark1">
+<link rel="stylesheet" href="wms-workbench.css?v=20261016-1">
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2157,7 +2158,10 @@ header.top .header-logo { border-radius: 14px; }
 
   <!-- ============ TAB: STOCK ============ -->
   <div class="tab-pane" id="pane-stock" role="tabpanel" aria-labelledby="tab-stock">
-
+    <section class="dashboard-actions" aria-labelledby="dashboardActionsTitle">
+      <div class="dashboard-actions-head"><div><h2 id="dashboardActionsTitle">รายการที่ต้องดำเนินการ</h2><p>ข้อมูลเดียวกับการแจ้งเตือน · เลือกรายการเพื่อเปิดหน้างาน</p></div><button type="button" id="dashboardActionsAll">ดูแจ้งเตือนทั้งหมด</button></div>
+      <div id="dashboardActionItems" class="dashboard-action-items"><p class="notification-empty">กำลังตรวจรายการ…</p></div>
+    </section>
     <div class="dashboard-overview" aria-label="ภาพรวมคลัง">
 <div class="kpi-total-fixed" id="stockTotalKpiFixed" title="มูลค่าคงเหลือรวม">
     <div class="kpi-scope" id="filterStatus">กำลังแสดง: ทุกคลัง</div>
@@ -5893,10 +5897,10 @@ function renderWithdrawForm(i, item, remaining) {
         </thead>
         <tbody>
           <tr class="fw-entry-row">
-            <td><input type="date" class="fw-date" title="วันที่เบิกจ่าย" value="${today}"></td>
-            <td><input type="number" class="fw-qty" list="fw-recent-${i}-qty" autocomplete="off" placeholder="จำนวน" min="0"${maxAttr} step="any" inputmode="decimal"></td>
-            <td><input type="text" class="fw-unit" placeholder="หน่วย" value="${escapeHtml(item.unit || '')}"></td>
-            <td><input type="text" class="fw-by" list="fw-recent-${i}-by" autocomplete="off" placeholder="ชื่อผู้เบิก"></td>
+            <td><input type="date" class="fw-date" aria-label="วันที่เบิก" title="วันที่เบิกจ่าย" value="${today}"></td>
+            <td><input type="number" class="fw-qty" aria-label="จำนวนที่เบิก" list="fw-recent-${i}-qty" autocomplete="off" placeholder="จำนวน" min="0"${maxAttr} step="any" inputmode="decimal"></td>
+            <td><input type="text" class="fw-unit" aria-label="หน่วยที่เบิก" placeholder="หน่วย" value="${escapeHtml(item.unit || '')}"></td>
+            <td><input type="text" class="fw-by" aria-label="ผู้เบิก" list="fw-recent-${i}-by" autocomplete="off" placeholder="ชื่อผู้เบิก"></td>
           </tr>
         </tbody>
       </table>
@@ -5921,10 +5925,10 @@ function renderReturnForm(i, item, returnable) {
       <table class="fw-table">
         <thead><tr><th>วันที่รับคืน</th><th>จำนวนรับคืน</th><th>หน่วย</th><th>ผู้คืน</th><th></th></tr></thead>
         <tbody><tr class="fw-entry-row">
-          <td><input type="date" class="fr-date" title="วันที่รับคืน" value="${today}"></td>
-          <td><input type="number" class="fr-qty" list="fr-recent-${i}-qty" autocomplete="off" placeholder="จำนวน" min="0" max="${returnable}" step="any" inputmode="decimal"></td>
-          <td><input type="text" class="fr-unit" placeholder="หน่วย" value="${escapeHtml(item.unit || '')}"></td>
-          <td><input type="text" class="fr-by" list="fr-recent-${i}-by" autocomplete="off" placeholder="ชื่อผู้คืน"></td>
+          <td><input type="date" class="fr-date" aria-label="วันที่รับคืน" title="วันที่รับคืน" value="${today}"></td>
+          <td><input type="number" class="fr-qty" aria-label="จำนวนรับคืน" list="fr-recent-${i}-qty" autocomplete="off" placeholder="จำนวน" min="0" max="${returnable}" step="any" inputmode="decimal"></td>
+          <td><input type="text" class="fr-unit" aria-label="หน่วยรับคืน" placeholder="หน่วย" value="${escapeHtml(item.unit || '')}"></td>
+          <td><input type="text" class="fr-by" aria-label="ผู้คืน" list="fr-recent-${i}-by" autocomplete="off" placeholder="ชื่อผู้คืน"></td>
         </tr></tbody>
       </table>
       <label>เลขเอกสารรับคืน * <input type="text" class="fr-reference" list="fr-recent-${i}-reference" autocomplete="off" placeholder="เลขใบรับคืน / เลขอ้างอิง" required></label>
@@ -10415,7 +10419,7 @@ window.addEventListener('pageshow', () => {
 <script src="action-confirmation.js?v=2"></script>
 <script src="event-calendar.js?v=20261013-realtime1"></script>
 <script src="cache-maintenance.js?v=20261009-audit1"></script>
-<script src="notifications.js?v=20261013-reorder1"></script>
+<script src="notifications.js?v=20261016-workbench1"></script>
 <script src="receipt-plan.js?v=20261013-lazy1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
 <script src="account-status.js?v=20261015-departmentrollback1"></script>
