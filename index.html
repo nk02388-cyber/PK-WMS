@@ -3492,6 +3492,14 @@ ZONE_SLOTS.U = U_FINAL_ORDER.map((oldNumber,index) => ({
  code:`U-${String(index+1).padStart(2,'0')}`,
 }));
 
+function palletSlotHeight(zoneCode, slotCode) {
+  // These two CAD rows are closer than the standard pallet overlay height.
+  if (zoneCode === 'U' && ['U-26','U-27','U-28','U-29'].includes(slotCode)) {
+    return (ZONE_SLOTS.U.find(slot=>slot.code==='U-28').topPct - ZONE_SLOTS.U.find(slot=>slot.code==='U-26').topPct) * .9;
+  }
+  return .95;
+}
+
 // M1: retire the two lower-right positions and add four in the marked aisle.
 // Geometry only: keep stored inventory/history attached to its original identity.
 const m1OriginalSlots = ZONE_SLOTS['M-1'];
@@ -4642,7 +4650,8 @@ function renderOverviewSlotStatus() {
       let cls = 'ov-slot';
       if (isOccupied(zoneCode, s.code)) cls += ' occupied'; // plain marker, see renderZoomSlots()
       if (status !== 'none') cls += ` age-${status}`;
-      html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;" title="${s.code}"></div>`;
+      const height = palletSlotHeight(zoneCode,s.code);
+      html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;${height < .95 ? `height:${height}%;box-sizing:border-box;border:0;box-shadow:none;` : ''}" title="${s.code}"></div>`;
     });
   });
   floorplanSlotStatus.innerHTML = html;
@@ -4716,7 +4725,6 @@ function updateZoomView() {
   });
 
   const cellW = (0.65 / 100) * bgW;
-  const cellH = (0.95 / 100) * bgH;
   // Repaint the CAD rack artwork as well as the interactive slots. Crop each
   // source row and scale it horizontally, preserving every printed pallet label.
   zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
@@ -4740,10 +4748,11 @@ function updateZoomView() {
     const x = posX + (lp / 100 * bgW);
     const y = posY + (tp / 100 * bgH);
     const slotW = cellW * palletRowScale(el.dataset.zone || currentZoomZone);
+    const slotH = palletSlotHeight(el.dataset.zone || currentZoomZone,el.dataset.slot) / 100 * bgH;
     el.style.left = (x - slotW / 2) + 'px';
-    el.style.top = (y - cellH / 2) + 'px';
+    el.style.top = (y - slotH / 2) + 'px';
     el.style.width = slotW + 'px';
-    el.style.height = cellH + 'px';
+    el.style.height = slotH + 'px';
   });
 
   if (zoomZoneBox) {
@@ -4842,7 +4851,7 @@ function renderZoomSlots(zoneCode) {
       const status = zoneCode === 'M-1' ? 'none' : slotAgeStatus('U', s.code);
       const ageCls = status === 'none' ? '' : ` age-${status}`;
       const occCls = isOccupied('U', s.code) ? ' occupied' : '';
-      return `<div class="zoom-context-slot${occCls}${ageCls}" data-zone="U" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
+      return `<div class="zoom-context-slot${occCls}${ageCls}" data-zone="U" data-slot="${s.code}" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
     }).join('');
   }
   zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {

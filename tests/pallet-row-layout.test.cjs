@@ -5,6 +5,10 @@ const snippet=html.slice(html.indexOf('const COMPACT_PALLET_ZONES ='),html.index
 test('compact rows preserve every pallet code, count, row height and other zones',()=>{
  const changed=structuredClone(original),pins={};
  vm.runInNewContext(snippet,{ZONE_SLOTS:changed,ZONE_PINS:pins});
+ const height=vm.runInNewContext('('+html.match(/function palletSlotHeight\([^]*?\n\}/)[0]+')',{ZONE_SLOTS:changed});
+ for(const slot of changed.U)assert.equal(height('U',slot.code)<.95,['U-26','U-27','U-28','U-29'].includes(slot.code));
+ assert.ok(height('U','U-26')<changed.U.find(s=>s.code==='U-28').topPct-changed.U.find(s=>s.code==='U-26').topPct);
+ for(const slot of changed['S-1'])assert.equal(height('S-1',slot.code),.95,'S1 dimensions must stay unchanged');
  const targets=new Set(['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1']);
  for(const [zone,slots] of Object.entries(original)){
   if(zone==='U'){
