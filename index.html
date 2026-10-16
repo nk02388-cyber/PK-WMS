@@ -3492,12 +3492,11 @@ ZONE_SLOTS.U = U_FINAL_ORDER.map((oldNumber,index) => ({
  code:`U-${String(index+1).padStart(2,'0')}`,
 }));
 
-function palletSlotHeight(zoneCode, slotCode) {
-  // These two CAD rows are closer than the standard pallet overlay height.
-  if (zoneCode === 'U' && ['U-26','U-27','U-28','U-29'].includes(slotCode)) {
-    return (ZONE_SLOTS.U.find(slot=>slot.code==='U-28').topPct - ZONE_SLOTS.U.find(slot=>slot.code==='U-26').topPct) * .9;
-  }
-  return .95;
+// Keep full-size U bottom pallets; separate rows instead of shrinking their cells.
+const uBottomSlots = ZONE_SLOTS.U.filter(slot => ['U-26','U-27','U-28','U-29'].includes(slot.code));
+PALLET_ROW_MASKS.push({left:Math.min(...uBottomSlots.map(slot=>slot.leftPct))-.7,right:Math.max(...uBottomSlots.map(slot=>slot.leftPct))+.7,top:Math.min(...uBottomSlots.map(slot=>slot.topPct))-.62,bottom:Math.max(...uBottomSlots.map(slot=>slot.topPct))+.64});
+for (const [upper,lower] of [['U-26','U-28'],['U-27','U-29']]) {
+  ZONE_SLOTS.U.find(slot=>slot.code===lower).topPct = ZONE_SLOTS.U.find(slot=>slot.code===upper).topPct + 1.2;
 }
 
 // M1: retire the two lower-right positions and add four in the marked aisle.
@@ -4650,8 +4649,7 @@ function renderOverviewSlotStatus() {
       let cls = 'ov-slot';
       if (isOccupied(zoneCode, s.code)) cls += ' occupied'; // plain marker, see renderZoomSlots()
       if (status !== 'none') cls += ` age-${status}`;
-      const height = palletSlotHeight(zoneCode,s.code);
-      html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;${height < .95 ? `height:${height}%;box-sizing:border-box;border:0;box-shadow:none;` : ''}" title="${s.code}"></div>`;
+      html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;${zoneCode === 'U' && ['U-26','U-27','U-28','U-29'].includes(s.code) ? 'box-sizing:border-box;box-shadow:none;' : ''}" title="${s.code}"></div>`;
     });
   });
   floorplanSlotStatus.innerHTML = html;
@@ -4725,6 +4723,7 @@ function updateZoomView() {
   });
 
   const cellW = (0.65 / 100) * bgW;
+  const cellH = (0.95 / 100) * bgH;
   // Repaint the CAD rack artwork as well as the interactive slots. Crop each
   // source row and scale it horizontally, preserving every printed pallet label.
   zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
@@ -4748,11 +4747,10 @@ function updateZoomView() {
     const x = posX + (lp / 100 * bgW);
     const y = posY + (tp / 100 * bgH);
     const slotW = cellW * palletRowScale(el.dataset.zone || currentZoomZone);
-    const slotH = palletSlotHeight(el.dataset.zone || currentZoomZone,el.dataset.slot) / 100 * bgH;
     el.style.left = (x - slotW / 2) + 'px';
-    el.style.top = (y - slotH / 2) + 'px';
+    el.style.top = (y - cellH / 2) + 'px';
     el.style.width = slotW + 'px';
-    el.style.height = slotH + 'px';
+    el.style.height = cellH + 'px';
   });
 
   if (zoomZoneBox) {

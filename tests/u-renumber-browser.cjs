@@ -33,8 +33,9 @@ const root=path.resolve(__dirname,'..');
   const a=slots.find(s=>s.code===left),b=slots.find(s=>s.code===right);assert.ok(a.leftPct<b.leftPct);assert.equal(a.topPct,b.topPct);
  }
  assert.ok(slots.find(s=>s.code==='U-03').topPct<slots.find(s=>s.code==='U-06').topPct);
+ const standard=await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="U-24"]').boundingBox();
  for(const [upper,lower] of [['U-26','U-28'],['U-27','U-29']]){
-  const a=await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="'+upper+'"]').boundingBox(),b=await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="'+lower+'"]').boundingBox();assert.ok(a.y+a.height<b.y,'U bottom zoom rows must not overlap');
+  const a=await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="'+upper+'"]').boundingBox(),b=await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="'+lower+'"]').boundingBox();assert.ok(a.y+a.height<b.y,'U bottom zoom rows must not overlap');assert.ok(Math.abs(a.height-standard.height)<.1&&Math.abs(b.height-standard.height)<.1,'U bottom cells retain standard full height');assert.ok(Math.abs(a.width-standard.width)<.1,'U bottom cells retain standard width');
   const separate=await page.evaluate(([upper,lower])=>{const a=document.querySelector('.ov-slot[title="'+upper+'"]').getBoundingClientRect(),b=document.querySelector('.ov-slot[title="'+lower+'"]').getBoundingClientRect();return a.bottom<=b.top||b.bottom<=a.top||a.right<=b.left||b.right<=a.left},[upper,lower]);assert.ok(separate,'U bottom overview rows must not overlap, including rotated mobile view');
  }
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);
