@@ -170,6 +170,24 @@
     });
   }
 
+  function stockCardRangeRows(rows, from, to) {
+    const filtered = filterHistoryRange(rows,from,to);
+    const start = movementDateNumber(from), end = movementDateNumber(to);
+    if (filtered.length || start == null || end == null || start > end) return filtered;
+    const balances = new Map(), undated = new Set();
+    for (const row of rows || []) {
+      const unit = String(row.unit || '').trim() || 'ไม่ระบุหน่วย';
+      const date = movementDateNumber(row.date);
+      if (date == null) undated.add(unit);
+      else if (date < start) balances.set(unit,row.calculatedBalance);
+    }
+    return [...balances].map(([unit,balance]) => ({
+      type:'opening',label:'ยอดยกมา',date:from,unit,received:null,issued:null,
+      calculatedBalance:undated.has(unit) ? null : balance,
+      reference:'ยอดตามบันทึกก่อนวันเริ่มต้น',
+    }));
+  }
+
   function reconcileStockCard(movements, balances, reportDate) {
     const cutoff = movementDateNumber(reportDate);
     const units = new Map((balances || []).map(row => [String(row.unit || '').trim() || 'ไม่ระบุหน่วย', {
@@ -207,7 +225,7 @@
   }
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {buildCatalog, searchCatalog, collectMovements, summarizeStock, summarizeBalances, stockCardRows, reconcileStockCard, formatRecordedTime, defaultHistoryRange, filterHistoryRange, reconciliationReasons};
+    module.exports = {buildCatalog, searchCatalog, collectMovements, summarizeStock, summarizeBalances, stockCardRows, stockCardRangeRows, reconcileStockCard, formatRecordedTime, defaultHistoryRange, filterHistoryRange, reconciliationReasons};
     return;
   }
 
@@ -228,7 +246,8 @@
     const stock = summarizeStock(STOCK.items, selectedCode);
     const movements = collectMovements(SLOT_ITEMS, selectedCode, getStockMovement, PK_LATEST_SUPPLIERS);
     const balances = summarizeBalances(stock);
-    const cardRows = filterHistoryRange(stockCardRows(movements), historyRange.from, historyRange.to);
+    const cardRows = stockCardRangeRows(stockCardRows(movements), historyRange.from, historyRange.to);
+    const opening = cardRows.some(row => row.type === 'opening');
     const reconciliation = reconcileStockCard(movements, balances, STOCK.report_date);
     const loading = !palletDataReady;
     const syncFailed = document.getElementById('syncStatusBar')?.classList.contains('sync-error');
@@ -238,9 +257,10 @@
     detailEl.innerHTML = `<div class="product-history-product"><div><strong>${escape(product.code)}</strong><h3>${escape(product.name || 'ไม่ระบุชื่อสินค้า')}</h3></div><span>${escape(stockLabel)}</span></div>
       <section class="product-history-section"><h3>ยอดคงเหลือตามคลัง</h3><p class="product-history-note">${escape(String(STOCK.report_date || 'ไม่ระบุวันที่สต็อก'))}</p>
         <div class="product-history-stock">${stock.length ? stock.map(row => `<div><span>คลัง ${escape(row.wh)} · ${escape(row.unit)}</span><strong>${row.known ? fmt(row.qty) : 'ไม่ทราบจำนวน'}</strong></div>`).join('') : '<p>ไม่มีรหัสนี้ในสต็อกที่อัปเดต</p>'}</div></section>
-      <section class="product-history-section"><div class="product-history-section-head"><h3>ประวัติการเคลื่อนไหวบนพาเลต</h3><span>${loading ? (syncFailed ? 'โหลดข้อมูลไม่สำเร็จ' : 'กำลังโหลดข้อมูลพาเลต…') : `${fmt(cardRows.length)} รายการ`}</span></div>
+      <section class="product-history-section"><div class="product-history-section-head"><h3>ประวัติการเคลื่อนไหวบนพาเลต</h3><span>${loading ? (syncFailed ? 'โหลดข้อมูลไม่สำเร็จ' : 'กำลังโหลดข้อมูลพาเลต…') : `${fmt(opening ? 0 : cardRows.length)} รายการ${opening ? " · แสดงยอดยกมา" : ""}`}</span></div>
         <div class="product-history-dates"><label for="productHistoryFrom">ตั้งแต่วันที่<input type="date" id="productHistoryFrom" value="${escape(historyRange.from)}" required></label><label for="productHistoryTo">ถึงวันที่<input type="date" id="productHistoryTo" value="${escape(historyRange.to)}" required></label></div>
-        ${loading ? `<p class="product-history-empty">${syncFailed ? 'โหลดข้อมูลพาเลตไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ' : 'กำลังโหลดข้อมูลพาเลต กรุณารอสักครู่'}</p>` : cardRows.length ? `<div class="product-history-table-wrap"><table><thead><tr><th>วันที่</th><th>บันทึกเมื่อ</th><th>รายการ</th><th>โซน / ตำแหน่ง</th><th>Lot / PK No.</th><th class="num">รับเข้า</th><th class="num">จ่ายออก</th><th class="num">ยอดสะสมตามบันทึก</th><th>หน่วย</th><th>ผู้ส่งสินค้า</th><th>ผู้ทำรายการ</th><th>เลขเอกสาร</th></tr></thead><tbody>${cardRows.slice(0,shown).map(row => `<tr><td>${escape(formatMovementDate(row.date))}</td><td>${escape(formatRecordedTime(row.recordedAt))}</td><td><span class="product-history-type product-history-type-${escape(row.type)}">${escape(row.label)}</span></td><td>${escape(row.zone)} / ${escape(row.slot)}</td><td>${escape(row.lotNo || '—')}</td><td class="num">${row.received == null ? '—' : fmt(row.received)}</td><td class="num">${row.issued == null ? '—' : fmt(row.issued)}</td><td class="num product-history-running">${row.calculatedBalance == null ? '—' : fmt(row.calculatedBalance)}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.supplierName || '—')}</td><td>${escape(row.by || '—')}</td><td>${escape(row.reference || '—')}</td></tr>`).join('')}</tbody></table></div>${cardRows.length > shown ? `<button class="product-history-more" type="button">แสดงเพิ่มเติม (${fmt(cardRows.length-shown)} รายการ)</button>` : ''}` : '<p class="product-history-empty">ไม่พบประวัติการเคลื่อนไหวบนพาเลตในช่วงวันที่ที่เลือก</p>'}
+        ${!loading && opening ? '<p class="product-history-note">ไม่มีการเคลื่อนไหวในช่วงนี้ แสดงยอดยกมาตามบันทึกก่อนวันเริ่มต้น แยกตามหน่วย ไม่ใช่ยอดจาก Update Stock หากประวัติไม่ครบจะแสดงว่าไม่ทราบยอด</p>' : ''}
+        ${loading ? `<p class="product-history-empty">${syncFailed ? 'โหลดข้อมูลพาเลตไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ' : 'กำลังโหลดข้อมูลพาเลต กรุณารอสักครู่'}</p>` : cardRows.length ? `<div class="product-history-table-wrap"><table><thead><tr><th>วันที่</th><th>บันทึกเมื่อ</th><th>รายการ</th><th>โซน / ตำแหน่ง</th><th>Lot / PK No.</th><th class="num">รับเข้า</th><th class="num">จ่ายออก</th><th class="num">ยอดสะสมตามบันทึก</th><th>หน่วย</th><th>ผู้ส่งสินค้า</th><th>ผู้ทำรายการ</th><th>เลขเอกสาร</th></tr></thead><tbody>${cardRows.slice(0,shown).map(row => `<tr><td>${escape(formatMovementDate(row.date))}</td><td>${escape(formatRecordedTime(row.recordedAt))}</td><td><span class="product-history-type product-history-type-${escape(row.type)}">${escape(row.label)}</span></td><td>${escape(row.zone)} / ${escape(row.slot)}</td><td>${escape(row.lotNo || '—')}</td><td class="num">${row.received == null ? '—' : fmt(row.received)}</td><td class="num">${row.issued == null ? '—' : fmt(row.issued)}</td><td class="num product-history-running">${row.calculatedBalance == null ? row.type === 'opening' ? 'ไม่ทราบยอด' : '—' : fmt(row.calculatedBalance)}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.supplierName || '—')}</td><td>${escape(row.by || '—')}</td><td>${escape(row.reference || '—')}</td></tr>`).join('')}</tbody></table></div>${cardRows.length > shown ? `<button class="product-history-more" type="button">แสดงเพิ่มเติม (${fmt(cardRows.length-shown)} รายการ)</button>` : ''}` : '<p class="product-history-empty">ไม่พบประวัติการเคลื่อนไหวบนพาเลตในช่วงวันที่ที่เลือก</p>'}
         ${!loading && movements.length ? `<div class="product-history-reconcile"><strong>เทียบกับสต็อก ณ ${escape(stockDate)}</strong>${reconciliation.map(row => `<p>หน่วย ${escape(row.unit)} · สุทธิตามบันทึก ${row.complete ? fmt(row.recordedNet) : 'คำนวณไม่ได้'} · สต็อก ${row.stockQty == null ? 'ไม่ทราบ' : fmt(row.stockQty)} · <span class="${row.difference == null ? '' : row.difference === 0 ? 'is-matched' : 'is-different'}">ผลต่าง (บันทึก − สต็อก) ${row.difference == null ? 'คำนวณไม่ได้' : `${row.difference > 0 ? '+' : ''}${fmt(row.difference)}`}</span>${reconciliationReasons(row).length ? `<small class="product-history-reconcile-reason">สาเหตุ: ${escape(reconciliationReasons(row).join(' · '))}</small>` : ''}</p>`).join('')}</div><p class="product-history-note">ยอดสะสมเริ่มจาก 0 และนับเฉพาะรายการพาเลตที่ยังมีบันทึก หากผลต่างไม่เป็น 0 แสดงว่ายอดตามประวัติยังไม่ตรงกับยอดสต็อก ณ วันอ้างอิง จึงไม่ควรใช้ยอดสะสมแทนยอดสต็อกจริง</p>` : ''}
         ${movements.some(row => row.supplierSource === 'latest') ? '<p class="product-history-note">ชื่อผู้ส่งสินค้าบางรายการอ้างอิงจากการรับเข้าล่าสุดของรหัสสินค้า ไม่ได้ยืนยันผู้ส่งสินค้าของรายการย้อนหลัง</p>' : ''}
         <p class="product-history-note">กรองตามวันที่รายการ รวมวันเริ่มต้นและวันสิ้นสุด เรียงจากเก่าไปใหม่ รายการที่ไม่ระบุวันที่จะไม่แสดงในช่วงวันที่ ยอดสะสมและการเทียบสต็อกคำนวณจากประวัติทั้งหมด</p>

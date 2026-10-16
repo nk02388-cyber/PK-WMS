@@ -143,6 +143,31 @@ test('stock card leaves balances unknown after incomplete records and compares o
   assert.equal(reconcileStockCard([{date:'',type:'receive',qty:1,unit:'ขวด'}],[{unit:'ขวด',qty:5,known:true}], '24/09/2569')[0].difference,null);
 });
 const {defaultHistoryRange,filterHistoryRange}=require('../product-history.js');
+const {stockCardRangeRows}=require('../product-history.js');
+test('empty movement ranges show carried balances per unit without changing history',()=>{
+ const ledger=stockCardRows([
+  {date:'2026-09-01',type:'receive',qty:409,unit:'ใบ'},
+  {date:'2026-09-15',type:'withdraw',qty:21,unit:'ใบ'},
+  {date:'2026-09-20',type:'receive',qty:2,unit:'กล่อง'},
+  {date:'2026-10-20',type:'withdraw',qty:1,unit:'ใบ'},
+ ]);
+ const before=JSON.stringify(ledger),rows=stockCardRangeRows(ledger,'2026-10-01','2026-10-16');
+ assert.deepEqual(rows.map(r=>[r.type,r.unit,r.calculatedBalance]),[['opening','ใบ',388],['opening','กล่อง',2]]);
+ assert.ok(rows.every(r=>r.date==='2026-10-01'&&r.received===null&&r.issued===null));
+ assert.equal(JSON.stringify(ledger),before);
+ assert.equal(stockCardRangeRows(ledger,'2026-10-20','2026-10-20')[0].type,'withdraw');
+ assert.deepEqual(stockCardRangeRows(ledger,'2026-08-01','2026-08-31'),[]);
+ assert.deepEqual(stockCardRangeRows([],'2026-10-01','2026-10-16'),[]);
+ assert.deepEqual(stockCardRangeRows(ledger,'2026-10-16','2026-10-01'),[]);
+});
+test('opening balance preserves zero and unknown quantities or undated history',()=>{
+ const zero=stockCardRows([{date:'2026-09-01',type:'receive',qty:0,unit:'ใบ'}]);
+ assert.equal(stockCardRangeRows(zero,'2026-10-01','2026-10-16')[0].calculatedBalance,0);
+ for(const bad of [{date:'2026-09-02',type:'withdraw',qty:null,unit:'ใบ'},{date:'',type:'withdraw',qty:1,unit:'ใบ'}]){
+  const ledger=stockCardRows([{date:'2026-09-01',type:'receive',qty:100,unit:'ใบ'},bad]);
+  assert.equal(stockCardRangeRows(ledger,'2026-10-01','2026-10-16')[0].calculatedBalance,null);
+ }
+});
 test('history range uses Bangkok current month and includes both boundaries',()=>{
  assert.deepEqual(defaultHistoryRange(new Date('2026-09-30T18:00:00Z')),{from:'2026-10-01',to:'2026-10-01'});
  const rows=[{date:'2026-09-30'},{date:'01/10/2569'},{date:'2026-10-14'},{date:'2026-10-15'},{date:''}];
