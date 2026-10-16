@@ -6160,6 +6160,21 @@ function syncAfterSlotEdit() {
   window.PKDashboardInsights?.refresh();
 }
 
+function revealEditingSlot() {
+  if (!editingSlot || zoomModal.hidden || slotEditPanel.hidden || editingSlot.zone !== currentZoomZone) return;
+  const selected = zoomSlotsLayer.querySelector(`.zoom-slot[data-slot="${CSS.escape(editingSlot.slot)}"]`);
+  if (!selected) return;
+  const viewport = zoomViewport.getBoundingClientRect(), slot = selected.getBoundingClientRect();
+  const left = viewport.left + 12, right = viewport.right - 12;
+  const top = viewport.top + 12, bottom = Math.min(viewport.bottom,slotEditPanel.getBoundingClientRect().top) - 12;
+  if (right <= left || bottom <= top) return;
+  const shift = (start,end,min,max) => end-start > max-min ? (min+max-start-end)/2 : start < min ? min-start : end > max ? max-end : 0;
+  const dx = shift(slot.left,slot.right,left,right), dy = shift(slot.top,slot.bottom,top,bottom);
+  if (Math.abs(dx) < .5 && Math.abs(dy) < .5) return;
+  zoomPanX += dx; zoomPanY += dy;
+  updateZoomView();
+}
+
 function openSlotEdit(zoneCode, slotCode) {
   window.PKSlotCopy?.close();
   hideAddProductSuggestions();
@@ -6177,7 +6192,7 @@ function openSlotEdit(zoneCode, slotCode) {
   highlightEditingSlot();
   // the panel takes up viewport height, so the background/slot positions need to reflow once
   // the browser has actually laid out the now-visible panel
-  requestAnimationFrame(updateZoomView);
+  requestAnimationFrame(() => { updateZoomView(); revealEditingSlot(); });
 }
 function closeSlotEdit() {
   window.PKSlotCopy?.close();
