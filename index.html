@@ -5956,6 +5956,8 @@ function updateReturnBtnState() {
   const v = returnFieldValidity(formEl, getReturnableQty(item));
   [['.fr-date',v.date],['.fr-qty',v.qty],['.fr-unit',v.unit],['.fr-by',v.by],['.fr-reference',v.reference]].forEach(([sel, ok]) => {
     const el = formEl.querySelector(sel); el.classList.toggle('fr-field-valid', ok); el.classList.toggle('fr-field-invalid', !ok);
+    el.setAttribute('aria-invalid', String(!ok));
+    el.setAttribute('aria-required', 'true');
   });
   formEl.querySelector('.fr-save-btn').disabled = !(v.date && v.qty && v.unit && v.by && v.reference);
 }
@@ -5999,6 +6001,8 @@ function updateWithdrawBtnState() {
     if (!el) return;
     el.classList.toggle('fw-field-valid', v[key]);
     el.classList.toggle('fw-field-invalid', !v[key]);
+    el.setAttribute('aria-invalid', String(!v[key]));
+    el.setAttribute('aria-required', 'true');
   });
   const saveBtn = formEl.querySelector('.fw-save-btn');
   if (saveBtn) saveBtn.disabled = !(v.date && v.qty && v.unit && v.by && v.reference);
