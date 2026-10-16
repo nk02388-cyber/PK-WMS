@@ -1,6 +1,6 @@
 # PK WMS — Design System
 
-Version 1.2, 15 October 2026. Current visual contract for [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). Code baseline: `bf518e7`. This document consolidates superseded design notes into the current behavior; it does not redesign the product.
+Version 1.3, 16 October 2026. Current visual contract for [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). Foundation baseline: `bf518e7`, with the scoped Hallmark Dashboard corrections described below.
 
 ## Overview and use
 
@@ -52,6 +52,8 @@ Noto Sans Thai is served locally through `typography.css`. Use the existing type
 **Variants/states:** one green→yellow→red capacity arc and dotted needle grammar for total/buildings, numeric used/total/available values from the same capacity calculation. Trend uses full container width and a 230px SVG height; text/markers do not stretch. Building cards align top/bottom with movement analysis above 1250px. Category bars use gauge green #5aa77d; warehouse bars use #78b0c9 and #5c95af hover. These are current chart-specific values, not new global theme tokens.
 
 **Date controls:** two labeled date fields, From and To, start at the first day of the current Bangkok month through today. Trend, totals, daily rows and donut share the inclusive interval. Empty/reversed dates preserve the last valid chart and show validation. Single-day plots center points without duplicated labels.
+
+**Hallmark corrections (16 October):** at 600px and below the stock-value and total-capacity cards size to their content instead of a fixed 260px minimum. Activity heading/date stack vertically; activity dates, legend and capacity detail use 13px text. Update Stock, calendar and notification targets are at least 44×44px at this breakpoint. Desktop card dimensions remain unchanged; the stock-value card uses a uniform 1px border in both layouts, preserving its green surface. Dashboard CSS records its DESIGN.md / DESIGN_SYSTEM.md ownership. Evidence: tests/dashboard-layout-browser.cjs covers 320/375/390/414/768/1024/1440/1920px, with mobile content containment and touch-target checks.
 
 **Accessibility:** units, percentage/denominator and text legends remain available without interpreting color. Daily rows provide a text alternative. Date controls are keyboard-operable; browser fixtures do not establish full screen-reader or physical-device coverage.
 

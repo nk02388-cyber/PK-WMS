@@ -1,4 +1,4 @@
-/* PK WMS: overview, movement analysis, then inventory value distribution. */
+/* Hallmark · macrostructure: inventory workbench · design-system: DESIGN.md / DESIGN_SYSTEM.md · tone: operational · anchor hue: green */
 :root[data-theme] .viz-root #pane-stock{--dash-gap:18px;--dash-pad:22px;color:var(--text-primary)}
 .viz-root .dashboard-overview{display:grid;grid-template-columns:minmax(220px,1fr) minmax(200px,.8fr) minmax(300px,1.35fr);gap:var(--dash-gap);margin-bottom:var(--dash-gap);align-items:stretch}
 .viz-root .dashboard-overview>:is(.kpi-total-fixed,.speed-meter-card,.packaging-age-card){width:100%;min-width:0;box-sizing:border-box;margin:0;border-radius:14px}
@@ -82,7 +82,7 @@
 .viz-root .dashboard-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
 .viz-root .dashboard-overview #stockTotalKpiFixed,
 .viz-root .dashboard-overview #pkSpeedMeterCard{height:270px;min-height:270px;padding:28px 32px;border:1px solid var(--border);box-shadow:0 4px 14px #15242b08}
-.viz-root .dashboard-overview #stockTotalKpiFixed{border-color:var(--series-1);border-left-width:4px}
+.viz-root .dashboard-overview #stockTotalKpiFixed{border-color:var(--series-1)}
 .viz-root .dashboard-overview #stockTotalKpiFixed .label{font-size:17px;font-weight:600}
 .viz-root .dashboard-overview #stockTotalKpiFixed .value{font-size:clamp(40px,4vw,60px);font-weight:700;margin:14px 0 10px;letter-spacing:-.03em}
 .viz-root .dashboard-overview #stockTotalKpiFixed .sub{font-size:14px}
@@ -170,10 +170,12 @@
 @media(max-width:600px){
  :root[data-theme] .viz-root #pane-stock{--dash-gap:12px}
  .viz-root .dashboard-overview{grid-template-columns:1fr}
- .viz-root .dashboard-overview #stockTotalKpiFixed,.viz-root .dashboard-overview #pkSpeedMeterCard{height:260px;min-height:260px;padding:18px 20px}
+ .viz-root .dashboard-overview #stockTotalKpiFixed,.viz-root .dashboard-overview #pkSpeedMeterCard{height:auto;min-height:0;padding:18px 20px}
  .viz-root .dashboard-overview #dashboardActivity{padding:18px 20px}
  .viz-root .dashboard-overview #dashboardActivity .di-mix{grid-template-columns:120px minmax(0,1fr);gap:16px}
  .viz-root .dashboard-overview #dashboardActivity .di-mix svg{width:120px}
  .viz-root .dashboard-main-grid #dashboardInsights,.viz-root .dashboard-main-grid .dashboard-building{padding:16px}
  .viz-root .dashboard-building .building-gauge{width:min(100%,160px)}
+ .viz-root .dashboard-overview #dashboardActivity .dashboard-widget-head{flex-direction:column}
+ .viz-root #dashboardActivityScope,.viz-root .dashboard-overview #dashboardActivity .di-mix ul,.viz-root .dashboard-overview #pkSpeedMeterCard .sm-sub{font-size:13px}
 }

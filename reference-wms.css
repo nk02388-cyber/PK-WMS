@@ -114,6 +114,7 @@
 
 /* Stock upload belongs to the same compact outline toolbar as calendar/notifications. */
 .viz-root header.top #stockUpdateBtn{display:inline-grid;place-items:center;width:40px;height:40px;min-height:40px;padding:0!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface-1)!important;color:var(--text-primary)!important;box-shadow:none}
+@media(max-width:600px){.viz-root header.top :is(#stockUpdateBtn,#eventCalendarToggle,#notificationToggle){width:44px;height:44px;min-height:44px}}
 .viz-root header.top #stockUpdateBtn span{display:none}
 .viz-root header.top #stockUpdateBtn svg{display:block;width:18px;height:18px}
 .viz-root header.top #stockUpdateBtn::before{content:none}
