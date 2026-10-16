@@ -1,17 +1,5 @@
 /* Hallmark · genre: modern-minimal · macrostructure: workbench / compact entry · design-system: DESIGN.md · designed-as-app
  * Pre-emit critique: P4 H4 E4 S5 R5 V4. Shared PK WMS tokens, no new theme. */
-.viz-root .dashboard-actions{margin-bottom:var(--dash-gap);padding:18px 22px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--surface-1)}
-.dashboard-actions-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.dashboard-actions-head h2{margin:0;font-size:18px;color:var(--text-primary)}
-.dashboard-actions-head p{margin:4px 0 0;font-size:13px;color:var(--text-secondary)}
-.dashboard-actions-head button{flex:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);background:var(--surface-2);color:var(--series-1);cursor:pointer}
-.dashboard-action-items{display:grid;gap:8px;max-height:280px;overflow:auto;overscroll-behavior:contain}
-.dashboard-action-items .notification-item{border-width:0 0 1px;border-radius:0;background:transparent;padding:12px 4px}
-.dashboard-action-items .notification-item[data-tone="critical"] strong{color:var(--status-critical)}
-.dashboard-action-items .notification-item strong{font-size:14px}
-.dashboard-action-items .notification-item small{font-size:13px}
-.dashboard-action-items .notification-item:hover{background:var(--series-1-wash)}
-.dashboard-actions button:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 
 /* Keep transaction state colors and validation; give every field room to read. */
 .viz-root :is(.fse-withdraw-form,.fse-return-form){padding:16px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--surface-1);box-shadow:none}
@@ -50,10 +38,6 @@
 .viz-root :is(.auth-card,.department-card) .entry-theme-toggle{background:var(--surface-2);color:var(--text-primary);border-color:var(--border)}
 
 @media(max-width:600px){
- .viz-root .dashboard-actions{padding:16px}
- .dashboard-actions-head{align-items:flex-start;flex-direction:column}
- .dashboard-actions-head button{width:100%}
- .dashboard-action-items{max-height:176px}
  .viz-root :is(.fse-withdraw-form,.fse-return-form){padding:12px}
  .viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-entry-row{grid-template-columns:minmax(0,1fr)}
  .viz-root :is(.fse-withdraw-form,.fse-return-form) .fw-entry-row td{padding:0}

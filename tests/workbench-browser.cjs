@@ -43,14 +43,17 @@ const root=path.resolve(__dirname,'..');
   await form.screenshot({path:'work/workbench-return-'+theme+'-'+viewport.width+'.png'});
  }
  await page.evaluate(()=>{document.getElementById('returnFixture').remove();stockSnapshotState='error';PKNotifications.refreshStock();});
- assert.ok(await page.locator('#dashboardActionItems [data-action="stock"]').count());
- await page.locator('#dashboardActionItems [data-action="stock"]').click();
+ assert.equal(await page.locator('.dashboard-actions').count(),0);
+ await page.locator('#notificationToggle').click();
+ assert.ok(await page.locator('#notificationItems [data-action="stock"]').count());
+ await page.locator('#notificationItems [data-action="stock"]').click();
  assert.equal(await page.locator('#pane-stock').isVisible(),true);
  await page.evaluate(()=>{stockSnapshotState='latest';STOCK.items=[{code:'QA-NEGATIVE',qty:-1,unit:'ชิ้น'}];window.PKProductHistory={open:code=>window.qaOpenedCode=code};PKNotifications.refreshStock();});
- assert.equal(await page.locator('#dashboardActionItems [data-action]').first().getAttribute('data-tone'),'critical');
- await page.locator('#dashboardActionItems [data-action="negative"]').click();assert.equal(await page.evaluate(()=>window.qaOpenedCode),'QA-NEGATIVE');
+ await page.locator('#notificationToggle').click();
+ assert.equal(await page.locator('#notificationItems [data-action="negative"]').getAttribute('data-tone'),'critical');
+ await page.locator('#notificationItems [data-action="negative"]').click();assert.equal(await page.evaluate(()=>window.qaOpenedCode),'QA-NEGATIVE');
  await page.evaluate(()=>activateTab(document.getElementById('tab-stock')));
- await page.locator('#dashboardActionsAll').click();assert.equal(await page.locator('#notificationPanel').isVisible(),true);await page.keyboard.press('Escape');
+ await page.locator('#notificationToggle').click();assert.equal(await page.locator('#notificationPanel').isVisible(),true);await page.keyboard.press('Escape');
  await page.evaluate(()=>activateTab(document.getElementById('tab-incoming')));await page.waitForTimeout(450);
  assert.equal(await page.locator('#incomingReceiveForm').isVisible(),true);
  for(const theme of ['light','dark']){await page.evaluate(t=>{document.documentElement.dataset.theme=t;document.getElementById('notificationToastStack').replaceChildren();},theme);await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);await page.screenshot({path:'work/workbench-incoming-'+theme+'-'+viewport.width+'.png'});}

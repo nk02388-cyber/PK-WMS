@@ -56,7 +56,6 @@
   const panel = document.getElementById('notificationPanel');
   const badge = document.getElementById('notificationBadge');
   const list = document.getElementById('notificationItems');
-  const dashboardList = document.getElementById('dashboardActionItems');
   const clearButton = document.getElementById('notificationClear');
   const toastStack = document.getElementById('notificationToastStack');
   if (!toggle || !panel || !badge || !list || !clearButton) return;
@@ -134,10 +133,6 @@
     toggle.setAttribute('aria-label',currentActions.length ? `เปิดการแจ้งเตือน ${currentActions.length} ประเภท` : 'เปิดการแจ้งเตือน');
     list.innerHTML = currentActions.length ? currentActions.map(action => `<button type="button" class="notification-item" data-action="${escape(action.kind)}" data-tone="${action.tone}"><strong>${escape(action.title)}</strong><small>${escape(action.detail)}</small></button>`).join('') : `<p class="notification-empty">${actions.length ? 'ล้างการแจ้งเตือนวันนี้แล้ว · รายการใหม่จะแสดงเมื่อข้อมูลเปลี่ยน' : 'ไม่มีรายการที่ต้องดำเนินการ'}</p>`;
     if (pending.count == null && !pending.error) list.insertAdjacentHTML('beforeend','<p class="notification-empty">กำลังตรวจรายการรอจัดเก็บ…</p>');
-    if (dashboardList) {
-      dashboardList.innerHTML = list.innerHTML;
-      for (const item of dashboardList.querySelectorAll('[data-tone="critical"]')) dashboardList.prepend(item);
-    }
     scheduleToast();
   }
 
@@ -165,7 +160,6 @@
     toggle.setAttribute('aria-expanded',String(open));
     if (open) refreshPending();
   });
-  document.getElementById('dashboardActionsAll')?.addEventListener('click', event => { event.stopPropagation(); if (panel.hidden) toggle.click(); toggle.focus(); });
   document.getElementById('notificationRefresh').addEventListener('click',refreshPending);
   clearButton.addEventListener('click',() => {
     if (ensureCurrentDay()) render();
@@ -212,7 +206,6 @@
     else if (action === 'pending-error') { panel.hidden = false; toggle.setAttribute('aria-expanded','true'); refreshPending(); }
   }
   list.addEventListener('click',openAction);
-  dashboardList?.addEventListener('click',openAction);
   window.PKNotifications = {refresh:refreshPending,refreshStock:render};
   render();
   refreshPending();
