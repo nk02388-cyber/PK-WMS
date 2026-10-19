@@ -1,9 +1,7 @@
 (function () {
   'use strict';
 
-  const SOURCE_ID = '1qoDuHL4kAT4SFKv2nmpy8CBRRSut_dXm';
   const REFRESH_MS = 5 * 60 * 1000;
-  const sourceUrl = `https://docs.google.com/spreadsheets/d/${SOURCE_ID}/export?format=xlsx`;
 
   const text = value => String(value == null ? '' : value).trim();
   const number = value => {
@@ -45,8 +43,21 @@
     });
   }
 
+  function validateSnapshot(data) {
+    if (!data || !Array.isArray(data.rows) || !data.imported_at || !Number.isFinite(Date.parse(data.imported_at)))
+      throw new Error('ข้อมูลแผนรับเข้าไม่ถูกต้อง');
+    for (const row of data.rows) {
+      const day = /^\d{4}-\d{2}-\d{2}$/.test(row.date || '') && new Date(`${row.date}T00:00:00Z`);
+      if (!day || !Number.isFinite(day.getTime()) || day.toISOString().slice(0,10) !== row.date ||
+        !['code','item','unit','company','po'].every(key => typeof row[key] === 'string') || !row.code.trim() || !row.item.trim() ||
+        typeof row.quantity !== 'number' || !Number.isFinite(row.quantity) || row.quantity < 0)
+        throw new Error('รายการแผนรับเข้าไม่ถูกต้อง');
+    }
+    return data;
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {parseReceiptPlanSheet, sheetNameForDate};
+    module.exports = {parseReceiptPlanSheet, sheetNameForDate, validateSnapshot};
     return;
   }
 
@@ -60,7 +71,8 @@
   const badge = document.getElementById('tabBadgeReceiptPlan');
   const refreshButton = document.getElementById('receiptPlanRefresh');
   const escape = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let workbook = null, loadedAt = null, pending = null, followToday = true;
+  const allowed = () => window.getWmsCanAccess?.('receipt-plan') === true;
+  let snapshot = null, loadedAt = null, pending = null, followToday = true, generation = 0;
   date.value = localToday();
 
   function keepCurrentDay() {
@@ -68,22 +80,12 @@
   }
 
   function render() {
-    if (!workbook) return;
+    if (!snapshot) return;
     const selected = date.value;
-    const sheetName = sheetNameForDate(selected);
-    const sheet = workbook.Sheets[sheetName];
-    let rows = [];
-    try {
-      if (sheet) rows = parseReceiptPlanSheet(XLSX.utils.sheet_to_json(sheet, {header:1, raw:false, defval:''}));
-    } catch (error) {
-      status.classList.add('error');
-      status.textContent = error.message;
-      summary.replaceChildren(); result.replaceChildren(); badge.textContent = 'ตรวจสอบ';
-      return;
-    }
+    const rows = snapshot.rows.filter(row => !selected || row.date === selected);
     status.classList.remove('error');
     const stamp = loadedAt ? loadedAt.toLocaleString('th-TH') : '—';
-    status.textContent = `${sheet ? `ชีต ${sheetName} · ${rows.length} รายการ` : `ไม่มีชีต ${sheetName} ในไฟล์ต้นทาง`} · โหลดล่าสุด ${stamp}`;
+    status.textContent = `นำเข้าจากเว็บต้นทาง ${snapshot.rows.length} รายการ · ${snapshot.source_note || ''} · นำเข้า PK WMS ${new Date(snapshot.imported_at).toLocaleString('th-TH')} · ตรวจข้อมูลใน PK WMS ล่าสุด ${stamp}`;
     badge.textContent = selected === localToday() ? `${rows.length} วันนี้` : `${rows.length} รายการ`;
     const key = query.value.trim().toLocaleLowerCase('th');
     const visible = key ? rows.filter(row => {const hay=[row.rr,row.company,row.period,row.po,row.code,row.item,row.unit].map(value=>text(value)).join(' ').normalize('NFKC').toLocaleLowerCase('th');return key.normalize('NFKC').split(/\s+/).every(term=>hay.includes(term));}) : rows;
@@ -92,44 +94,51 @@
     const kpis = [['รายการในแผน',rows.length],['รหัสสินค้า',distinctCodes],['บริษัท',distinctCompanies],['ผลค้นหา',visible.length]];
     summary.innerHTML = kpis.map(([label,value]) => `<div class="daily-kpi"><span>${escape(label)}</span><strong>${value.toLocaleString('en-US')}</strong></div>`).join('');
     result.innerHTML = visible.length ? `<div class="daily-table-wrap"><table class="daily-table">
-      <thead><tr><th>ช่วงเวลา</th><th>บริษัท</th><th>PO</th><th>รหัสสินค้า</th><th>รายการ</th><th class="num">จำนวนแผน</th><th>หน่วย</th><th>RR No.(WH)</th></tr></thead>
-      <tbody>${visible.map(row => `<tr><td>${escape(row.period || '—')}</td><td>${escape(row.company || '—')}</td><td>${escape(row.po || '—')}</td><td>${escape(row.code)}</td><td>${escape(row.item)}</td><td class="num">${row.quantity == null ? '—' : row.quantity.toLocaleString('en-US',{maximumFractionDigits:3})}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.rr || '—')}</td></tr>`).join('')}</tbody></table></div>`
-      : `<div class="daily-empty">${key ? 'ไม่พบรายการที่ตรงกับคำค้น' : sheet ? 'ไม่มีรายการรับเข้าในวันที่เลือก' : 'ยังไม่มีแผนรับเข้าในวันที่เลือก'}</div>`;
+      <thead><tr><th>วันที่คาดว่าจะรับ</th><th>รหัสสินค้า</th><th>ชื่อสินค้า</th><th class="num">จำนวนแผน</th><th>หน่วย</th><th>ผู้ขาย / บริษัท</th><th>PO</th></tr></thead>
+      <tbody>${visible.map(row => `<tr><td>${escape(row.date.split('-').reverse().join('/'))}</td><td>${escape(row.code)}</td><td>${escape(row.item)}</td><td class="num">${row.quantity.toLocaleString('en-US',{maximumFractionDigits:3})}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.company || '—')}</td><td>${escape(row.po || '—')}</td></tr>`).join('')}</tbody></table></div>`
+      : `<div class="daily-empty">${key ? 'ไม่พบรายการที่ตรงกับคำค้น' : 'ยังไม่มีแผนรับเข้าในวันที่เลือก'}</div>`;
   }
 
   async function refresh(force = false) {
     keepCurrentDay();
+    const client = typeof supabaseClient !== 'undefined' ? supabaseClient : null;
+    if (!client || !allowed()) {clear(); return;}
     if (pending) return pending;
     if (!force && loadedAt && Date.now() - loadedAt.getTime() < REFRESH_MS) {render(); return;}
     refreshButton.disabled = true;
     status.classList.remove('error');
-    status.textContent = workbook ? 'กำลังตรวจข้อมูลใหม่จาก Google Drive…' : 'กำลังโหลดไฟล์แผนจาก Google Drive…';
+    status.textContent = 'กำลังโหลดแผนที่นำเข้าจากเว็บต้นทาง…';
+    const requestGeneration = generation;
     pending = (async () => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
       try {
-        await PKDependencies.excel();
-        const response = await fetch(`${sourceUrl}&_=${Date.now()}`, {cache:'no-store', signal:controller.signal});
-        if (!response.ok) throw new Error(`Google Drive ตอบกลับ HTTP ${response.status}`);
-        const buffer = await response.arrayBuffer();
-        if (buffer.byteLength < 100) throw new Error('ไฟล์ที่ได้รับว่างหรือไม่ใช่ Excel');
-        const next = XLSX.read(buffer, {type:'array'});
-        if (!next.SheetNames.length) throw new Error('ไม่พบชีตในไฟล์ Excel');
-        workbook = next;
+        const response = await client.rpc('get_pk_receipt_plan');
+        if (requestGeneration !== generation || !allowed()) return;
+        if (response.error?.code === '42501') {clear(); return;}
+        if (response.error) throw new Error(response.error.message || 'โหลดแผนรับเข้าไม่สำเร็จ');
+        snapshot = validateSnapshot(response.data);
         loadedAt = new Date();
         render();
       } catch (error) {
+        if (requestGeneration !== generation) return;
         status.classList.add('error');
-        status.textContent = `โหลดแผนรับเข้าไม่สำเร็จ: ${error.name === 'AbortError' ? 'หมดเวลารอ Google Drive' : error.message}${workbook ? ' · ข้อมูลเดิมยังแสดงอยู่' : ''}`;
-        if (!workbook) badge.textContent = 'โหลดไม่ได้';
+        status.textContent = `โหลดแผนรับเข้าไม่สำเร็จ: ${error.message}${snapshot ? ' · ข้อมูลที่โหลดก่อนหน้ายังแสดงอยู่' : ''}`;
+        if (!snapshot) badge.textContent = 'โหลดไม่ได้';
       } finally {
-        clearTimeout(timeout);
+        if (requestGeneration !== generation) return;
         refreshButton.disabled = false;
         pending = null;
       }
     })();
     return pending;
   }
+
+  function clear() {
+    ++generation; snapshot = null; loadedAt = null; pending = null;
+    summary.replaceChildren(); result.replaceChildren(); badge.textContent = '—';
+    refreshButton.disabled = false; status.classList.remove('error');
+    status.textContent = 'เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์แผนรับเข้าเพื่อโหลดข้อมูล';
+  }
+  window.addEventListener('wms:account-changed', () => {clear(); if (!panel.hidden) refresh();});
 
   date.addEventListener('change', () => {followToday = date.value === localToday(); render();});
   query.addEventListener('input', render);
@@ -141,6 +150,7 @@
     render();
   });
   document.getElementById('receiptPlanToday').addEventListener('click', () => {followToday = true; date.value = localToday(); render();});
+  document.getElementById('receiptPlanAll').addEventListener('click', () => {followToday = false; date.value = ''; render();});
   refreshButton.addEventListener('click', () => refresh(true));
   document.getElementById('tab-receipt-plan').addEventListener('click', () => refresh());
   document.addEventListener('visibilitychange', () => {if (!document.hidden && !panel.hidden) refresh();});

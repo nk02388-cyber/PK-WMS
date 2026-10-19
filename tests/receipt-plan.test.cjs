@@ -1,6 +1,16 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {parseReceiptPlanSheet, sheetNameForDate} = require('../receipt-plan.js');
+const {parseReceiptPlanSheet, sheetNameForDate, validateSnapshot} = require('../receipt-plan.js');
+
+test('imported plans preserve separate PO rows and reject invalid dates, quantities and columns', () => {
+  const row={date:'2026-10-19',code:'QA-01',item:'กล่อง',quantity:0,unit:'ใบ',company:'QA',po:'PO1'};
+  const data={rows:[row,{...row,po:'PO2',quantity:10}],imported_at:'2026-10-19T06:00:00Z'};
+  assert.equal(validateSnapshot(data),data);
+  assert.equal(validateSnapshot({...data,rows:[]}).rows.length,0);
+  for(const change of [{date:'2026-02-30'},{date:'bad'},{quantity:-1},{quantity:NaN},{quantity:'10'},{unit:null},{code:''}])
+    assert.throws(()=>validateSnapshot({...data,rows:[{...row,...change}]}));
+  assert.throws(()=>validateSnapshot({...data,imported_at:'bad'}));
+});
 
 test('daily plan resolves the exact workbook tab for a selected date', () => {
   assert.equal(sheetNameForDate('2026-09-17'), '17.09');

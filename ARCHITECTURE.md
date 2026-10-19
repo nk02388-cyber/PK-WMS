@@ -52,7 +52,7 @@ flowchart LR
 | Work tracking | `warehouse_ops` private tables through `warehouse_ops_rpc` | Operations UI is a same-origin frame; its server gateway checks PK Admin |
 | Avatar | Edge Function validates caller/file and writes Storage | Profile URLs may be public; they must not include credentials |
 | Drafts/preferences | Browser local/session storage | Counts, BOM drafts and calendar fallback contain business work; targeted cleanup preserves them |
-| Receipt plan | Referenced Google Sheets export | Network refresh/freshness is separate from inventory snapshot time |
+| Receipt plan | `pk_receipt_plan_snapshots` via guarded `get_pk_receipt_plan()` | Imported from authenticated Netlify plan table; PK polls its own database every 5 minutes. Source changes require a new authorized import. No source credentials or plan rows in static assets. |
 
 The deployed schema and database, when inspected directly, are authoritative for API guards. Some early root SQL scripts still show superseded anon grants; do not replay a single old script in isolation and assume it matches the deployed permission model.
 
