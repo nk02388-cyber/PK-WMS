@@ -3423,6 +3423,18 @@ function compactPalletRows(slotsByZone, pins) {
 }
 compactPalletRows(ZONE_SLOTS, ZONE_PINS);
 
+// Shorten these two racks upward to the marked baseline, including their hit targets.
+const COMPACT_PALLET_COLUMNS = new Set(['O-1','P-1']);
+const PALLET_COLUMN_SCALE_Y = .87;
+const palletColumnTop = Math.min(...[...COMPACT_PALLET_COLUMNS].flatMap(zone=>ZONE_SLOTS[zone].map(slot=>slot.topPct))) - .65;
+COMPACT_PALLET_COLUMNS.forEach(zone=>{
+  const slots=ZONE_SLOTS[zone],left=Math.min(...slots.map(slot=>slot.leftPct))-.55,right=Math.max(...slots.map(slot=>slot.leftPct))+.55;
+  const bottom=Math.max(...slots.map(slot=>slot.topPct))+.65;
+  PALLET_ROW_RACKS.push({sourceLeft:left,sourceRight:right,top:palletColumnTop,bottom,targetLeft:left,scaleX:1,scaleY:PALLET_COLUMN_SCALE_Y});
+  PALLET_ROW_MASKS.push({left,right,top:palletColumnTop+(bottom-palletColumnTop)*PALLET_COLUMN_SCALE_Y,bottom});
+  slots.forEach(slot=>{slot.topPct=palletColumnTop+(slot.topPct-palletColumnTop)*PALLET_COLUMN_SCALE_Y;});
+});
+
 // S1: fit three equal pallets in the top bay, keeping existing stock identities.
 const s1UpperLeft = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-01');
 const s1UpperRight = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-02');
@@ -3514,6 +3526,7 @@ ZONE_SLOTS.U = U_FINAL_ORDER.map((oldNumber,index) => ({
 }));
 
 function palletSlotHeight(zoneCode, slotCode) {
+  if (COMPACT_PALLET_COLUMNS.has(zoneCode)) return .95 * PALLET_COLUMN_SCALE_Y;
   // These two CAD rows are closer than the standard pallet overlay height.
   if (zoneCode === 'U' && ['U-26','U-27','U-28','U-29'].includes(slotCode)) {
     return (ZONE_SLOTS.U.find(slot=>slot.code==='U-28').topPct - ZONE_SLOTS.U.find(slot=>slot.code==='U-26').topPct) * .9;
@@ -3984,7 +3997,7 @@ function applyZoomBackdrop(bgW,bgH,posX,posY) {
       const width=2048,height=Math.round(width*FLOORPLAN_ZOOM_H/FLOORPLAN_ZOOM_W);
       mobileMapSurface.width=width;mobileMapSurface.height=height;
       const ctx=mobileMapSurface.getContext('2d');ctx.drawImage(mobileMapSource,0,0,width,height);
-      for(const rack of PALLET_ROW_RACKS){const x=rack.sourceLeft/100,y=rack.top/100,w=(rack.sourceRight-rack.sourceLeft)/100,h=(rack.bottom-rack.top)/100;ctx.drawImage(mobileMapSource,x*mobileMapSource.naturalWidth,y*mobileMapSource.naturalHeight,w*mobileMapSource.naturalWidth,h*mobileMapSource.naturalHeight,rack.targetLeft/100*width,y*height,w*PALLET_ROW_SCALE_X*width,h*height);}
+      for(const rack of PALLET_ROW_RACKS){const x=rack.sourceLeft/100,y=rack.top/100,w=(rack.sourceRight-rack.sourceLeft)/100,h=(rack.bottom-rack.top)/100;ctx.drawImage(mobileMapSource,x*mobileMapSource.naturalWidth,y*mobileMapSource.naturalHeight,w*mobileMapSource.naturalWidth,h*mobileMapSource.naturalHeight,rack.targetLeft/100*width,y*height,w*(rack.scaleX??PALLET_ROW_SCALE_X)*width,h*(rack.scaleY??1)*height);}
       ctx.fillStyle='#fff';for(const mask of PALLET_ROW_MASKS)ctx.fillRect(mask.left/100*width,mask.top/100*height,(mask.right-mask.left)/100*width,(mask.bottom-mask.top)/100*height);
       zoomViewLayout=null;if(!zoomModal.hidden)requestAnimationFrame(updateZoomView);
     };
@@ -4662,7 +4675,7 @@ function renderOverviewSlotStatus() {
   let html = PALLET_ROW_RACKS.map(rack => {
     const width = rack.sourceRight - rack.sourceLeft;
     const height = rack.bottom - rack.top;
-    return `<div class="ov-compact-rack" aria-hidden="true" style="position:absolute;overflow:hidden;left:${rack.targetLeft}%;top:${rack.top}%;width:${width}%;height:${height}%;background:#fff;transform:scaleX(${PALLET_ROW_SCALE_X});transform-origin:left top;"><img alt="" style="position:absolute;max-width:none;width:${10000/width}%;height:${10000/height}%;left:${-rack.sourceLeft/width*100}%;top:${-rack.top/height*100}%;"></div>`;
+    return `<div class="ov-compact-rack" aria-hidden="true" style="position:absolute;overflow:hidden;left:${rack.targetLeft}%;top:${rack.top}%;width:${width}%;height:${height}%;background:#fff;transform:scale(${rack.scaleX??PALLET_ROW_SCALE_X},${rack.scaleY??1});transform-origin:left top;"><img alt="" style="position:absolute;max-width:none;width:${10000/width}%;height:${10000/height}%;left:${-rack.sourceLeft/width*100}%;top:${-rack.top/height*100}%;"></div>`;
   }).join('') + PALLET_ROW_MASKS.map(mask => `<div aria-hidden="true" style="position:absolute;left:${mask.left}%;top:${mask.top}%;width:${mask.right-mask.left}%;height:${mask.bottom-mask.top}%;background:#fff;"></div>`).join('');
   Object.keys(ZONE_SLOTS).forEach(zoneCode => {
     const slots = ZONE_SLOTS[zoneCode] || [];
@@ -4836,7 +4849,7 @@ function renderZoomSlots(zoneCode) {
   } else {
     zoomZoneBoxBounds = null;
   }
-  zoomSlotsLayer.innerHTML = PALLET_ROW_RACKS.map((_,index) => `<div class="zoom-compact-rack" data-rack="${index}" aria-hidden="true" style="position:absolute;background-color:#fff;background-repeat:no-repeat;transform:scaleX(${PALLET_ROW_SCALE_X});transform-origin:left top;pointer-events:none;"></div>`).join('') + PALLET_ROW_MASKS.map((_,index) => `<div class="zoom-layout-mask" data-mask="${index}" aria-hidden="true" style="position:absolute;background:#fff;pointer-events:none;"></div>`).join('') + slots.map(s => {
+  zoomSlotsLayer.innerHTML = PALLET_ROW_RACKS.map((rack,index) => `<div class="zoom-compact-rack" data-rack="${index}" aria-hidden="true" style="position:absolute;background-color:#fff;background-repeat:no-repeat;transform:scale(${rack.scaleX??PALLET_ROW_SCALE_X},${rack.scaleY??1});transform-origin:left top;pointer-events:none;"></div>`).join('') + PALLET_ROW_MASKS.map((_,index) => `<div class="zoom-layout-mask" data-mask="${index}" aria-hidden="true" style="position:absolute;background:#fff;pointer-events:none;"></div>`).join('') + slots.map(s => {
     const status = slotAgeStatus(zoneCode, s.code);
     // "occupied" is kept as a plain, unstyled marker class alongside the age-* class that
     // actually drives the fill color (see slotAgeStatus() / the .zoom-slot.age-* CSS) -- purely

@@ -2,15 +2,27 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const original=JSON.parse(html.match(/const ZONE_SLOTS = (.*);/)[1]);
 const snippet=html.slice(html.indexOf('const COMPACT_PALLET_ZONES ='),html.indexOf('const pinnedZones ='));
-test('compact rows preserve every pallet code, count, row height and other zones',()=>{
+test('compact layouts preserve pallet identities and only resize the intended zones',()=>{
  const changed=structuredClone(original),pins={};
  vm.runInNewContext(snippet,{ZONE_SLOTS:changed,ZONE_PINS:pins});
- const height=vm.runInNewContext('('+html.match(/function palletSlotHeight\([^]*?\n\}/)[0]+')',{ZONE_SLOTS:changed});
+ const height=vm.runInNewContext('('+html.match(/function palletSlotHeight\([^]*?\n\}/)[0]+')',{ZONE_SLOTS:changed,COMPACT_PALLET_COLUMNS:new Set(['O-1','P-1']),PALLET_COLUMN_SCALE_Y:.87});
  for(const slot of changed.U)assert.equal(height('U',slot.code)<.95,['U-26','U-27','U-28','U-29'].includes(slot.code));
  assert.ok(height('U','U-26')<changed.U.find(s=>s.code==='U-28').topPct-changed.U.find(s=>s.code==='U-26').topPct);
  for(const slot of changed['S-1'])assert.equal(height('S-1',slot.code),.95,'S1 dimensions must stay unchanged');
  const targets=new Set(['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1']);
  for(const [zone,slots] of Object.entries(original)){
+  if(['O-1','P-1'].includes(zone)){
+   assert.equal(changed[zone].length,24);
+   for(const [i,slot] of slots.entries()){
+    const actual=changed[zone][i];assert.equal(actual.code,slot.code);assert.equal(actual.leftPct,slot.leftPct);
+    assert.ok(Math.abs(actual.topPct-(25.603+(slot.topPct-25.603)*.87))<1e-9);
+    assert.equal(height(zone,slot.code),.95*.87);
+   }
+   const tops=[...new Set(changed[zone].map(s=>s.topPct))].sort((a,b)=>a-b);
+   for(let i=1;i<tops.length;i++)assert.ok(tops[i]-tops[i-1]>.95*.87);
+   assert.ok(Math.max(...changed[zone].map(s=>s.topPct))+.95*.87/2<31.494);
+   continue;
+  }
   if(zone==='U'){
    const order=[1,2,3,4,5,6,7,8,9,10,11,25,12,13,14,15,16,17,18,20,26,21,23,22,24];
    assert.equal(changed.U.length,29);
