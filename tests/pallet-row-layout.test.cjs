@@ -30,13 +30,14 @@ test('compact layouts preserve pallet identities and only resize the intended zo
   }
   if(zone==='U'){
    const order=[1,2,3,4,5,6,7,8,9,10,11,25,12,13,14,15,16,17,18,20,26,21,23,22,24];
-   assert.equal(changed.U.length,29);
-   assert.deepEqual(Array.from(changed.U,s=>s.code),Array.from({length:29},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
+   assert.equal(changed.U.length,30);
+   assert.deepEqual(Array.from(changed.U,s=>s.code),Array.from({length:30},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
    const right=['U-02','U-06','U-25','U-17','U-19','U-26'];
    const left=['U-01','U-03','U-09','U-14','U-18','U-20'];
    order.forEach((old,i)=>{
     const finalOrder=[1, 2, 26, 27, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 29, 19, 20, 21, 22, 23, 24, 25];
     const code=`U-${String(old).padStart(2,'0')}`,slot=changed.U[finalOrder.indexOf(i+1)];
+    if(['U-26','U-27','U-28','U-29'].includes(slot.code))return;
     if(right.includes(code)){
      assert.equal(slot.leftPct,slots.find(s=>s.code==='U-02').leftPct);
      assert.equal(slot.topPct,slots.find(s=>s.code===left[right.indexOf(code)]).topPct);
@@ -49,6 +50,12 @@ test('compact layouts preserve pallet identities and only resize the intended zo
    assert.equal(changed.U.find(s=>s.code==='U-03').topPct,changed.U.find(s=>s.code==='U-04').topPct);
    assert.equal(changed.U.find(s=>s.code==='U-21').topPct,changed.U.find(s=>s.code==='U-22').topPct);
    const removed=slots.find(s=>s.code==='U-18');
+   const find=code=>changed.U.find(s=>s.code===code);
+   assert.ok(Math.abs(find('U-29').leftPct+.65/2-59.04)<1e-9);
+   assert.ok(Math.abs(find('U-29').topPct+height('U','U-29')/2-46.04)<1e-9);
+   assert.ok(Math.abs(find('U-30').topPct+.95/2-46.04)<1e-9);
+   assert.equal(find('U-30').leftPct-.65/2,55.7);
+   for(const a of changed.U.slice(-5))for(const b of changed.U)if(a!==b)assert.ok(Math.abs(a.leftPct-b.leftPct)>=.65||Math.abs(a.topPct-b.topPct)>=(height('U',a.code)+height('U',b.code))/2,`Moved U cell overlaps: ${a.code}/${b.code}`);
    assert.equal(changed.U.some(s=>s.leftPct===slots.find(s=>s.code==='U-02').leftPct&&s.topPct===removed.topPct),false);
    continue;
   }
@@ -68,7 +75,7 @@ test('compact layouts preserve pallet identities and only resize the intended zo
     assert.equal(find(code).topPct,find(neighbor).topPct);
    }
    for(const a of changed[zone])for(const b of changed[zone])if(a!==b)assert.ok(Math.abs(a.leftPct-b.leftPct)>=.65 || Math.abs(a.topPct-b.topPct)>=.95,'M1 cells must not overlap');
-   assert.match(html,/palletNo: 536,/);
+   assert.match(html,/palletNo: 537,/);
    continue;
   }
   if(zone==='S-1'){

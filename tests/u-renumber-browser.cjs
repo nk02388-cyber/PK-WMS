@@ -24,9 +24,9 @@ const root=path.resolve(__dirname,'..');
  await page.evaluate(()=>openZoomModal('U'));
  await page.waitForTimeout(400);
  const labels=await page.locator('#floorplanZoomSlots .zoom-slot-label').allTextContents();
- assert.deepEqual(labels.filter(s=>s.startsWith('U-')),Array.from({length:29},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
+ assert.deepEqual(labels.filter(s=>s.startsWith('U-')),Array.from({length:30},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
  const slots=await page.evaluate(()=>ZONE_SLOTS.U);
- assert.equal(slots.length,29);
+ assert.equal(slots.length,30);
  assert.equal(slots.find(s=>s.code==='U-14').leftPct,slots.find(s=>s.code==='U-02').leftPct);
  assert.equal(slots.find(s=>s.code==='U-14').topPct,slots.find(s=>s.code==='U-11').topPct);
  for(const [left,right] of [['U-03','U-04'],['U-21','U-22'],['U-26','U-27'],['U-28','U-29']]){
@@ -42,14 +42,14 @@ const root=path.resolve(__dirname,'..');
 
  await page.evaluate(()=>{SLOT_ITEMS.U={'U-12':[{code:'QA',name:'Fixture',qty:1,receiveDate:new Date().toISOString().slice(0,10)}]};PALLET_STATUS.U={'U-12':'occupied'};openZoomModal('M-1');});
  const context=page.locator('#floorplanZoomSlots .zoom-context-slot[data-zone="U"]');
- assert.equal(await context.count(),29,'all 29 U positions render beside M1');
- assert.deepEqual(await context.locator('.zoom-slot-label').allTextContents(),Array.from({length:29},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
+ assert.equal(await context.count(),30,'all 30 U positions render beside M1');
+ assert.deepEqual(await context.locator('.zoom-slot-label').allTextContents(),Array.from({length:30},(_,i)=>`U-${String(i+1).padStart(2,'0')}`));
  assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),24,'M1 edit scope unchanged');
  assert.equal(await context.filter({hasText:'U-12'}).evaluate(el=>!['age-green','age-yellow','age-red'].some(c=>el.classList.contains(c))),true,'U context stays neutral inside M1');
  assert.equal(await context.first().evaluate(el=>getComputedStyle(el).pointerEvents),'none');
  await page.screenshot({path:'work/u-context-m1-'+viewport.width+'.png'});
- await page.evaluate(()=>openZoomModal('T-1'));assert.equal(await context.count(),29);assert.equal(await context.filter({hasText:'U-12'}).evaluate(el=>!el.classList.contains('age-green')),true);assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),20);
- await page.evaluate(()=>openZoomModal('U'));assert.equal(await context.count(),0,'no duplicate U overlay in own zone');assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),29);assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="U-12"]').evaluate(el=>el.classList.contains('age-green')),true);
- assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS U 29 spatially numbered positions, zoom labels, no overflow '+viewport.width);
+ await page.evaluate(()=>openZoomModal('T-1'));assert.equal(await context.count(),30);assert.equal(await context.filter({hasText:'U-12'}).evaluate(el=>!el.classList.contains('age-green')),true);assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),20);
+ await page.evaluate(()=>openZoomModal('U'));assert.equal(await context.count(),0,'no duplicate U overlay in own zone');assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot').count(),30);assert.equal(await page.locator('#floorplanZoomSlots .zoom-slot[data-slot="U-12"]').evaluate(el=>el.classList.contains('age-green')),true);
+ assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS U 30 spatially numbered positions, zoom labels, no overflow '+viewport.width);
  await page.close();} }finally{await browser.close()}})();
 
