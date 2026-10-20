@@ -3435,6 +3435,16 @@ COMPACT_PALLET_COLUMNS.forEach(zone=>{
   slots.forEach(slot=>{slot.topPct=palletColumnTop+(slot.topPct-palletColumnTop)*PALLET_COLUMN_SCALE_Y;});
 });
 
+// Add a fifth O1 column in the aisle strip; renumber each row left to right.
+const o1OriginalSlots = ZONE_SLOTS['O-1'].map(slot=>({...slot}));
+const o1Right = Math.max(...o1OriginalSlots.map(slot=>slot.leftPct));
+[...new Set(o1OriginalSlots.map(slot=>slot.topPct))].sort((a,b)=>a-b).forEach((top,index)=>{
+  ZONE_SLOTS['O-1'].push({code:`O1-${25+index}`,leftPct:o1Right+.727,topPct:top});
+});
+const O1_FINAL_ORDER = [1,2,3,4,25,5,6,7,8,26,9,10,11,12,27,13,14,15,16,28,17,18,19,20,29,21,22,23,24,30];
+const o1ByCode = new Map(ZONE_SLOTS['O-1'].map(slot=>[slot.code,slot]));
+ZONE_SLOTS['O-1'] = O1_FINAL_ORDER.map((old,index)=>({...o1ByCode.get(`O1-${String(old).padStart(2,'0')}`),code:`O1-${String(index+1).padStart(2,'0')}`}));
+
 // S1: fit three equal pallets in the top bay, keeping existing stock identities.
 const s1UpperLeft = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-01');
 const s1UpperRight = ZONE_SLOTS['S-1'].find(slot => slot.code === 'S1-02');
@@ -3582,7 +3592,7 @@ function zoneLabelRect(zoneCode) {
     minL = Math.min(minL, s.leftPct); maxL = Math.max(maxL, s.leftPct);
     minT = Math.min(minT, s.topPct); maxT = Math.max(maxT, s.topPct);
   });
-  minL -= ZONE_LABEL_PAD_L; maxL += ZONE_LABEL_PAD_L;
+  minL -= ZONE_LABEL_PAD_L; maxL += zoneCode==='O-1' ? .4 : ZONE_LABEL_PAD_L;
   minT -= ZONE_LABEL_PAD_T; maxT += ZONE_LABEL_PAD_T;
   let w = maxL - minL, h = maxT - minT;
   const cx = (minL + maxL) / 2, cy = (minT + maxT) / 2;
@@ -4453,7 +4463,7 @@ const AREA_BUILDINGS = [
     // in two buildings) and push the total to 548, nowhere near his stated 503 -- confirmed with
     // him this means "J-1" (matching every other "-1"-suffixed zone in this list).
     zones: ['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1','I-1','J-1','K-1','L-1','M-1','N-1','O-1','P-1','Q-1','R-1','S-1','T-1','U'],
-    palletNo: 530, // Original 503 + 20 in T-1 + net 5 in U + net 2 in M1.
+    palletNo: 536, // Original 503 + 20 in T-1 + net 5 in U + net 2 in M1 + 6 in O1.
   },
   {
     key: 'new',
@@ -4843,7 +4853,7 @@ function renderZoomSlots(zoneCode) {
       minT = Math.min(minT, s.topPct); maxT = Math.max(maxT, s.topPct);
     });
     zoomZoneBoxBounds = {
-      minL: minL - ZONE_BOX_PAD_L, maxL: maxL + ZONE_BOX_PAD_L,
+      minL: minL - ZONE_BOX_PAD_L, maxL: maxL + (zoneCode==='O-1' ? .4 : ZONE_BOX_PAD_L),
       minT: minT - ZONE_BOX_PAD_T, maxT: maxT + ZONE_BOX_PAD_T,
     };
   } else {

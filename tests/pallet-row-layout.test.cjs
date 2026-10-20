@@ -12,15 +12,20 @@ test('compact layouts preserve pallet identities and only resize the intended zo
  const targets=new Set(['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1']);
  for(const [zone,slots] of Object.entries(original)){
   if(['O-1','P-1'].includes(zone)){
-   assert.equal(changed[zone].length,24);
+   assert.equal(changed[zone].length,zone==='O-1'?30:24);
    for(const [i,slot] of slots.entries()){
-    const actual=changed[zone][i];assert.equal(actual.code,slot.code);assert.equal(actual.leftPct,slot.leftPct);
+    const index=zone==='O-1'?i+Math.floor(i/4):i;
+    const actual=changed[zone][index];assert.equal(actual.code,(zone==='O-1'?'O1-':'P1-')+String(index+1).padStart(2,'0'));assert.equal(actual.leftPct,slot.leftPct);
     assert.ok(Math.abs(actual.topPct-(25.603+(slot.topPct-25.603)*.87))<1e-9);
     assert.equal(height(zone,slot.code),.95*.87);
    }
    const tops=[...new Set(changed[zone].map(s=>s.topPct))].sort((a,b)=>a-b);
    for(let i=1;i<tops.length;i++)assert.ok(tops[i]-tops[i-1]>.95*.87);
    assert.ok(Math.max(...changed[zone].map(s=>s.topPct))+.95*.87/2<31.494);
+   if(zone==='O-1'){
+    assert.equal(new Set(changed[zone].map(s=>s.leftPct)).size,5);
+    for(let row=0;row<6;row++){const added=changed[zone][row*5+4];assert.equal(added.topPct,changed[zone][row*5].topPct);assert.ok(added.leftPct+.65/2<Math.min(...changed['P-1'].map(s=>s.leftPct))-.65/2);}
+   }
    continue;
   }
   if(zone==='U'){
@@ -63,7 +68,7 @@ test('compact layouts preserve pallet identities and only resize the intended zo
     assert.equal(find(code).topPct,find(neighbor).topPct);
    }
    for(const a of changed[zone])for(const b of changed[zone])if(a!==b)assert.ok(Math.abs(a.leftPct-b.leftPct)>=.65 || Math.abs(a.topPct-b.topPct)>=.95,'M1 cells must not overlap');
-   assert.match(html,/palletNo: 530,/);
+   assert.match(html,/palletNo: 536,/);
    continue;
   }
   if(zone==='S-1'){
