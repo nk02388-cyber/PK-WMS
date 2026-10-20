@@ -2904,12 +2904,24 @@ header.top .header-logo { border-radius: 14px; }
           <button type="button" class="fz-zoom-close" id="floorplanZoomClose" title="ปิด" aria-label="ปิดหน้าต่างผังโซน">✕</button>
         </div>
       </div>
-      <div class="pallet-bulk-tools" id="palletBulkTools" aria-label="เลือกพาเลทเพื่อลบข้อมูล">
+      <div class="pallet-bulk-tools" id="palletBulkTools" aria-label="เลือกหลายพาเลทเพื่อย้ายหรือลบข้อมูล">
         <button type="button" id="palletBulkToggle" aria-pressed="false">เลือกหลายพาเลท</button>
         <button type="button" id="palletBulkAll" hidden>เลือกทั้งหมดที่มีข้อมูล</button>
         <button type="button" id="palletBulkRemove" hidden disabled>ลบพาเลทที่เลือก</button>
+        <button type="button" id="palletBulkMove" hidden disabled>ย้ายพาเลทที่เลือก</button>
         <button type="button" id="palletBulkCancel" hidden>ยกเลิกเลือก</button>
         <p id="palletBulkStatus" role="status" aria-live="polite"></p>
+        <form id="palletBulkMoveForm" hidden>
+          <p>ย้ายทั้งพาเลทพร้อมประวัติ · เลือกปลายทางว่างไม่ซ้ำกัน</p>
+          <div class="bulk-move-fields">
+            <label>โซนปลายทาง<select id="palletBulkMoveZone" required></select></label>
+            <label>วันที่ย้าย<input id="palletBulkMoveDate" type="date" required></label>
+            <label>เลขเอกสารย้าย<input id="palletBulkMoveReference" required maxlength="200"></label>
+          </div>
+          <div id="palletBulkMovePairs"></div>
+          <button type="submit" id="palletBulkMoveSave">ตรวจสอบและยืนยันย้าย</button>
+          <button type="button" id="palletBulkMoveBack">กลับไปเลือกพาเลท</button>
+        </form>
       </div>
       <div class="floorplan-zoom-viewport" id="floorplanZoomViewport" style="background-image: url(&quot;assets/floorplan-detail.jpg&quot;);">
         <div class="zoom-zone-box" id="floorplanZoomZoneBox"></div>
@@ -5506,6 +5518,26 @@ function buildSlotMovePlan(sourceRow, destinationRow, selections, date, by, refe
   }
   return { source:{...sourceRow, items:remaining, occupied:remaining.length > 0},
     destination:{...destinationRow, items:destinationItems, occupied:true}, movedCount };
+}
+
+function buildBulkSlotMovePlan(pairs,date,by,reference) {
+  if(!Array.isArray(pairs)||!pairs.length)throw new Error('เลือกพาเลทต้นทางอย่างน้อยหนึ่งตำแหน่ง');
+  if(String(reference||'').trim().length>200)throw new Error('เลขเอกสารย้ายต้องไม่เกิน 200 ตัวอักษร');
+  const sources=new Set(),destinations=new Set(),rows=[];
+  for(const {source,destination,sourceVersion,destinationVersion} of pairs) {
+    if(!source||!destination||!Array.isArray(source.items)||!source.items.length||!Array.isArray(destination.items))throw new Error('พาเลทต้นทางต้องมีรายการสินค้า');
+    if(!Number.isInteger(sourceVersion)||sourceVersion<0||!Number.isInteger(destinationVersion)||destinationVersion<0)throw new Error('เวอร์ชันพาเลทไม่ถูกต้อง');
+    const from=JSON.stringify([source.zone,source.slot_code]),to=JSON.stringify([destination.zone,destination.slot_code]);
+    if(sources.has(from)||destinations.has(to))throw new Error('ต้นทางหรือปลายทางซ้ำกัน กรุณาเลือกปลายทางไม่ซ้ำ');
+    if(destination.occupied||destination.items.length)throw new Error('ปลายทางต้องเป็นตำแหน่งว่าง');
+    sources.add(from);destinations.add(to);
+  }
+  if([...sources].some(key=>destinations.has(key)))throw new Error('ปลายทางต้องไม่เป็นพาเลทต้นทางที่เลือก');
+  for(const {source,destination,sourceVersion,destinationVersion} of pairs) {
+    const plan=buildSlotMovePlan(source,destination,source.items.map((_,index)=>({index,whole:true})),date,by,reference);
+    rows.push({...plan.source,expected_version:sourceVersion},{...plan.destination,expected_version:destinationVersion});
+  }
+  return rows;
 }
 
 const RECONCILE_EXCLUDED_WAREHOUSES = new Set(['200','800','900','300-S','300']);
@@ -10448,8 +10480,8 @@ window.addEventListener('pageshow', () => {
 <link rel="stylesheet" href="slot-copy.css?v=20261009-selfcopy1">
 <script src="slot-copy-core.js?v=20261009-selfcopy1"></script>
 <script src="slot-copy.js?v=20261010-kien1"></script>
-<link rel="stylesheet" href="pallet-bulk-remove.css?v=20261020-1">
-<script src="pallet-bulk-remove.js?v=20261020-1"></script>
+<link rel="stylesheet" href="pallet-bulk-remove.css?v=20261020-move1">
+<script src="pallet-bulk-remove.js?v=20261020-move1"></script>
 <script src="sidebar-toggle.js?v=20261010-pinpush1"></script>
 <script src="vendor/motion-14.1.1.js"></script>
 <script src="dashboard-motion.js?v=20261013-motion1"></script>

@@ -46,10 +46,46 @@ const root=path.resolve(__dirname,'..');
   await page.evaluate(()=>{qaAllowed=false;window.dispatchEvent(new Event('wms:account-changed'));qaApprove({id:'late'});});
   await page.waitForFunction(()=>!document.getElementById('floorplanZoomModal').inert);
   assert.equal(await page.evaluate(()=>qaCalls.length),before,'account switch during confirmation never writes');
-  await page.evaluate(()=>{qaAllowed=true;openZoomModal('R-1');});await toggle.click();await page.locator('#palletBulkAll').click();
+  await page.evaluate(()=>{
+   qaAllowed=true;qaConfirmation='ok';SLOT_ITEMS.U={};PALLET_STATUS.U={};
+   for(const slot of ['R1-03','R1-04']){SLOT_ITEMS['R-1'][slot]=[{code:'QA-'+slot,name:'กล่องทดสอบ',lotNo:'LOT',qty:100,remainingQty:70,unit:'ใบ',receiveDate:'2026-10-01',withdrawals:[{date:'2026-10-02',qty:30,unit:'ใบ'}]}];PALLET_STATUS['R-1'][slot]='occupied';}
+   for(const slot of ['U-01','U-02'])palletVersions.set(JSON.stringify(['U',slot]),5);
+   openZoomModal('R-1');
+  });await toggle.click();
+  for(const slot of ['R1-03','R1-04'])await page.locator(`.zoom-slot[data-slot="${slot}"]`).press('Space');
+  const configureMove=async()=>{
+   await page.locator('#palletBulkMove').click();await page.locator('#palletBulkMoveZone').selectOption('U');
+   await page.locator('#palletBulkMovePairs select[data-source="R1-03"]').selectOption('U-01');
+   await page.locator('#palletBulkMovePairs select[data-source="R1-04"]').selectOption('U-02');
+   await page.locator('#palletBulkMoveDate').fill('2026-10-20');await page.locator('#palletBulkMoveReference').fill('MOVE-QA');
+  };
+  await configureMove();
+  const submit=page.locator('#palletBulkMoveSave'),callsBeforeMove=await page.evaluate(()=>qaCalls.length);
+  await page.locator('#palletBulkMovePairs select[data-source="R1-04"]').selectOption('U-01');await submit.click();
+  await page.locator('#palletBulkStatus').filter({hasText:'ซ้ำ'}).waitFor();assert.equal(await page.evaluate(()=>qaCalls.length),callsBeforeMove);
+  await page.locator('#palletBulkMovePairs select[data-source="R1-04"]').selectOption('U-02');
+  await page.evaluate(()=>qaConfirmation='cancel');await submit.click();assert.equal(await page.evaluate(()=>qaCalls.length),callsBeforeMove);
+  await page.evaluate(()=>{qaConfirmation='ok';qaConflict=true;});await submit.click();
+  await page.locator('#palletBulkStatus').filter({hasText:'มีคนแก้ข้อมูลนี้แล้ว'}).waitFor();assert.equal(await page.evaluate(()=>SLOT_ITEMS['R-1']['R1-03'].length),1);assert.equal(await page.evaluate(()=>SLOT_ITEMS.U['U-01']?.length||0),0);
+  await page.evaluate(()=>{qaConflict=false;palletVersions.set(JSON.stringify(['U','U-01']),6);});
+  const beforeStaleMove=await page.evaluate(()=>qaCalls.length);await submit.click();await page.locator('#palletBulkStatus').filter({hasText:'ต้นทางหรือปลายทางมีข้อมูลใหม่'}).waitFor();assert.equal(await page.evaluate(()=>qaCalls.length),beforeStaleMove);
+  await configureMove();
+  await page.evaluate(()=>qaConfirmation='pending');await submit.click();
+  await page.evaluate(()=>{qaAllowed=false;window.dispatchEvent(new Event('wms:account-changed'));qaApprove({id:'late-move'});});
+  await page.waitForFunction(()=>!document.getElementById('floorplanZoomModal').inert);assert.equal(await page.evaluate(()=>qaCalls.length),beforeStaleMove);
+  await page.evaluate(()=>{qaAllowed=true;qaConfirmation='ok';openZoomModal('R-1');});await toggle.click();
+  for(const slot of ['R1-03','R1-04'])await page.locator(`.zoom-slot[data-slot="${slot}"]`).press('Space');
+  await configureMove();
+  assert.equal(await page.evaluate(()=>document.getElementById('floorplanZoomModal').scrollWidth>innerWidth),false);
+  await page.screenshot({path:path.join(root,`work/bulk-remove/move-${process.env.PK_COPY_BROWSER||'edge'}-${width}.png`)});
+  await submit.click();await page.locator('#palletBulkStatus').filter({hasText:'ย้าย 2 พาเลท'}).waitFor();
+  const moved=await page.evaluate(()=>({sources:[SLOT_ITEMS['R-1']['R1-03'],SLOT_ITEMS['R-1']['R1-04']],destinations:[SLOT_ITEMS.U['U-01'],SLOT_ITEMS.U['U-02']],call:qaCalls.at(-1)}));
+  assert.ok(moved.sources.every(items=>items.length===0));assert.ok(moved.destinations.every(items=>items.length===1&&items[0].remainingQty===70&&items[0].withdrawals[0].qty===30&&items[0].locationMoves.length===1));
+  assert.equal(moved.call.args.p_slots.length,4);assert.ok(moved.call.args.p_slots.every(r=>r._audit.action==='transfer'));
+  await toggle.click();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   fs.mkdirSync(path.join(root,'work/bulk-remove'),{recursive:true});await page.screenshot({path:path.join(root,`work/bulk-remove/${process.env.PK_COPY_BROWSER||'edge'}-${width}.png`)});
   await page.evaluate(()=>openZoomModal('U'));assert.equal(await toggle.getAttribute('aria-pressed'),'false','switch zone clears selection');
-  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS bulk remove selection/cancel/conflict/atomic batch/untouched slots/account change '+width);await page.close();
+  assert.deepEqual(errors.filter(e=>!e.includes('supabase')),[]);console.log('PASS bulk remove and move: selection/cancel/conflict/stale versions/batch/duplicate destinations/history/account change '+width);await page.close();
  }}finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
