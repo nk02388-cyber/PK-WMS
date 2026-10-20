@@ -1,0 +1,7 @@
+# Multiple pallet data removal — 20 October 2026
+
+The zone viewer provides an explicit selection mode. Users can select occupied/nonempty slots by mouse, touch or keyboard, select all nonempty slots in the current zone, and cancel. Selected cells retain their original age colors with a checkmark and outline. Context-only cells from other zones cannot be selected. Switching zones, closing the viewer or changing accounts resets selection.
+
+Removing selected pallets clears all item records in those slots and marks them unoccupied; physical layout positions, receive-date catalog and audit history remain. The target list and effect are shown before the existing own-account PIN/password/reason confirmation. Selection records each slot version. Versions and account are rechecked after confirmation; one call to the established transactional `save_pallet_changes` RPC submits the complete batch with `remove` audit metadata. The action-confirmation ID links each pallet audit entry to its reason. No new database permissions or removal API are introduced.
+
+No business inventory was deleted during implementation. Edge and WebKit synthetic browser checks at 1440/390 passed mouse/touch/keyboard selection, realtime re-render, cancellation without a write, RPC conflict without local deletion, batch success, untouched unselected slots, stale local version rejection and account change while confirming. Existing password/reason confirmation and pallet copy browser tests passed. Node regression: 123 passed, zero failed. Actual handheld devices were not tested.

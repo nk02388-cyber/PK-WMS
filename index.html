@@ -2904,6 +2904,13 @@ header.top .header-logo { border-radius: 14px; }
           <button type="button" class="fz-zoom-close" id="floorplanZoomClose" title="ปิด" aria-label="ปิดหน้าต่างผังโซน">✕</button>
         </div>
       </div>
+      <div class="pallet-bulk-tools" id="palletBulkTools" aria-label="เลือกพาเลทเพื่อลบข้อมูล">
+        <button type="button" id="palletBulkToggle" aria-pressed="false">เลือกหลายพาเลท</button>
+        <button type="button" id="palletBulkAll" hidden>เลือกทั้งหมดที่มีข้อมูล</button>
+        <button type="button" id="palletBulkRemove" hidden disabled>ลบพาเลทที่เลือก</button>
+        <button type="button" id="palletBulkCancel" hidden>ยกเลิกเลือก</button>
+        <p id="palletBulkStatus" role="status" aria-live="polite"></p>
+      </div>
       <div class="floorplan-zoom-viewport" id="floorplanZoomViewport" style="background-image: url(&quot;assets/floorplan-detail.jpg&quot;);">
         <div class="zoom-zone-box" id="floorplanZoomZoneBox"></div>
         <div class="zoom-zone-label" id="floorplanZoomZoneLabel"></div>
@@ -4860,6 +4867,7 @@ function renderZoomSlots(zoneCode) {
   });
   if(mobileMapView)zoomSlotsLayer.querySelectorAll('.zoom-layout-mask').forEach(el=>el.style.display='none');
   updateZoomCount();
+  window.PKBulkRemove?.render();
 }
 
 // Some zones (e.g. T, which has a second 12-slot block near the LIFT well away from its
@@ -4901,6 +4909,7 @@ function computeZoomFit(zoneCode, rotation = 0) {
 }
 
 function openZoomModal(zoneCode) {
+  window.PKBulkRemove?.reset();
   currentZoomZone = zoneCode;
   zoomTitle.textContent = 'โซน ' + zoneCode;
   zoomModal.hidden = false;
@@ -4919,6 +4928,7 @@ function openZoomModal(zoneCode) {
   requestAnimationFrame(updateZoomView);
 }
 function closeZoomModal() {
+  window.PKBulkRemove?.reset();
   window.PKSlotCopy?.close();
   zoneGestures.clear();
   zoomViewLayout = null;
@@ -4935,6 +4945,7 @@ function closeZoomModal() {
 // the modal has actually laid out) but centers tighter on the single slot and adds a temporary
 // pulsing highlight so the target is unmistakable among dozens of same-colored neighbors.
 function jumpToSlot(zoneCode, slotCode) {
+  window.PKBulkRemove?.reset();
   currentZoomZone = zoneCode;
   zoomTitle.textContent = 'โซน ' + zoneCode;
   zoomModal.hidden = false;
@@ -6745,7 +6756,7 @@ const zoneGestures = bindMapGestures(zoomViewport, {
   limits: () => ({min:ZOOM_MIN,max:ZOOM_MAX}), centered:true,
   target:'.zoom-slot', dragClass:'dragging',
   settle:()=>{if(mobileMapView){zoomViewLayout=null;updateZoomView();}},
-  tap:target => openSlotEdit(currentZoomZone, target.dataset.slot),
+  tap:target => {if (!window.PKBulkRemove?.tap(target.dataset.slot)) openSlotEdit(currentZoomZone, target.dataset.slot);},
 });
 
 // ---------- Export / import pallet status data file ----------
@@ -10437,6 +10448,8 @@ window.addEventListener('pageshow', () => {
 <link rel="stylesheet" href="slot-copy.css?v=20261009-selfcopy1">
 <script src="slot-copy-core.js?v=20261009-selfcopy1"></script>
 <script src="slot-copy.js?v=20261010-kien1"></script>
+<link rel="stylesheet" href="pallet-bulk-remove.css?v=20261020-1">
+<script src="pallet-bulk-remove.js?v=20261020-1"></script>
 <script src="sidebar-toggle.js?v=20261010-pinpush1"></script>
 <script src="vendor/motion-14.1.1.js"></script>
 <script src="dashboard-motion.js?v=20261013-motion1"></script>
