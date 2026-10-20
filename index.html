@@ -4695,7 +4695,8 @@ function renderOverviewSlotStatus() {
       if (isOccupied(zoneCode, s.code)) cls += ' occupied'; // plain marker, see renderZoomSlots()
       if (status !== 'none') cls += ` age-${status}`;
       const height = palletSlotHeight(zoneCode,s.code);
-      html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;${height < .95 ? `height:${height}%;box-sizing:border-box;border:0;box-shadow:none;` : ''}" title="${s.code}"></div>`;
+      const overviewHeight = COMPACT_PALLET_COLUMNS.has(zoneCode) ? `height:${1.05 * PALLET_COLUMN_SCALE_Y}%;` : height < .95 ? `height:${height}%;box-sizing:border-box;border:0;box-shadow:none;` : '';
+      html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;${overviewHeight}" title="${s.code}"></div>`;
     });
   });
   floorplanSlotStatus.innerHTML = html;

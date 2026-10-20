@@ -11,6 +11,15 @@ const root=path.resolve(__dirname,'..');
    return route.fulfill({body,contentType:file.endsWith('.html')?'text/html':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'image/jpeg'});
   });
   await page.goto('http://localhost/');await page.emulateMedia({reducedMotion:'reduce'});
+  await page.evaluate(()=>{palletDataReady=true;activateTab(document.getElementById('tab-floorplan'));});
+  for(const status of ['none','green','yellow','red']){
+   await page.evaluate(status=>{window.originalAgeStatus??=slotAgeStatus;slotAgeStatus=()=>status;renderOverviewSlotStatus();},status);
+   const markers=await page.evaluate(()=>['O1-01','P1-01','Q1-01'].map(code=>{const s=getComputedStyle(document.querySelector(`#floorplanSlotStatus [title="${code}"]`));return {border:s.borderTopWidth,color:s.borderTopColor,fill:s.backgroundColor,shadow:s.boxShadow};}));
+   assert.deepEqual(markers[0],markers[2]);assert.deepEqual(markers[1],markers[2]);assert.equal(markers[0].border,'1px');
+  }
+  fs.mkdirSync(path.join(root,'work/column-layout'),{recursive:true});
+  await page.locator('#floorplanStage').screenshot({path:path.join(root,`work/column-layout/overview-${process.env.PK_COPY_BROWSER||'edge'}-${width}.png`)});
+  await page.evaluate(()=>{slotAgeStatus=window.originalAgeStatus;renderOverviewSlotStatus();});
   await page.evaluate(()=>{palletDataReady=true;activateTab(document.getElementById('tab-floorplan'));openZoomModal('O-1');zoomCenterPct={leftPct:45,topPct:28.6};zoomScale=innerWidth<900?1:2;updateZoomView();});
   if(width===390)await page.waitForFunction(()=>document.querySelector('.mobile-map-surface')?.width===2048);
   const result=await page.evaluate(()=>({counts:['O-1','P-1'].map(z=>ZONE_SLOTS[z].length),bottoms:PALLET_ROW_RACKS.filter(r=>r.scaleY).map(r=>r.top+(r.bottom-r.top)*r.scaleY),scales:[...document.querySelectorAll('.ov-compact-rack')].slice(-2).map(e=>e.style.transform),slots:document.querySelectorAll('#floorplanZoomSlots .zoom-slot').length,canvas:!mobileMapView||mobileMapSurface.width===2048}));
