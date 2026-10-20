@@ -6937,8 +6937,6 @@ document.getElementById('floorplanZoomImportInput').addEventListener('change', a
   palletWriteBusy = true;
   try {
     if (!supabaseClient || !palletDataReady) throw new Error('กรุณารอโหลดข้อมูลให้ครบก่อนนำเข้า');
-    const pin = await confirmPalletTransfer('Import');
-    if (pin === null) return;
     const parsed = JSON.parse(await file.text());
     const incoming = parsed.pallet_status || parsed;
     if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');
@@ -6954,6 +6952,7 @@ document.getElementById('floorplanZoomImportInput').addEventListener('change', a
         slots.push({zone:row.zone,slot_code:row.slot_code,occupied:true,items:row.items,expected_version:row.expected_version});
       }
     } else {
+    if (!parsed.pallet_status && !Object.keys(incoming).some(zone=>Object.hasOwn(ZONE_SLOTS,zone))) throw new Error('ไฟล์นี้ไม่ใช่ข้อมูลพาเลทที่รองรับ');
     for (const [zone,geometry] of Object.entries(ZONE_SLOTS)) for (const slot of geometry) {
       const items = parsed.slot_items ? (parsed.slot_items[zone]?.[slot.code] || []) : slotItemsFor(zone,slot.code);
       if (!Array.isArray(items) || items.some(it=>!it || typeof it !== 'object' || Array.isArray(it))) throw new Error('รายการสินค้าในไฟล์ไม่ถูกต้อง');
@@ -6963,11 +6962,23 @@ document.getElementById('floorplanZoomImportInput').addEventListener('change', a
     }
     const dates = parsed.add_to_empty_slots === undefined && parsed.receive_dates ? [...new Set([...dateVersions.keys(),...Object.keys(parsed.receive_dates)])].map(code=>({
       item_code:code,receive_date:parsed.receive_dates[code] || null,expected_version:dateVersions.get(code) || 0})) : [];
+    const importItems = slots.flatMap(row=>row.items);
+    const importCodes = [...new Set(importItems.map(it=>it.code).filter(Boolean))];
+    const importUnits = [...new Set(importItems.map(it=>it.unit || ''))];
+    const quantitySummary = importUnits.length===1 ? ` · ${importItems.reduce((sum,it)=>sum+Number(it.qty || 0),0).toLocaleString('th-TH')} ${importUnits[0]}` : '';
+    const importSummary = `${parsed.add_to_empty_slots!==undefined ? 'เพิ่มเฉพาะตำแหน่งว่าง' : 'แทนที่ข้อมูลทุกโซน'} ${slots.length} ตำแหน่ง · ${importCodes.length} รหัส${quantitySummary}`;
+    const pin = await confirmPalletTransfer(`Import\n${importSummary}\nรหัส: ${importCodes.slice(0,9).join(', ')}${importCodes.length>9 ? ', …' : ''}`);
+    if (pin === null) return;
     setSyncStatus('connecting','กำลังตรวจเวอร์ชันและบันทึกไฟล์นำเข้า…');
-    await pushFullGeometryToRemote(slots,dates,pin);
+    const saved = await pushFullGeometryToRemote(slots,dates,pin);
+    if (saved?.slots?.length!==slots.length || slots.some(row=>{
+      const result = saved.slots.find(s=>s.zone===row.zone && s.slot_code===row.slot_code);
+      return !result || result.items.length!==row.items.length || row.items.some((it,i)=>['code','qty','unit'].some(key=>result.items[i][key]!==it[key]));
+    })) throw new Error('ผลบันทึกไม่ตรงกับไฟล์ กรุณาตรวจข้อมูลล่าสุดก่อนนำเข้าซ้ำ');
     if (editingSlot) closeSlotEdit();
     refreshAfterRemoteChange(null,null);
-    setSyncStatus('connected','นำเข้าข้อมูลพาเลตครบแล้ว');
+    setSyncStatus('connected',`นำเข้าแล้ว · ${importSummary}`);
+    showFseFeedback(`นำเข้าแล้ว · ${importSummary}`);
   } catch (error) { setSyncStatus('error','นำเข้าไม่สำเร็จ · ' + error.message); alert('นำเข้าไม่สำเร็จ · ' + error.message); }
   finally { palletWriteBusy = false; }
 });
