@@ -780,7 +780,7 @@
   .zoom-slot-label {
     line-height: 1.6; white-space: nowrap; font-weight: 700; pointer-events: none;
     transform: rotate(var(--map-label-rotation, 0deg));
-    font-size: clamp(6px, min(46cqh, 17cqw), 19px);
+    font-size: clamp(3px, min(46cqh, 17cqw), 19px);
     color: #1a1200;
     background: #fff3b0;
     border: 1px solid #e0b400;
@@ -4695,7 +4695,7 @@ function renderOverviewSlotStatus() {
       if (isOccupied(zoneCode, s.code)) cls += ' occupied'; // plain marker, see renderZoomSlots()
       if (status !== 'none') cls += ` age-${status}`;
       const height = palletSlotHeight(zoneCode,s.code);
-      const overviewHeight = COMPACT_PALLET_COLUMNS.has(zoneCode) ? `height:${1.05 * PALLET_COLUMN_SCALE_Y}%;` : height < .95 ? `height:${height}%;box-sizing:border-box;border:0;box-shadow:none;` : '';
+      const overviewHeight = COMPACT_PALLET_COLUMNS.has(zoneCode) ? `height:${1.05 * PALLET_COLUMN_SCALE_Y}%;` : height < .95 ? `height:${height}%;box-sizing:border-box;` : '';
       html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;${overviewHeight}" title="${s.code}"></div>`;
     });
   });
