@@ -6934,13 +6934,25 @@ document.getElementById('floorplanZoomImportInput').addEventListener('change', a
     const incoming = parsed.pallet_status || parsed;
     if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');
     const slots = [];
+    if (parsed.add_to_empty_slots !== undefined) {
+      if (!Array.isArray(parsed.add_to_empty_slots) || !parsed.add_to_empty_slots.length) throw new Error('ไม่มีรายการตำแหน่งที่จะเพิ่ม');
+      for (const row of parsed.add_to_empty_slots) {
+        if (!row || !ZONE_SLOTS[row.zone]?.some(s=>s.code===row.slot_code)
+          || !Number.isSafeInteger(row.expected_version) || row.expected_version < 0
+          || !Array.isArray(row.items) || !row.items.length
+          || row.items.some(it=>!it || typeof it!=='object' || Array.isArray(it))) throw new Error('รายการเพิ่มพาเลทไม่ถูกต้อง');
+        if (isOccupied(row.zone,row.slot_code) || slotItemsFor(row.zone,row.slot_code).length) throw new Error(`ตำแหน่ง ${row.zone}/${row.slot_code} มีสินค้าอยู่แล้ว`);
+        slots.push({zone:row.zone,slot_code:row.slot_code,occupied:true,items:row.items,expected_version:row.expected_version});
+      }
+    } else {
     for (const [zone,geometry] of Object.entries(ZONE_SLOTS)) for (const slot of geometry) {
       const items = parsed.slot_items ? (parsed.slot_items[zone]?.[slot.code] || []) : slotItemsFor(zone,slot.code);
       if (!Array.isArray(items) || items.some(it=>!it || typeof it !== 'object' || Array.isArray(it))) throw new Error('รายการสินค้าในไฟล์ไม่ถูกต้อง');
       slots.push({zone,slot_code:slot.code,occupied:incoming[zone]?.[slot.code] === 'occupied',items,
         expected_version:versions.get(JSON.stringify([zone,slot.code])) || 0});
     }
-    const dates = parsed.receive_dates ? [...new Set([...dateVersions.keys(),...Object.keys(parsed.receive_dates)])].map(code=>({
+    }
+    const dates = parsed.add_to_empty_slots === undefined && parsed.receive_dates ? [...new Set([...dateVersions.keys(),...Object.keys(parsed.receive_dates)])].map(code=>({
       item_code:code,receive_date:parsed.receive_dates[code] || null,expected_version:dateVersions.get(code) || 0})) : [];
     setSyncStatus('connecting','กำลังตรวจเวอร์ชันและบันทึกไฟล์นำเข้า…');
     await pushFullGeometryToRemote(slots,dates,pin);
