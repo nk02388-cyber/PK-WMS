@@ -3402,6 +3402,7 @@ const ZONE_SLOTS = {"A":[{"code":"A-01","leftPct":67.648,"topPct":67.802},{"code
 // Shorten the old-building horizontal rows toward their left edge. Only display
 // geometry changes; pallet codes, counts, inventory, and row heights stay intact.
 const COMPACT_PALLET_ZONES = new Set(['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1']);
+const originalPalletLayouts = new Map(Object.entries(ZONE_SLOTS).map(([zone,slots])=>[zone,JSON.stringify(slots)]));
 const PALLET_ROW_SCALE_X = 0.9;
 const PALLET_ROW_MASKS = [];
 const PALLET_ROW_RACKS = [];
@@ -3562,6 +3563,7 @@ ZONE_SLOTS['M-1'].push(
   {code:'M1-26', leftPct:m1Left, topPct:m1OriginalSlots.find(slot => slot.code === 'M1-21').topPct},
 );
 
+const UPDATED_PALLET_ZONES = Object.keys(ZONE_SLOTS).filter(zone=>JSON.stringify(ZONE_SLOTS[zone])!==originalPalletLayouts.get(zone));
 const pinnedZones = zoneEntries.filter(([z]) => ZONE_PINS[z]);
 const unpinnedZones = zoneEntries.filter(([z]) => !ZONE_PINS[z]);
 
@@ -3592,7 +3594,7 @@ function zoneLabelRect(zoneCode) {
     minL = Math.min(minL, s.leftPct); maxL = Math.max(maxL, s.leftPct);
     minT = Math.min(minT, s.topPct); maxT = Math.max(maxT, s.topPct);
   });
-  minL -= ZONE_LABEL_PAD_L; maxL += zoneCode==='O-1' ? .4 : ZONE_LABEL_PAD_L;
+  minL -= zoneCode==='P-1' ? .4 : ZONE_LABEL_PAD_L; maxL += zoneCode==='O-1' ? .4 : ZONE_LABEL_PAD_L;
   minT -= ZONE_LABEL_PAD_T; maxT += ZONE_LABEL_PAD_T;
   let w = maxL - minL, h = maxT - minT;
   const cx = (minL + maxL) / 2, cy = (minT + maxT) / 2;
@@ -4330,7 +4332,7 @@ function refreshAfterRemoteChange(zoneCode, slotCode) {
   rebuildItemToSlots();
   refreshSearchDatalist();
   renderOverviewSlotStatus();
-  if (currentZoomZone && (!zoneCode || zoneCode === currentZoomZone || zoneCode === 'T-1')) {
+  if (currentZoomZone && (!zoneCode || zoneCode === currentZoomZone)) {
     renderZoomSlots(currentZoomZone);
     updateZoomView();
   }
@@ -4695,7 +4697,8 @@ function renderOverviewSlotStatus() {
       if (isOccupied(zoneCode, s.code)) cls += ' occupied'; // plain marker, see renderZoomSlots()
       if (status !== 'none') cls += ` age-${status}`;
       const height = palletSlotHeight(zoneCode,s.code);
-      const overviewHeight = COMPACT_PALLET_COLUMNS.has(zoneCode) ? `height:${1.05 * PALLET_COLUMN_SCALE_Y}%;` : height < .95 ? `height:${height}%;box-sizing:border-box;` : '';
+      // An inset outline cannot expand the subpixel-height U rows into each other.
+      const overviewHeight = COMPACT_PALLET_COLUMNS.has(zoneCode) ? `height:${1.05 * PALLET_COLUMN_SCALE_Y}%;` : height < .95 ? `height:${height}%;box-sizing:border-box;border:0;outline:1px solid #334155;outline-offset:-1px;` : '';
       html += `<div class="${cls}" style="left:${s.leftPct}%; top:${s.topPct}%; width:${(COMPACT_PALLET_ZONES.has(zoneCode) ? 0.70 : 0.72) * palletRowScale(zoneCode)}%;${overviewHeight}" title="${s.code}"></div>`;
     });
   });
@@ -4854,7 +4857,7 @@ function renderZoomSlots(zoneCode) {
       minT = Math.min(minT, s.topPct); maxT = Math.max(maxT, s.topPct);
     });
     zoomZoneBoxBounds = {
-      minL: minL - ZONE_BOX_PAD_L, maxL: maxL + (zoneCode==='O-1' ? .4 : ZONE_BOX_PAD_L),
+      minL: minL - (zoneCode==='P-1' ? .4 : ZONE_BOX_PAD_L), maxL: maxL + (zoneCode==='O-1' ? .4 : ZONE_BOX_PAD_L),
       minT: minT - ZONE_BOX_PAD_T, maxT: maxT + ZONE_BOX_PAD_T,
     };
   } else {
@@ -4875,30 +4878,10 @@ function renderZoomSlots(zoneCode) {
       : s.code;
     return `<div class="zoom-slot${occCls}${ageCls}" data-slot="${s.code}" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" title="${tip.replace(/"/g,'&quot;')}"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
   }).join('');
-  // T-1 has no rack artwork in the CAD image. Draw its pallets in other zone
-  // views too, while keeping actions and counts scoped to the selected zone.
-  if (zoneCode !== 'T-1') {
-    zoomSlotsLayer.innerHTML += (ZONE_SLOTS['T-1'] || []).map(s => {
-      return `<div class="zoom-context-slot" data-zone="T-1" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
-    }).join('');
-  }
-  // The four new M1 cells have no CAD artwork; keep them visible as context
-  // when a neighbouring zone is selected, without making them actionable there.
-  if (zoneCode !== 'M-1') {
-    zoomSlotsLayer.innerHTML += ZONE_SLOTS['M-1'].filter(s => ['M1-23','M1-24','M1-25','M1-26'].includes(s.code)).map(s =>
-      `<div class="zoom-context-slot" data-zone="M-1" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`
-    ).join('');
-  }
-  // U's added positions and new numbering differ from the static CAD artwork.
-  // Draw the current U projection in neighbouring views without changing edit scope.
-  if (zoneCode !== 'U') {
-    zoomSlotsLayer.innerHTML += ZONE_SLOTS.U.map(s => {
-      const status = zoneCode === 'M-1' ? 'none' : slotAgeStatus('U', s.code);
-      const ageCls = status === 'none' ? '' : ` age-${status}`;
-      const occCls = isOccupied('U', s.code) ? ' occupied' : '';
-      return `<div class="zoom-context-slot${occCls}${ageCls}" data-zone="U" data-slot="${s.code}" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`;
-    }).join('');
-  }
+  // Project every changed CAD zone into neighbouring views, without edit targets.
+  zoomSlotsLayer.innerHTML += UPDATED_PALLET_ZONES.filter(zone=>zone!==zoneCode).flatMap(contextZone=>
+    ZONE_SLOTS[contextZone].map(s=>`<div class="zoom-context-slot" data-zone="${contextZone}" data-slot="${s.code}" data-left-pct="${s.leftPct}" data-top-pct="${s.topPct}" style="pointer-events:none;cursor:default;"><span class="zoom-slot-label">${escapeHtml(s.code)}</span></div>`)
+  ).join('');
   zoomSlotsLayer.querySelectorAll('.zoom-compact-rack').forEach(el => {
     if(mobileMapView)el.style.display='none';else el.style.backgroundImage = `url(${zoomSourceUrl})`;
   });

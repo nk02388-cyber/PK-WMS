@@ -19,13 +19,27 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
    await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
    const overview=await page.evaluate(()=>Object.entries(ZONE_SLOTS).flatMap(([zone,slots])=>slots.map(slot=>{
     const el=document.querySelector(`#floorplanSlotStatus [title="${slot.code}"]`),style=getComputedStyle(el);
-    return {zone,code:slot.code,status:slotAgeStatus(zone,slot.code),border:style.borderTopWidth,fill:style.backgroundColor,shadow:style.boxShadow};
+    return {zone,code:slot.code,status:slotAgeStatus(zone,slot.code),border:style.borderTopWidth,outline:style.outlineWidth,fill:style.backgroundColor,shadow:style.boxShadow};
    })));
    assert.equal(new Set(overview.map(s=>s.zone)).size,zones.length);
-   for(const marker of overview){assert.equal(marker.border,'1px',`${theme} ${marker.code} overview border`);assert.notEqual(marker.shadow,'none',`${marker.code} boundary`);}
+   for(const marker of overview){assert.ok(marker.border==='1px'||marker.outline==='1px',`${theme} ${marker.code} overview boundary`);assert.notEqual(marker.shadow,'none',`${marker.code} boundary`);}
    for(const status of ['none','green','yellow','red'])assert.equal(new Set(overview.filter(s=>s.status===status).map(s=>s.fill)).size,1,`${theme} ${status} uniform overview fill`);
    for(const zone of zones){
     await page.evaluate(async zone=>{openZoomModal(zone);await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));},zone);
+    const context=await page.evaluate(()=>({
+     zones:UPDATED_PALLET_ZONES,
+     expected:UPDATED_PALLET_ZONES.filter(z=>z!==currentZoomZone).flatMap(z=>ZONE_SLOTS[z].map(s=>`${z}/${s.code}`)),
+     actual:[...document.querySelectorAll('#floorplanZoomSlots .zoom-context-slot')].map(el=>`${el.dataset.zone}/${el.dataset.slot}`),
+     inert:[...document.querySelectorAll('#floorplanZoomSlots .zoom-context-slot')].every(el=>getComputedStyle(el).pointerEvents==='none'&&!el.matches('.zoom-slot')),
+     neutral:[...document.querySelectorAll('#floorplanZoomSlots .zoom-context-slot')].every(el=>!el.matches('.age-green,.age-yellow,.age-red')&&getComputedStyle(el).backgroundColor==='rgba(140, 140, 140, 0.32)')
+    }));
+    assert.deepEqual([...context.zones].sort(),['A-1','B-1','C-1','D-1','E-1','F-1','G-1','H-1','M-1','O-1','P-1','S-1','T-1','U'].sort());
+    assert.deepEqual(context.actual,context.expected,`${zone} shows every updated neighbouring zone`);assert.ok(context.inert,'Neighbouring pallets cannot edit or join bulk selection');assert.ok(context.neutral,'All neighbouring pallets stay gray');
+    if(zone==='P-1'&&width===1440){
+     const visible=await page.evaluate(()=>[5,10,15,20,25,30].every(n=>{const el=document.querySelector(`.zoom-context-slot[data-zone="O-1"][data-slot="O1-${String(n).padStart(2,'0')}"]`),r=el.getBoundingClientRect(),v=document.getElementById('floorplanZoomViewport').getBoundingClientRect();return r.left>=v.left&&r.right<=v.right&&r.top>=v.top&&r.bottom<=v.bottom;}));
+     assert.ok(visible,'All six added O1 pallets are visible beside the open P1 rack');
+     assert.ok(await page.evaluate(()=>document.getElementById('floorplanZoomZoneBox').getBoundingClientRect().left>document.querySelector('.zoom-context-slot[data-slot="O1-05"]').getBoundingClientRect().right),'P1 outline stays outside O1 added column');
+    }
     const cells=await page.evaluate(()=>[...document.querySelectorAll('#floorplanZoomSlots .zoom-slot')].map(el=>{
      const s=getComputedStyle(el),label=el.querySelector('.zoom-slot-label'),r=el.getBoundingClientRect(),lr=label.getBoundingClientRect();
      return {code:el.dataset.slot,status:slotAgeStatus(currentZoomZone,el.dataset.slot),border:parseFloat(s.borderTopWidth),fill:s.backgroundColor,label:label.textContent,dimensions:[r.width,r.height,lr.width,lr.height],contained:lr.left>=r.left-1&&lr.right<=r.right+1&&lr.top>=r.top-1&&lr.bottom<=r.bottom+1};
