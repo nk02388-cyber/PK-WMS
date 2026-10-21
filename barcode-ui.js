@@ -272,6 +272,6 @@
     const code = $('barcodePrintProductCode').value.trim();
     const product = products().find(item => String(item.code || '').trim().toUpperCase() === code.toUpperCase());
     if (!product || !code || typeof qrcode !== 'function') { printMessage('ไม่พบรหัสสินค้าแบบตรงตัว กรุณาตรวจรหัสก่อนพิมพ์',true); return; }
-    printLabels(`ป้ายสินค้า ${product.code}`,`<div class="label"><div>${qrMarkup(PKBarcode.productPayload(product.code))}</div><b>${escapeHtml(product.code)}</b><small>${escapeHtml(product.name || '')}</small></div>`);
+    printLabels(`ป้ายสินค้า ${product.code}`,`<div class="label"><div>${qrMarkup(PKBarcode.productPayload(product.code))}</div><b>${escapeHtml(product.code)}</b><small>Product Name: ${escapeHtml(product.name || '—')}</small></div>`);
   });
 })();
