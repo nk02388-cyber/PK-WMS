@@ -219,6 +219,47 @@
       <footer>ผู้ตรวจนับ ____________________ ผู้ตรวจสอบ ____________________ วันที่ ____________________<br><small>จดผลก่อนบันทึกในเมนู Cycle Counts · ไม่แสดงยอดในระบบ · พิมพ์ ${escapeHtml(new Date().toLocaleString('th-TH'))}</small></footer></article>`;
     printLabels(`Count Sheet · โซน ${zone} · ${slots.length} ตำแหน่ง`, sheet, true);
   });
+  const retroZone = $('retroLabelZone'), retroList = $('retroLabelItems');
+  retroZone.innerHTML = printZone.innerHTML;
+  let retroSnapshot = [];
+  function retroItems() {
+    return (ZONE_SLOTS[retroZone.value] || []).flatMap(slot => (SLOT_ITEMS[retroZone.value]?.[slot.code] || []).flatMap((item,index) => {
+      const raw = getRemainingQty(item), qty = Number(raw);
+      if (raw == null || raw === '' || !Number.isFinite(qty) || qty <= 0) return [];
+      return [{ key: `${slot.code}:${index}`, retrospective: true, zone: retroZone.value, slot_code: slot.code,
+        receiving_no: item.receiveReference || '—', supplier_name: item.supplierName || '—',
+        product_code: item.code || '—', product_name: item.name || '—', lot_no: item.lotNo || '—',
+        quantity: qty, unit: item.unit || '—', received_on: item.receiveDate || '—',
+        manufactured_on: item.manufacturedOn || '', expires_on: item.expiresOn || '', batch_index: 1, batch_total: 1 }];
+    }));
+  }
+  function updateRetroSelection() { $('retroLabelPrint').disabled = !retroList.querySelector('input:checked'); }
+  function renderRetroItems() {
+    retroSnapshot = retroItems();
+    retroList.innerHTML = retroSnapshot.length ? retroSnapshot.map(item => `<label><input type="checkbox" value="${escapeHtml(item.key)}"><span><strong>${escapeHtml(item.slot_code)} · ${escapeHtml(item.product_code)}</strong> · ${escapeHtml(item.product_name)} · Lot ${escapeHtml(item.lot_no)} · คงเหลือ ${escapeHtml(item.quantity)} ${escapeHtml(item.unit)}</span></label>`).join('') : 'ไม่มีสินค้าที่ทราบยอดคงเหลือมากกว่า 0 ในโซนนี้';
+    updateRetroSelection();
+  }
+  retroZone.addEventListener('change', renderRetroItems);
+  $('retroLabelRefresh').addEventListener('click', renderRetroItems);
+  retroList.addEventListener('change', updateRetroSelection);
+  for (const [id, checked] of [['retroLabelSelectAll',true],['retroLabelClear',false]]) $(id).addEventListener('click',()=>{
+    retroList.querySelectorAll('input').forEach(input=>{input.checked=checked;}); updateRetroSelection();
+  });
+  $('tab-print-labels').addEventListener('click', renderRetroItems);
+  $('retroLabelPrint').addEventListener('click',()=>{
+    if (!palletDataReady || !$('syncStatusBar')?.classList.contains('sync-connected')) { printMessage('กรุณารอเชื่อมต่อข้อมูลพาเลทก่อนพิมพ์',true); return; }
+    const current = retroItems();
+    if (JSON.stringify(current) !== JSON.stringify(retroSnapshot)) { renderRetroItems(); printMessage('ข้อมูลคงเหลือเปลี่ยนแล้ว กรุณาตรวจรายการและเลือกใหม่ก่อนพิมพ์',true); return; }
+    const keys = new Set([...retroList.querySelectorAll('input:checked')].map(input=>input.value));
+    const tags = current.filter(item=>keys.has(item.key));
+    if (!tags.length) { printMessage('กรุณาเลือกสินค้าที่มียอดคงเหลือก่อนพิมพ์',true); return; }
+    if (typeof window.PKIncomingPrint !== 'function') { printMessage('โหลดรูปแบบป้ายไม่สำเร็จ กรุณารีเฟรช',true); return; }
+    const page = window.open('','_blank');
+    if (!page) { printMessage('เบราว์เซอร์ปิดกั้นหน้าพิมพ์ กรุณาอนุญาตป๊อปอัป',true); return; }
+    if (window.PKIncomingPrint(tags,page,printMessage)) printMessage(`เปิดหน้าพิมพ์ ${tags.length} รายการแล้ว · ไม่ได้เพิ่มหรือแก้ไขสินค้า`);
+  });
+  window.addEventListener('wms:account-changed',()=>{ retroSnapshot=[];retroList.replaceChildren();updateRetroSelection(); });
+  renderRetroItems();
   $('barcodePrintLocations').addEventListener('click', () => {
     const zone = printZone.value, slots = locations.filter(loc => loc.zone === zone);
     if (!slots.length || typeof qrcode !== 'function') { printMessage('ยังสร้างป้าย QR ไม่ได้',true); return; }
