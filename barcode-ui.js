@@ -216,7 +216,7 @@
       <div class="sheet-meta"><span>วันที่ตรวจนับ __________________ เวลาเริ่ม __________ เวลาสิ้นสุด __________</span><span>ผู้ตรวจนับ ____________________</span></div>
       <p class="sheet-help">กรอกจำนวนที่นับจริงทุกแถว · พบว่าไม่มีสินค้าให้กรอก 0 · พบสินค้าอื่นให้ระบุในหมายเหตุ · QR สแกนเปิดตำแหน่งผ่านเมนูผังคลัง</p>
       <table><colgroup><col style="width:5%"><col style="width:12%"><col style="width:31%"><col style="width:12%"><col style="width:8%"><col style="width:13%"><col style="width:19%"></colgroup><thead><tr><th colspan="7">COUNT SHEET · โซน ${escapeHtml(zone)} · วันที่ตรวจนับ ______________ · เลขที่ใบตรวจนับ ______________</th></tr><tr><th>ลำดับ</th><th>ตำแหน่ง / QR</th><th>รหัส / ชื่อสินค้า</th><th>Lot</th><th>หน่วย</th><th>จำนวนที่นับจริง</th><th>หมายเหตุ</th></tr></thead><tbody>${rows}</tbody></table>
-      <footer>ผู้ตรวจนับ ____________________ ผู้ตรวจสอบ ____________________ วันที่ ____________________<br><small>จดผลก่อนบันทึกในเมนู Cycle Counts · ไม่แสดงยอดในระบบ · พิมพ์ ${escapeHtml(new Date().toLocaleString('th-TH'))}</small></footer></article>`;
+      <footer>ผู้ตรวจนับ ____________________ ผู้ตรวจสอบ ____________________ วันที่ ____________________<br><small>จดผลก่อนบันทึกในเมนู Cycle Counts · ไม่แสดงยอดในระบบ · พิมพ์ ${escapeHtml(WmsDates.dateTime(new Date()))}</small></footer></article>`;
     printLabels(`Count Sheet · โซน ${zone} · ${slots.length} ตำแหน่ง`, sheet, true);
   });
   const retroZone = $('retroLabelZone'), retroList = $('retroLabelItems');

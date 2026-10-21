@@ -74,7 +74,7 @@
     const totals = counts(rows);
     badge.textContent = trusted ? `${fmt(totals.alert)} ถึงจุด` : 'รอสต็อก';
     notice.textContent = trusted
-      ? `เทียบสต็อกล่าสุด ${String(STOCK.report_date || '').replace(/^ณ วันที่:\s*/,'')} · จุดสั่งซื้อจากไฟล์วิเคราะห์ถึง 24 ก.ย. 69 · ยังไม่รวมใบสั่งซื้อค้างรับ`
+      ? `เทียบสต็อกล่าสุด ${WmsDates.date(STOCK.report_date)} · จุดสั่งซื้อจากไฟล์วิเคราะห์ถึง 24/09/2026 · ยังไม่รวมใบสั่งซื้อค้างรับ`
       : 'กำลังรอสต็อกล่าสุดจากระบบ จะแสดงผลเปรียบเทียบเมื่อโหลดสำเร็จ';
     summary.innerHTML = `<div><strong>${trusted ? fmt(totals.alert) : '—'}</strong><span>ถึงจุดสั่งซื้อ</span></div><div><strong>${trusted ? fmt(totals.review) : '—'}</strong><span>ควรทบทวนเกณฑ์</span></div><div><strong>${trusted ? fmt(totals.unmatched) : '—'}</strong><span>จับคู่สต็อกไม่ได้</span></div><div><strong>${fmt(rows.length)}</strong><span>รหัสในไฟล์</span></div>`;
     // Keep summary/badge fresh without rebuilding an invisible 200-row table.

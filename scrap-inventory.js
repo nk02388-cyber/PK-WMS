@@ -53,7 +53,7 @@
   function renderHistory() {
     const rows=scrapRows();
     document.getElementById('scrapExport').disabled=!rows.length;
-    history.innerHTML=rows.length ? rows.slice(0,100).map(row=>`<tr><td>${escape(row.date)}</td><td>${escape(row.reference)}</td><td><strong>${escape(row.code)}</strong><small>${escape(row.name)}${row.lotNo ? ` · Lot ${escape(row.lotNo)}` : ''}</small></td><td>${escape(row.zone)}/${escape(row.slot)}</td><td>${fmt(row.qty)} ${escape(row.unit || '')}</td><td>${escape(row.reason)}${row.note ? `<small>${escape(row.note)}</small>` : ''}</td><td>${escape(row.by)}</td></tr>`).join('')
+    history.innerHTML=rows.length ? rows.slice(0,100).map(row=>`<tr><td>${escape(WmsDates.date(row.date))}</td><td>${escape(row.reference)}</td><td><strong>${escape(row.code)}</strong><small>${escape(row.name)}${row.lotNo ? ` · Lot ${escape(row.lotNo)}` : ''}</small></td><td>${escape(row.zone)}/${escape(row.slot)}</td><td>${fmt(row.qty)} ${escape(row.unit || '')}</td><td>${escape(row.reason)}${row.note ? `<small>${escape(row.note)}</small>` : ''}</td><td>${escape(row.by)}</td></tr>`).join('')
       : '<tr><td colspan="7">ยังไม่มีรายการ Scrap ในข้อมูลพาเลต</td></tr>';
   }
   function refresh() {
@@ -94,7 +94,7 @@
   });
   document.getElementById('scrapExport').addEventListener('click',()=>{
     const header=['วันที่','เลขเอกสาร','โซน','ตำแหน่ง','รหัสสินค้า','ชื่อสินค้า','Lot','จำนวน','หน่วย','เหตุผล','รายละเอียด','ผู้ทำรายการ','บันทึกเมื่อ','ปลายทาง'];
-    const rows=scrapRows().map(row=>[row.date,row.reference,row.zone,row.slot,row.code,row.name,row.lotNo,row.qty,row.unit,row.reason,row.note,row.by,row.recordedAt,row.destination]);
+    const rows=scrapRows().map(row=>[WmsDates.date(row.date),row.reference,row.zone,row.slot,row.code,row.name,row.lotNo,row.qty,row.unit,row.reason,row.note,row.by,WmsDates.dateTime(row.recordedAt),row.destination]);
     const cell=value=>{const raw=String(value ?? '');const safe=typeof value!=='number' && /^[=+@\-\t\r]/.test(raw)?`'${raw}`:raw;return `"${safe.replace(/"/g,'""')}"`;};
     const csv='\ufeff'+[header,...rows].map(row=>row.map(cell).join(',')).join('\r\n');
     const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));

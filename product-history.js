@@ -254,10 +254,10 @@
     const loading = !palletDataReady;
     const syncFailed = document.getElementById('syncStatusBar')?.classList.contains('sync-error');
     const stockLabel = ({latest:'สต็อกล่าสุดจากระบบ',loading:'กำลังโหลดสต็อก',locked:'เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์เพื่อดูสต็อก',error:'โหลดสต็อกไม่สำเร็จ'})[stockSnapshotState] || 'ยังไม่มีข้อมูลสต็อก';
-    const stockDate = String(STOCK.report_date || 'ไม่ระบุวันที่').replace(/^ณ วันที่:\s*/, '');
+    const stockDate = WmsDates.date(STOCK.report_date);
     detailEl.hidden = false;
     detailEl.innerHTML = `<div class="product-history-product"><div><strong>${escape(product.code)}</strong><h3>${escape(product.name || 'ไม่ระบุชื่อสินค้า')}</h3></div><span>${escape(stockLabel)}</span></div>
-      <section class="product-history-section"><h3>ยอดคงเหลือตามคลัง</h3><p class="product-history-note">${escape(String(STOCK.report_date || 'ไม่ระบุวันที่สต็อก'))}</p>
+      <section class="product-history-section"><h3>ยอดคงเหลือตามคลัง</h3><p class="product-history-note">${escape(WmsDates.date(STOCK.report_date))}</p>
         <div class="product-history-stock">${stock.length ? stock.map(row => `<div><span>คลัง ${escape(row.wh)} · ${escape(row.unit)}</span><strong>${row.known ? fmt(row.qty) : 'ไม่ทราบจำนวน'}</strong></div>`).join('') : '<p>ไม่มีรหัสนี้ในสต็อกที่อัปเดต</p>'}</div></section>
       <section class="product-history-section"><div class="product-history-section-head"><h3>ประวัติการเคลื่อนไหวบนพาเลต</h3><span>${loading ? (syncFailed ? 'โหลดข้อมูลไม่สำเร็จ' : 'กำลังโหลดข้อมูลพาเลต…') : `${fmt(opening ? 0 : cardRows.length)} รายการ${opening ? " · แสดงยอดยกมา" : ""}`}</span></div>
         <div class="product-history-dates"><label for="productHistoryFrom">ตั้งแต่วันที่<input type="date" id="productHistoryFrom" value="${escape(historyRange.from)}" required></label><label for="productHistoryTo">ถึงวันที่<input type="date" id="productHistoryTo" value="${escape(historyRange.to)}" required></label><button type="button" id="productHistoryAll" class="product-history-all" aria-pressed="${showAll}">${showAll ? 'แสดงตามช่วงวันที่' : 'แสดงรายการทั้งหมด'}</button></div>

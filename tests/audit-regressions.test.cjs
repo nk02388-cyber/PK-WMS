@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
 const source=n=>html.match(new RegExp(`(?:async )?function ${n}\\([^]*?\\n\\}`))[0];
-const ctx=vm.createContext({BOM_COMPONENT_TYPES:{P:'packaging'},BOM_UNIT_CONVERSIONS:[],
+const ctx=vm.createContext({WmsDates:require('../date-display.js'),BOM_COMPONENT_TYPES:{P:'packaging'},BOM_UNIT_CONVERSIONS:[],
   BOMPK:{assumptions:{excluded_warehouses:[]},kpis:{},bom_detail:{FG:{lines:[
     {pk_code:'P',unit:'ใบ',qty_per_unit:2},{pk_code:'P',unit:'ใบ',qty_per_unit:3}]}}},
   STOCK:{items:[{code:'P',qty:10,value:20,unit:'ใบ',wh:'200'}]},
@@ -40,15 +40,15 @@ console.log('PASS: repeated BOM capacity/value, unknown units, small quantities,
 
 (async()=>{
   const note={textContent:'',classList:{toggle(){}}};
-  const loading=vm.createContext({STOCK:{report_date:'Test date'},DATA:{},stockSnapshotState:'loading',
+  const loading=vm.createContext({WmsDates:require('../date-display.js'),STOCK:{report_date:'Test date'},DATA:{},stockSnapshotState:'loading',
     window:{getWmsCanAccess:()=>false},structuredClone,stockLoadGeneration:0,EMPTY_STOCK:{items:[],report_date:''},document:{querySelectorAll:()=>[note]},stockSupabaseClient:null,stockUpdateStatus:{},console:{warn(){}},rebuildStockControls(){}});
   vm.runInContext(source('renderStockSnapshotNotice')+'\n'+source('canReadPrivateStock')+'\n'+source('clearPrivateStock')+'\n'+source('loadLatestStockFromSupabase'),loading);
   await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'locked');assert.match(note.textContent,/เข้าสู่ระบบ/);loading.window.getWmsCanAccess=()=>true;
   loading.stockSupabaseClient={rpc:async()=>({data:null,error:null})};
   await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'error');
-  loading.stockSupabaseClient={rpc:async()=>({data:{items:[{}],kpis:{},warehouses:[],report_date:'Current date'},error:null})};
-  await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'latest');assert.match(note.textContent,/Current date/);
-  const imports=vm.createContext({window:{XLSX:{}},PKDependencies:{excel:async()=>{}},XLSX:{read:x=>({SheetNames:[x.date],Sheets:{[x.date]:{}}}),utils:{sheet_to_json:()=>[]}},
+  loading.stockSupabaseClient={rpc:async()=>({data:{items:[{}],kpis:{},warehouses:[],report_date:'2026-10-21'},error:null})};
+  await loading.loadLatestStockFromSupabase();assert.equal(loading.stockSnapshotState,'latest');assert.match(note.textContent,/21\/10\/2026/);
+  const imports=vm.createContext({WmsDates:require('../date-display.js'),window:{XLSX:{}},PKDependencies:{excel:async()=>{}},XLSX:{read:x=>({SheetNames:[x.date],Sheets:{[x.date]:{}}}),utils:{sheet_to_json:()=>[]}},
     rowsFromMatrix:(matrix,name,date)=>({rows:[{wh:'200'}],reportDate:date}),REQUIRED_STOCK_WAREHOUSES:['200']});
   vm.runInContext(source('parseStockFiles'),imports);
   const file=date=>({name:date,arrayBuffer:async()=>({date})});

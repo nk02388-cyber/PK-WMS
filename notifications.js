@@ -118,7 +118,7 @@
     const actions = [];
     if (pending.count > 0) actions.push({kind:'pending',tone:'warning',title:`${fmt(pending.count)} พาเลตรอจัดเก็บ`,detail:[...new Set(pending.rows.map(row => row.product_code).filter(Boolean))].join(' · ') || 'เปิดรายการรับเข้าและจัดเก็บ'});
     if (reorderRows.length) actions.push({kind:'reorder',tone:'warning',title:`ถึงจุดสั่งซื้อ ${fmt(reorderRows.length)} รหัส`,detail:`${reorderRows[0].code} · คงเหลือ ${fmt(reorderRows[0].available)} ${reorderRows[0].unit} / ROP ${fmt(reorderRows[0].rop)}`});
-    for (const event of window.PKEvents?.getDue?.() || []) actions.push({kind:`event:${event.id}`,tone:'warning',title:`นัดหมาย: ${event.name}`,detail:`${event.date} เวลา ${event.time}${event.details ? ` · ${event.details}` : ''}`});
+    for (const event of window.PKEvents?.getDue?.() || []) actions.push({kind:`event:${event.id}`,tone:'warning',title:`นัดหมาย: ${event.name}`,detail:`${WmsDates.date(event.date)} เวลา ${event.time}${event.details ? ` · ${event.details}` : ''}`});
     if (negative.length) actions.push({kind:'negative',tone:'critical',title:`สต็อกติดลบ ${fmt(negative.length)} รายการ`,detail:`เริ่มตรวจที่รหัส ${negative[0].code}`});
     if (mismatch) actions.push({kind:'reconcile',tone:'warning',title:`ยอดสต็อกกับพาเลตไม่ตรง ${fmt(mismatch.count)} รหัส/หน่วย`,
       detail:`ตัวอย่าง ${mismatch.example.code} · ${mismatch.differentTimes ? 'พาเลตแก้หลังบันทึกสต็อก ยอดอาจมาจากคนละเวลา' : 'ตรวจวันเวลาอ้างอิงก่อนสรุปผลต่าง'}`});

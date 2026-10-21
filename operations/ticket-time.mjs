@@ -3,8 +3,8 @@ const bangkokFormatter = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
 });
 
-const bangkokDisplayFormatter = new Intl.DateTimeFormat('th-TH', {
-  dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Bangkok',
+const bangkokDisplayFormatter = new Intl.DateTimeFormat('en-GB', {
+  day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZone:'Asia/Bangkok',calendar:'gregory',
 });
 const bangkokClockFormatter = new Intl.DateTimeFormat('th-TH', {
   hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok',

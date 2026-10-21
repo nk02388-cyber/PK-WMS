@@ -13,7 +13,7 @@
   const badge = document.getElementById('tabBadgeCycleCounts');
   const esc = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const number = value => Number(value).toLocaleString('en-US', { maximumFractionDigits: 6 });
-  const dateLabel = iso => iso ? new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${iso}T12:00:00`)) : '—';
+  const dateLabel = WmsDates.date;
   const zones = Object.keys(ZONE_SLOTS).filter(zone => ZONE_SLOTS[zone]?.length).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
 
   function loadState() {
@@ -105,7 +105,7 @@
     draftBox.hidden = !draft;
     if (!draft) { draftBox.innerHTML = ''; return; }
     const tally = CycleCountCore.countSummary(draft.rows);
-    draftBox.innerHTML = `<div class="cycle-counts-draft-head"><div><h3>กำลังตรวจนับโซน ${esc(draft.zone)}</h3><p>บันทึกยอดตั้งต้นเมื่อ ${esc(new Date(draft.startedAt).toLocaleString('th-TH'))} · ${draft.rows.length} รายการ</p></div><button id="cycleCountCancel" type="button">ยกเลิกงานนับ</button></div>
+    draftBox.innerHTML = `<div class="cycle-counts-draft-head"><div><h3>กำลังตรวจนับโซน ${esc(draft.zone)}</h3><p>บันทึกยอดตั้งต้นเมื่อ ${esc(WmsDates.dateTime(draft.startedAt))} · ${draft.rows.length} รายการ</p></div><button id="cycleCountCancel" type="button">ยกเลิกงานนับ</button></div>
       <div class="cycle-counts-draft-meta"><label>ผู้ตรวจนับ *<input id="cycleCountBy" maxlength="80" autocomplete="name" value="${esc(draft.countedBy || '')}"></label><label>หมายเหตุ<input id="cycleCountNote" maxlength="500" value="${esc(draft.note || '')}" placeholder="เลขเอกสารหรือข้อสังเกต (ถ้ามี)"></label></div>
       ${draft.rows.length ? `<div class="cycle-counts-table-wrap cycle-counts-entry-table"><table><thead><tr><th>ตำแหน่ง</th><th>สินค้า / Lot</th><th>ยอดในระบบ</th><th>นับได้ *</th><th>ส่วนต่าง</th></tr></thead><tbody>${draft.rows.map((row, index) => `<tr><td>${esc(row.slot)}</td><td><strong>${esc(row.code || 'ไม่ระบุรหัส')}</strong><span>${esc(row.name)}</span>${row.lot ? `<small>Lot ${esc(row.lot)}</small>` : ''}</td><td>${row.expected == null ? 'ไม่ทราบ' : `${number(row.expected)} ${esc(row.unit)}`}</td><td><input type="number" min="0" ${row.type === 'occupied' ? 'max="1" step="1"' : 'step="any"'} inputmode="decimal" data-row="${index}" aria-label="จำนวนที่นับได้ ${esc(row.slot)} ${esc(row.code || row.name)}" value="${esc(row.counted)}"></td><td class="cycle-difference" data-difference="${index}">${esc(difference(row))}</td></tr>`).join('')}</tbody></table></div>` : `<label class="cycle-counts-empty-confirm"><input id="cycleCountConfirmEmpty" type="checkbox" ${draft.confirmEmpty ? 'checked' : ''}> ตรวจแล้วว่าโซนนี้ไม่มีสินค้าและไม่มีพาเลตใช้งาน</label>`}
       <div class="cycle-counts-draft-foot"><span id="cycleCountProgress">กรอกแล้ว ${tally.counted}/${draft.rows.length} · ส่วนต่าง ${tally.different} · ไม่ทราบยอดตั้งต้น ${tally.unknown}</span><button id="cycleCountComplete" type="button" class="cycle-counts-primary">บันทึกผลตรวจนับ</button></div>`;
@@ -115,7 +115,7 @@
     if (!state.history.length) { historyBox.textContent = 'ยังไม่มีผลตรวจนับออนไลน์'; return; }
     historyBox.innerHTML = state.history.slice(0, 20).map(record => {
       const tally = CycleCountCore.countSummary(record.rows);
-      return `<details><summary><strong>โซน ${esc(record.zone)}</strong> · ${esc(new Date(record.completedAt).toLocaleString('th-TH'))} · ${esc(record.countedBy)} · ส่วนต่าง ${tally.different} รายการ</summary><p>${record.rows.length} รายการ · ไม่ทราบยอดตั้งต้น ${tally.unknown} รายการ${record.note ? ` · ${esc(record.note)}` : ''}</p><div class="cycle-counts-table-wrap"><table><thead><tr><th>ตำแหน่ง</th><th>สินค้า</th><th>ยอดในระบบ</th><th>นับได้</th><th>ส่วนต่าง</th></tr></thead><tbody>${record.rows.map(row => `<tr><td>${esc(row.slot)}</td><td>${esc(row.code || row.name)}</td><td>${row.expected == null ? 'ไม่ทราบ' : number(row.expected)} ${esc(row.unit)}</td><td>${number(row.counted)} ${esc(row.unit)}</td><td>${esc(difference(row))}</td></tr>`).join('')}</tbody></table></div></details>`;
+      return `<details><summary><strong>โซน ${esc(record.zone)}</strong> · ${esc(WmsDates.dateTime(record.completedAt))} · ${esc(record.countedBy)} · ส่วนต่าง ${tally.different} รายการ</summary><p>${record.rows.length} รายการ · ไม่ทราบยอดตั้งต้น ${tally.unknown} รายการ${record.note ? ` · ${esc(record.note)}` : ''}</p><div class="cycle-counts-table-wrap"><table><thead><tr><th>ตำแหน่ง</th><th>สินค้า</th><th>ยอดในระบบ</th><th>นับได้</th><th>ส่วนต่าง</th></tr></thead><tbody>${record.rows.map(row => `<tr><td>${esc(row.slot)}</td><td>${esc(row.code || row.name)}</td><td>${row.expected == null ? 'ไม่ทราบ' : number(row.expected)} ${esc(row.unit)}</td><td>${number(row.counted)} ${esc(row.unit)}</td><td>${esc(difference(row))}</td></tr>`).join('')}</tbody></table></div></details>`;
     }).join('');
   }
   function refresh() { renderSchedule(); renderDraft(); renderHistory(); controls(); }
@@ -190,7 +190,7 @@
   });
   document.getElementById('cycleCountExport').addEventListener('click', () => {
     const header = ['โซน', 'เริ่มนับ', 'บันทึกผล', 'ผู้ตรวจนับ', 'ตำแหน่ง', 'รหัสสินค้า', 'ชื่อสินค้า', 'Lot', 'หน่วย', 'ยอดในระบบ', 'นับได้', 'ส่วนต่าง', 'หมายเหตุ'];
-    const rows = state.history.flatMap(record => (record.rows.length ? record.rows : [{ slot: '', code: '', name: 'ยืนยันว่าไม่มีสินค้า', lot: '', unit: '', expected: 0, counted: 0 }]).map(row => [record.zone, record.startedAt, record.completedAt, record.countedBy, row.slot, row.code, row.name, row.lot, row.unit, row.expected ?? '', row.counted, row.expected == null ? '' : Number(row.counted) - Number(row.expected), record.note || '']));
+    const rows = state.history.flatMap(record => (record.rows.length ? record.rows : [{ slot: '', code: '', name: 'ยืนยันว่าไม่มีสินค้า', lot: '', unit: '', expected: 0, counted: 0 }]).map(row => [record.zone, WmsDates.dateTime(record.startedAt), WmsDates.dateTime(record.completedAt), record.countedBy, row.slot, row.code, row.name, row.lot, row.unit, row.expected ?? '', row.counted, row.expected == null ? '' : Number(row.counted) - Number(row.expected), record.note || '']));
     const csvCell = value => { const text = String(value ?? ''); const safe = typeof value !== 'number' && /^[=+@\-\t\r]/.test(text) ? `'${text}` : text; return `"${safe.replace(/"/g, '""')}"`; };
     const csv = '\ufeff' + [header, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));

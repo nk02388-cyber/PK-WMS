@@ -14,7 +14,7 @@ const snapshot = {items: [{code:'QA-PK',qty:12,unit:'ชิ้น'}], warehouses
 function fixture({parse, rpc, pin = '123456', allowed = true} = {}) {
   let change;
   const calls = [];
-  const context = vm.createContext({
+  const context = vm.createContext({WmsDates:require('../date-display.js'),
     stockExcelInput:{files:[{name:'fixture.txt'}],value:'chosen',addEventListener:(_, listener)=>{change=listener;}},
     stockUpdateBtn:{disabled:false},stockUpdateStatus:{textContent:'',className:''},
     stockLoadGeneration:0,stockSnapshotState:'latest',STOCK:null,DATA:{},allowed,

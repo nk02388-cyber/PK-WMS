@@ -39,7 +39,7 @@ function renderTrend(s){
  let svg='<svg viewBox="0 0 '+width+' 230" role="img" aria-label="แนวโน้มจำนวนรายการรับเข้า เบิกออก และรับคืน"><title>จำนวนรายการต่อวัน สูงสุด '+max+' รายการ</title>';
  for(let i=0;i<=4;i++){const n=max*i/4;svg+='<line x1="48" x2="'+(width-28)+'" y1="'+y(n)+'" y2="'+y(n)+'" class="di-grid"/><text x="40" y="'+(y(n)+4)+'" text-anchor="end">'+Number(n.toFixed(1))+'</text>';}
  for(const [k,label,color] of series){svg+='<g class="di-trend-series"><polyline fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" points="'+s.points.map((p,i)=>x(i)+','+y(p[k])).join(' ')+'"/>';s.points.forEach((p,i)=>{svg+='<circle cx="'+x(i)+'" cy="'+y(p[k])+'" r="3" fill="'+color+'"><title>'+p.date+' · '+label+' '+p[k]+' รายการ</title></circle>';});svg+='</g>';}
- for(const i of new Set([0,Math.floor((s.points.length-1)/2),s.points.length-1]))svg+='<text x="'+x(i)+'" y="220" text-anchor="middle">'+s.points[i].date.slice(5).split('-').reverse().join('/')+'</text>';
+ for(const i of new Set([0,Math.floor((s.points.length-1)/2),s.points.length-1]))svg+='<text x="'+x(i)+'" y="220" text-anchor="middle">'+WmsDates.date(s.points[i].date)+'</text>';
  svg+='</svg>';chart.innerHTML='<div class="di-legend">'+series.map(([,label,color])=>'<span><i style="background:'+color+'"></i>'+label+'</span>').join('')+'</div>'+(s.transactions?'':'<p class="di-empty">ไม่มีรายการที่มีวันที่ในช่วงนี้</p>')+svg;
 }
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{
@@ -58,7 +58,7 @@ function render(){
  stats.innerHTML=series.map(([k,label])=>'<div><small>'+label+'</small><strong>'+s.total[k].toLocaleString('en-US')+' <span>รายการ</span></strong></div>').join('');
  trendData=s;renderTrend(s);
  let offset=0;mix.innerHTML='<svg viewBox="0 0 160 160" role="img" aria-label="สัดส่วนกิจกรรมรวม '+s.transactions+' รายการ"><circle cx="80" cy="80" r="58" fill="none" stroke="var(--gridline)" stroke-width="18"/>'+series.map(([k,label,color])=>{const pct=s.transactions?s.total[k]/s.transactions*100:0,seg='<circle cx="80" cy="80" r="58" fill="none" stroke="'+color+'" stroke-width="18" pathLength="100" stroke-dasharray="'+pct+' '+(100-pct)+'" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 80 80)"><title>'+label+' '+pct.toFixed(1)+'%</title></circle>';offset+=pct;return seg;}).join('')+'<text x="80" y="80" text-anchor="middle" class="di-donut-value">'+s.transactions+'</text><text x="80" y="102" text-anchor="middle">รายการ</text></svg><ul>'+series.map(([k,label,color])=>'<li><i style="background:'+color+'"></i>'+label+'<b>'+(s.transactions?s.total[k]/s.transactions*100:0).toFixed(1)+'%</b></li>').join('')+'</ul>';
- host.querySelector('tbody').innerHTML=s.points.map(p=>'<tr><td>'+p.date+'</td><td>'+p.receive+'</td><td>'+p.issue+'</td><td>'+p.returns+'</td></tr>').join('');
+ host.querySelector('tbody').innerHTML=s.points.map(p=>'<tr><td>'+WmsDates.date(p.date)+'</td><td>'+p.receive+'</td><td>'+p.issue+'</td><td>'+p.returns+'</td></tr>').join('');
  playMotion();
  note.textContent='ข้อมูลประวัติในรายการพาเลตทุกโซน · นับจำนวนรายการ ไม่รวมจำนวนสินค้าต่างหน่วย · ไม่รวมย้ายภายใน'+(s.undated?' · มี '+s.undated+' รายการไม่มีวันที่ที่ถูกต้อง จึงไม่รวมในกราฟ':'');
 }

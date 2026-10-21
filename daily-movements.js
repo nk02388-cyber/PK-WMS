@@ -82,7 +82,7 @@
       : '<span>ไม่มียอดในวันที่เลือก</span>';
     panel.querySelector('.daily-result').innerHTML = visible.length ? `<div class="daily-table-wrap"><table class="daily-table">
       <thead><tr><th>ประเภท</th><th>โซน / พาเลต</th><th>รหัสสินค้า</th><th>ชื่อสินค้า</th><th>Lot / PK No.</th><th class="num">จำนวน</th><th>หน่วย</th><th>ผู้ทำรายการ</th><th>เลขเอกสาร</th><th>บันทึกเมื่อ</th></tr></thead>
-      <tbody>${visible.map(row => `<tr><td>${escape(row.type)}</td><td>${escape(row.zone)} / ${escape(row.slot)}</td><td>${escape(row.code)}</td><td>${escape(row.name)}</td><td>${escape(row.lotNo || '—')}</td><td class="num">${number(row.qty)}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.by || '—')}</td><td>${escape(row.reference || '—')}</td><td>${row.recordedAt ? escape(new Date(row.recordedAt).toLocaleString('th-TH')) : '—'}</td></tr>`).join('')}</tbody></table></div>`
+      <tbody>${visible.map(row => `<tr><td>${escape(row.type)}</td><td>${escape(row.zone)} / ${escape(row.slot)}</td><td>${escape(row.code)}</td><td>${escape(row.name)}</td><td>${escape(row.lotNo || '—')}</td><td class="num">${number(row.qty)}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.by || '—')}</td><td>${escape(row.reference || '—')}</td><td>${row.recordedAt ? escape(WmsDates.dateTime(row.recordedAt)) : '—'}</td></tr>`).join('')}</tbody></table></div>`
       : `<div class="daily-empty">${query ? 'ไม่พบรายการที่ตรงกับคำค้นในวันที่เลือก' : 'ไม่มีรายการในวันที่เลือก'}</div>`;
     const badge = document.getElementById(kind === 'receive' ? 'tabBadgeDailyReceive' : 'tabBadgeDailyIssue');
     badge.textContent = selectedDate === localToday() ? `${summary.transactions} วันนี้` : `${summary.transactions} รายการ`;

@@ -84,8 +84,8 @@
     const selected = date.value;
     const rows = snapshot.rows.filter(row => !selected || row.date === selected);
     status.classList.remove('error');
-    const stamp = loadedAt ? loadedAt.toLocaleString('th-TH') : '—';
-    status.textContent = `นำเข้าจากเว็บต้นทาง ${snapshot.rows.length} รายการ · ${snapshot.source_note || ''} · นำเข้า PK WMS ${new Date(snapshot.imported_at).toLocaleString('th-TH')} · ตรวจข้อมูลใน PK WMS ล่าสุด ${stamp}`;
+    const stamp = loadedAt ? WmsDates.dateTime(loadedAt) : '—';
+    status.textContent = `นำเข้าจากเว็บต้นทาง ${snapshot.rows.length} รายการ · ${snapshot.source_note || ''} · นำเข้า PK WMS ${WmsDates.dateTime(snapshot.imported_at)} · ตรวจข้อมูลใน PK WMS ล่าสุด ${stamp}`;
     badge.textContent = selected === localToday() ? `${rows.length} วันนี้` : `${rows.length} รายการ`;
     const key = query.value.trim().toLocaleLowerCase('th');
     const visible = key ? rows.filter(row => {const hay=[row.rr,row.company,row.period,row.po,row.code,row.item,row.unit].map(value=>text(value)).join(' ').normalize('NFKC').toLocaleLowerCase('th');return key.normalize('NFKC').split(/\s+/).every(term=>hay.includes(term));}) : rows;
@@ -95,7 +95,7 @@
     summary.innerHTML = kpis.map(([label,value]) => `<div class="daily-kpi"><span>${escape(label)}</span><strong>${value.toLocaleString('en-US')}</strong></div>`).join('');
     result.innerHTML = visible.length ? `<div class="daily-table-wrap"><table class="daily-table">
       <thead><tr><th>วันที่คาดว่าจะรับ</th><th>รหัสสินค้า</th><th>ชื่อสินค้า</th><th class="num">จำนวนแผน</th><th>หน่วย</th><th>ผู้ขาย / บริษัท</th><th>PO</th></tr></thead>
-      <tbody>${visible.map(row => `<tr><td>${escape(row.date.split('-').reverse().join('/'))}</td><td>${escape(row.code)}</td><td>${escape(row.item)}</td><td class="num">${row.quantity.toLocaleString('en-US',{maximumFractionDigits:3})}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.company || '—')}</td><td>${escape(row.po || '—')}</td></tr>`).join('')}</tbody></table></div>`
+      <tbody>${visible.map(row => `<tr><td>${escape(WmsDates.date(row.date))}</td><td>${escape(row.code)}</td><td>${escape(row.item)}</td><td class="num">${row.quantity.toLocaleString('en-US',{maximumFractionDigits:3})}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.company || '—')}</td><td>${escape(row.po || '—')}</td></tr>`).join('')}</tbody></table></div>`
       : `<div class="daily-empty">${key ? 'ไม่พบรายการที่ตรงกับคำค้น' : 'ยังไม่มีแผนรับเข้าในวันที่เลือก'}</div>`;
   }
 

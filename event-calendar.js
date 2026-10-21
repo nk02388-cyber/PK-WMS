@@ -44,8 +44,8 @@
   if (!dialog) return;
   const byId = id => document.getElementById(id);
   const escape = value => escapeHtml(String(value ?? ''));
-  const dateFormat = new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'long',year:'numeric'});
-  const monthFormat = new Intl.DateTimeFormat('th-TH',{month:'long',year:'numeric'});
+  const dateFormat = { format: value => WmsDates.date(value) };
+  const monthFormat = new Intl.DateTimeFormat('en-GB',{month:'2-digit',year:'numeric',calendar:'gregory'});
   const names = ['จ','อ','พ','พฤ','ศ','ส','อา'];
   const form = byId('eventCalendarForm');
   const error = byId('eventCalendarError');

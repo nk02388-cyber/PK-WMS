@@ -3,7 +3,7 @@ import {isWipCode} from './material-policy.mjs?v=1';
 import {formulaDraft,mergeFormulas} from './saved-formulas.mjs?v=2';
 import {withdrawalTimePerformance,MINUTES_PER_DOCUMENT} from './time-performance.mjs?v=1';
 import {followupComplete,reportingTickets,varianceRows} from './management.mjs?v=20261008-keywords1';
-import {installManagement} from './management-ui.mjs?v=20261008-keywords1';
+import {installManagement} from './management-ui.mjs?v=20261021-dates1';
 import {workBreakdown,minutesText,pickCompleteness,operationalPerformance,reasonLabels,documentsError} from './operations.mjs?v=4';
 import { prepareStaffPhoto } from './staff-photo.mjs';
 import { pickError, confirmedPickSummary, actualFromInput, pickVarianceText, defaultPickActual, automaticPickCloseStatus } from './picking.mjs?v=7';
@@ -15,7 +15,8 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, PK_WMS_URL, PK_WMS_PUBLISHABLE_
 import { filterTickets } from './ticket-report.mjs?v=20261008-keywords1';
 import { automaticSkill, completedJobWorkload, personPerformance } from './skill-metrics.mjs?v=5';
 import { matchesKeywords, searchStock } from './stock-search.mjs?v=20261008-keywords1';
-import { formatBangkokClock, formatBangkokDateTime, fromBangkokInput, timeEditError, toBangkokInput } from './ticket-time.mjs?v=2';
+import '../date-display.js?v=20261021-1';
+import { formatBangkokClock, formatBangkokDateTime, fromBangkokInput, timeEditError, toBangkokInput } from './ticket-time.mjs?v=3';
 import { ticketNumberExists, ticketNumberConflicts, ticketConflictText, suggestTicketNumber, isDuplicateTicketNumberError } from './ticket-number.mjs?v=3';
 import { purgeConfirmationError } from './trash.mjs';
 
@@ -23,7 +24,7 @@ const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = formatBangkokDateTime;
 const fmtReport = formatBangkokDateTime;
-const fmtAudit = v => v ? new Intl.DateTimeFormat('th-TH',{dateStyle:'short',timeStyle:'medium',timeZone:'Asia/Bangkok'}).format(new Date(v)) : '—';
+const fmtAudit = v => WmsDates.dateTime(v);
 sessionStorage.removeItem('editCode');
 const state = {db:null,role:sessionStorage.getItem('workRole')||'',username:sessionStorage.getItem('workUsername')||'',code:sessionStorage.getItem('workCode')||'',verified:false,actorId:sessionStorage.getItem('workActorId')||'',standards:[],people:[],jobs:[],tickets:[],deletedTickets:[],skills:[],bom:null,selectedFormulaCode:'',stock:null,stockLines:[],view:'dashboard'};
 const editing = () => state.verified && !!state.code;
@@ -92,7 +93,7 @@ async function loadStockCatalog(){
     if(error)throw error;
     if(!Number.isInteger(data.snapshot_id)||!Array.isArray(data.items)||!data.items.length)throw Error('ไม่มีรายการ Stock ล่าสุด');
     state.stock={...data,items:data.items.filter(item=>item.code&&item.name&&item.unit&&!item.unit_conflict&&!isWipCode(item.code))};
-    $('#stock-source').textContent=`Stock PK WMS ${data.report_date} · บันทึก ${fmt(data.snapshot_saved_at)} · ${state.stock.items.length} รหัส`;
+    $('#stock-source').textContent=`Stock PK WMS ${WmsDates.date(data.report_date)} · บันทึก ${fmt(data.snapshot_saved_at)} · ${state.stock.items.length} รหัส`;
     renderStockMatch();return true;
   }catch(error){
     $('#stock-source').textContent=`โหลด Stock ล่าสุดไม่สำเร็จ (${error.message}) · ยังเพิ่มรายการนอก BOM ไม่ได้`;
@@ -207,7 +208,7 @@ function renderDashboard(){
   const filters={dateFrom:$('#dashboard-from').value,dateTo:$('#dashboard-to').value,jobId:jobSelect.value,dateBasis:$('#dashboard-date-basis').value};
   const invalid=filters.dateFrom&&filters.dateTo&&filters.dateFrom>filters.dateTo;
   const t=filterTickets(reportingTickets(state.tickets,state.management?.cases),filters);
-  $('#dashboard-scope').textContent=invalid?'วันที่เริ่มต้องไม่เกินวันที่สิ้นสุด':`พบ ${totalDocuments(t)} ใบ · ${t.length} งาน · ${dateBasisLabel(filters.dateBasis)} (เวลาไทย): ${filters.dateFrom||'ไม่จำกัด'} ถึง ${filters.dateTo||'ไม่จำกัด'} · ${filters.jobId?jobFor(filters.jobId):'ทุกประเภทงาน'}`;
+  $('#dashboard-scope').textContent=invalid?'วันที่เริ่มต้องไม่เกินวันที่สิ้นสุด':`พบ ${totalDocuments(t)} ใบ · ${t.length} งาน · ${dateBasisLabel(filters.dateBasis)} (เวลาไทย): ${filters.dateFrom?WmsDates.date(filters.dateFrom):'ไม่จำกัด'} ถึง ${filters.dateTo?WmsDates.date(filters.dateTo):'ไม่จำกัด'} · ${filters.jobId?jobFor(filters.jobId):'ทุกประเภทงาน'}`;
   $('#dashboard-scope').classList.toggle('error',!!invalid);
   $('#dashboard-total').textContent=`${qtyText(t.length)} งาน · ${qtyText(totalDocuments(t))} ใบ`;
   const statusGroups=[['done','เบิกครบแล้ว',t.filter(x=>x.status==='done')],['partial','จบแล้ว · เบิกไม่ครบ',t.filter(x=>x.status==='partial')],['open','ยังไม่จบงาน',t.filter(x=>['queued','active','paused'].includes(x.status))]];
@@ -295,7 +296,7 @@ function reportFiltersText(filters){
   if(filters.query.trim())parts.push(`เลขที่ใบเบิก: ${filters.query.trim()}`);
   if(filters.assigneeId)parts.push(`พนักงาน: ${nameFor(filters.assigneeId)}`);
   if(filters.jobId)parts.push(`Job: ${jobFor(filters.jobId)}`);
-  if(filters.dateFrom||filters.dateTo)parts.push(`${dateBasisLabel(filters.dateBasis)}: ${filters.dateFrom||'ทั้งหมด'} ถึง ${filters.dateTo||'ทั้งหมด'}`);
+  if(filters.dateFrom||filters.dateTo)parts.push(`${dateBasisLabel(filters.dateBasis)}: ${filters.dateFrom?WmsDates.date(filters.dateFrom):'ทั้งหมด'} ถึง ${filters.dateTo?WmsDates.date(filters.dateTo):'ทั้งหมด'}`);
   if(filters.status)parts.push(`สถานะ: ${(filters.status==='followup_complete'?'เบิกครบ · จัดการติดตามแล้ว':statusLabels[filters.status]||filters.status)}`);
   return parts.length?parts.join(' · '):'ทุกใบเบิก';
 }

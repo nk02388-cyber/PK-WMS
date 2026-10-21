@@ -148,7 +148,7 @@
     if(error)return feedback(error.message,true);
     $('pkRecipeHistory').replaceChildren();
     for(const version of data){const row=document.createElement('div');row.className='pk-recipe-history';
-      row.textContent=`v${version.version} · ${version.saved_username} · ${new Date(version.saved_at).toLocaleString('th-TH')} · ${version.recipe.lines.length} ส่วนประกอบ`;
+      row.textContent=`v${version.version} · ${version.saved_username} · ${WmsDates.dateTime(version.saved_at)} · ${version.recipe.lines.length} ส่วนประกอบ`;
       const details=document.createElement('details'),summary=document.createElement('summary'),pre=document.createElement('pre');summary.textContent='ดูสูตรเวอร์ชันนี้';pre.textContent=JSON.stringify(version.recipe,null,2);pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere';details.append(summary,pre);row.append(details);$('pkRecipeHistory').append(row);}
   };
   window.addEventListener('wms:account-changed',()=>{
