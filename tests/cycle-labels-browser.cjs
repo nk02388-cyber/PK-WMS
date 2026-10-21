@@ -41,6 +41,13 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
   assert.deepEqual(scans.map(s=>s.slot),['O1-01','O1-01','O1-02','O1-03']);assert.ok(scans.every(s=>s.kind==='location'));
   await popup.emulateMedia({media:'print'});
   assert.ok(await popup.locator('body>h2').isHidden());
+  await popup.setViewportSize({width:1047,height:718});
+  const sequenceHeader=await popup.locator('thead tr:last-child th:first-child').evaluate(el=>{
+   const range=document.createRange();range.selectNodeContents(el);const rects=[...range.getClientRects()];
+   return {text:el.textContent,lines:new Set(rects.map(rect=>Math.round(rect.top))).size,textWidth:range.getBoundingClientRect().width,available:el.clientWidth-parseFloat(getComputedStyle(el).paddingLeft)-parseFloat(getComputedStyle(el).paddingRight)};
+  });
+  assert.equal(sequenceHeader.text,'ลำดับ');assert.equal(sequenceHeader.lines,1,'sequence heading must not wrap at printable A4 landscape width');
+  assert.ok(sequenceHeader.textWidth<=sequenceHeader.available,'sequence heading must fit without overlapping the next column');
   if(engine==='edge'){
    const pdf=await popup.pdf({path:path.join(out,`${width}-count-sheet.pdf`),preferCSSPageSize:true});
    assert.equal((pdf.toString('latin1').match(/\/Type \/Page\b/g)||[]).length,1,'four count rows must fit on one A4 landscape page');
