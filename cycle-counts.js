@@ -20,20 +20,56 @@
     try {
       const parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
       return { frequency: parsed.frequency && typeof parsed.frequency === 'object' ? parsed.frequency : {},
-        history: Array.isArray(parsed.history) ? parsed.history.slice(0, 100) : [],
+        history: Array.isArray(parsed.history) ? parsed.history : [],
         draft: parsed.draft && typeof parsed.draft === 'object' ? parsed.draft : null };
     } catch (_) { return { frequency: {}, history: [], draft: null }; }
   }
-  let state = loadState();
-  function persist(nextState) {
+  const emptyState = () => ({ frequency: {}, history: [], draft: null });
+  let state = emptyState(), version = 0, ready = false, busy = false, dirty = false, generation = 0;
+  const onlineStatus = document.getElementById('cycleCountOnlineStatus');
+  const allowed = () => window.getWmsCanAccess?.('cycle-counts');
+  function controls() {
+    root.querySelectorAll('#cycleCountSaveFrequency,#cycleCountStart,#cycleCountImportLocal,#cycleCountSaveDraft,#cycleCountCancel,#cycleCountComplete,#cycleCountDraft input').forEach(el => { el.disabled = !ready || busy; });
+  }
+  function markDirty() {
+    dirty = true;
+    onlineStatus.textContent = 'มีแบบร่างที่ยังไม่บันทึก · กดบันทึกแบบร่างออนไลน์ก่อนเปลี่ยนเครื่อง';
+  }
+  async function loadOnline(manual = false) {
+    if (busy || !allowed() || typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    if (dirty && (!manual || !confirm('มีแบบร่างที่ยังไม่บันทึก ต้องการทิ้งแบบร่างในหน้านี้และโหลดข้อมูลออนไลน์ล่าสุดหรือไม่?'))) return;
+    const request = generation;
+    busy = true; controls();
     try {
-      localStorage.setItem(storageKey, JSON.stringify(nextState));
-      state = nextState;
+      const { data, error } = await supabaseClient.rpc('get_pk_cycle_counts');
+      if (request !== generation || !allowed()) return;
+      if (error || !data?.data || !Number.isSafeInteger(Number(data.version))) throw error || new Error('ข้อมูลออนไลน์ไม่สมบูรณ์');
+      state = data.data; version = Number(data.version); ready = true; dirty = false;
+      frequencyInput.value = zoneFrequency(zoneSelect.value); refresh();
+      onlineStatus.textContent = `ออนไลน์ · เวอร์ชัน ${version}${data.updated_username ? ' · บันทึกล่าสุดโดย ' + data.updated_username : ''}`;
+    } catch (error) {
+      if (request === generation) { ready = false; onlineStatus.textContent = 'โหลดออนไลน์ไม่สำเร็จ · ' + (error.message || 'กรุณาลองใหม่'); }
+    } finally { if (request === generation) { busy = false; controls(); } }
+  }
+  async function persist(nextState) {
+    if (!ready || busy || !allowed()) { setStatus('กรุณาโหลดข้อมูลออนไลน์ให้สำเร็จก่อนบันทึก', true); return false; }
+    const request = generation;
+    busy = true; controls();
+    try {
+      const { data, error } = await supabaseClient.rpc('save_pk_cycle_counts', { p_state: JSON.parse(JSON.stringify(nextState)), p_expected_version: version });
+      if (request !== generation || !allowed()) return false;
+      if (error || !data?.data) throw error || new Error('ไม่ได้รับคำยืนยันจากฐานข้อมูล');
+      state = data.data; version = Number(data.version); dirty = false;
+      onlineStatus.textContent = `บันทึกออนไลน์แล้ว · เวอร์ชัน ${version} · ${data.updated_username || ''}`;
       return true;
-    } catch (_) {
-      setStatus('บันทึกในเบราว์เซอร์ไม่สำเร็จ กรุณาตรวจพื้นที่จัดเก็บหรือสิทธิ์การใช้งาน', true);
+    } catch (error) {
+      if (request === generation) {
+        if (error.code === '40001') ready = false;
+        setStatus('ยังไม่ได้บันทึกออนไลน์ · ' + (error.message || 'ตรวจเครือข่ายแล้วลองใหม่'), true);
+        onlineStatus.textContent = 'ยังไม่บันทึก · ข้อมูลในฟอร์มยังอยู่ หากชนกับเครื่องอื่นให้ส่งออกแบบร่างก่อนโหลดใหม่';
+      }
       return false;
-    }
+    } finally { if (request === generation) { busy = false; controls(); } }
   }
   function setStatus(message, error = false) {
     statusBox.textContent = message;
@@ -57,7 +93,7 @@
       </tr>`;
     }).join('');
     badge.textContent = due ? `${due} ถึงกำหนด` : configured ? 'ตามกำหนด' : 'ตั้งรอบนับ';
-    summaryBox.innerHTML = `<div><strong>${zones.length}</strong><span>โซนที่มีตำแหน่งพาเลต</span></div><div><strong>${configured}</strong><span>ตั้งรอบนับแล้ว</span></div><div><strong>${due}</strong><span>ถึงกำหนด / เกินกำหนด</span></div><div><strong>${state.history.length}</strong><span>ผลนับในเครื่องนี้</span></div>`;
+    summaryBox.innerHTML = `<div><strong>${zones.length}</strong><span>โซนที่มีตำแหน่งพาเลต</span></div><div><strong>${configured}</strong><span>ตั้งรอบนับแล้ว</span></div><div><strong>${due}</strong><span>ถึงกำหนด / เกินกำหนด</span></div><div><strong>${state.history.length}</strong><span>ผลนับออนไลน์</span></div>`;
   }
   function difference(row) {
     if (row.counted === '' || row.counted == null || row.expected == null) return '—';
@@ -76,32 +112,32 @@
   }
   function renderHistory() {
     document.getElementById('cycleCountExport').disabled = !state.history.length;
-    if (!state.history.length) { historyBox.textContent = 'ยังไม่มีผลตรวจนับในเครื่องนี้'; return; }
+    if (!state.history.length) { historyBox.textContent = 'ยังไม่มีผลตรวจนับออนไลน์'; return; }
     historyBox.innerHTML = state.history.slice(0, 20).map(record => {
       const tally = CycleCountCore.countSummary(record.rows);
       return `<details><summary><strong>โซน ${esc(record.zone)}</strong> · ${esc(new Date(record.completedAt).toLocaleString('th-TH'))} · ${esc(record.countedBy)} · ส่วนต่าง ${tally.different} รายการ</summary><p>${record.rows.length} รายการ · ไม่ทราบยอดตั้งต้น ${tally.unknown} รายการ${record.note ? ` · ${esc(record.note)}` : ''}</p><div class="cycle-counts-table-wrap"><table><thead><tr><th>ตำแหน่ง</th><th>สินค้า</th><th>ยอดในระบบ</th><th>นับได้</th><th>ส่วนต่าง</th></tr></thead><tbody>${record.rows.map(row => `<tr><td>${esc(row.slot)}</td><td>${esc(row.code || row.name)}</td><td>${row.expected == null ? 'ไม่ทราบ' : number(row.expected)} ${esc(row.unit)}</td><td>${number(row.counted)} ${esc(row.unit)}</td><td>${esc(difference(row))}</td></tr>`).join('')}</tbody></table></div></details>`;
     }).join('');
   }
-  function refresh() { renderSchedule(); renderDraft(); renderHistory(); }
+  function refresh() { renderSchedule(); renderDraft(); renderHistory(); controls(); }
 
   zoneSelect.innerHTML = zones.map(zone => `<option value="${esc(zone)}">โซน ${esc(zone)} · ${number(ZONE_SLOTS[zone].length)} ตำแหน่ง</option>`).join('');
   zoneSelect.addEventListener('change', () => { frequencyInput.value = zoneFrequency(zoneSelect.value); renderSchedule(); });
-  document.getElementById('cycleCountSaveFrequency').addEventListener('click', () => {
+  document.getElementById('cycleCountSaveFrequency').addEventListener('click', async () => {
     const days = Number(frequencyInput.value);
     if (!Number.isInteger(days) || days < 0 || days > 3650 || frequencyInput.value.trim() === '') { setStatus('รอบนับต้องเป็นจำนวนเต็มตั้งแต่ 0 ถึง 3,650 วัน', true); return; }
-    if (persist({ ...state, frequency: { ...state.frequency, [zoneSelect.value]: days } })) {
+    if (await persist({ ...state, frequency: { ...state.frequency, [zoneSelect.value]: days } })) {
       setStatus(`บันทึกรอบนับโซน ${zoneSelect.value} แล้ว${days ? ` · ทุก ${days} วัน` : ' · ไม่ตั้งรอบ'}`);
       renderSchedule();
     }
   });
-  document.getElementById('cycleCountStart').addEventListener('click', () => {
+  document.getElementById('cycleCountStart').addEventListener('click', async () => {
     if (state.draft) { setStatus(`มีงานตรวจนับโซน ${state.draft.zone} ค้างอยู่ กรุณาบันทึกผลหรือยกเลิกก่อน`, true); draftBox.scrollIntoView({ block: 'start' }); return; }
     if (!palletDataReady || !document.getElementById('syncStatusBar')?.classList.contains('sync-connected')) {
       setStatus('ข้อมูลพาเลตยังไม่เชื่อมต่อเรียลไทม์ กรุณารอหรือรีเฟรชหน้าเว็บก่อนเริ่มตรวจนับ', true); return;
     }
     const zone = zoneSelect.value;
     const snapshot = CycleCountCore.snapshotZone(zone, ZONE_SLOTS[zone], SLOT_ITEMS[zone], PALLET_STATUS[zone], getRemainingQty);
-    if (persist({ ...state, draft: { zone, startedAt: new Date().toISOString(), countedBy: '', note: '', confirmEmpty: false, rows: snapshot.rows } })) {
+    if (await persist({ ...state, draft: { zone, startedAt: new Date().toISOString(), countedBy: '', note: '', confirmEmpty: false, rows: snapshot.rows } })) {
       setStatus(`เริ่มตรวจนับโซน ${zone} แล้ว กรอกจำนวนจริงทุกตำแหน่งก่อนบันทึกผล`);
       renderDraft(); draftBox.scrollIntoView({ block: 'start' });
     }
@@ -128,17 +164,17 @@
     } else return;
     const tally = CycleCountCore.countSummary(state.draft.rows);
     draftBox.querySelector('#cycleCountProgress').textContent = `กรอกแล้ว ${tally.counted}/${state.draft.rows.length} · ส่วนต่าง ${tally.different} · ไม่ทราบยอดตั้งต้น ${tally.unknown}`;
-    persist(state);
+    markDirty();
   });
   draftBox.addEventListener('change', event => {
     if (event.target.id !== 'cycleCountConfirmEmpty' || !state.draft) return;
     state.draft.confirmEmpty = event.target.checked;
-    persist(state);
+    markDirty();
   });
-  draftBox.addEventListener('click', event => {
+  draftBox.addEventListener('click', async event => {
     if (event.target.id === 'cycleCountCancel') {
       if (!window.PKActionConfirmation?.isConfirmed(event.target.closest('button'))) return;
-      if (persist({ ...state, draft: null })) { renderDraft(); setStatus('ยกเลิกงานตรวจนับแล้ว'); }
+      if (await persist({ ...state, draft: null })) { renderDraft(); setStatus('ยกเลิกงานตรวจนับแล้ว'); }
     }
     if (event.target.id === 'cycleCountComplete') {
       const draft = state.draft;
@@ -146,7 +182,7 @@
       if (error) { setStatus(error, true); return; }
       const completed = { ...draft, completedAt: new Date().toISOString(), rows: draft.rows.map(row => ({ ...row, counted: Number(row.counted) })) };
       delete completed.confirmEmpty;
-      if (persist({ ...state, draft: null, history: [completed, ...state.history].slice(0, 100) })) {
+      if (await persist({ ...state, draft: null, history: [completed, ...state.history] })) {
         refresh();
         setStatus(`บันทึกผลตรวจนับโซน ${completed.zone} แล้ว · ผลต่าง ${CycleCountCore.countSummary(completed.rows).different} รายการ · ระบบยังไม่ได้ปรับยอดพาเลตหรือสต็อก`);
       }
@@ -161,9 +197,35 @@
     const link = document.createElement('a'); link.href = url; link.download = `cycle-counts-${CycleCountCore.todayIso()}.csv`; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
-  document.getElementById('tab-cycle-counts').addEventListener('click', () => { renderSchedule(); });
-  window.addEventListener('storage', event => { if (event.key === storageKey) { state = loadState(); frequencyInput.value = zoneFrequency(zoneSelect.value); refresh(); } });
+  document.getElementById('cycleCountReload').addEventListener('click', () => loadOnline(true));
+  document.getElementById('cycleCountSaveDraft').addEventListener('click', async () => {
+    if (await persist(state)) setStatus('บันทึกแบบร่างออนไลน์แล้ว เปิดต่อจากเครื่องอื่นได้');
+  });
+  document.getElementById('cycleCountBackupDraft').addEventListener('click', () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a'); link.href = url; link.download = 'cycle-counts-unsaved-backup.json'; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  document.getElementById('cycleCountImportLocal').addEventListener('click', async () => {
+    const local = loadState();
+    const key = r => JSON.stringify([r.zone, r.startedAt, r.completedAt]);
+    const existing = new Set(state.history.map(key));
+    const added = local.history.filter(r => { const id = key(r); if (existing.has(id)) return false; existing.add(id); return true; });
+    const next = { frequency: { ...local.frequency, ...state.frequency },
+      history: [...state.history, ...added].sort((a,b) => b.completedAt.localeCompare(a.completedAt)), draft: state.draft || local.draft };
+    if (await persist(next)) {
+      frequencyInput.value = zoneFrequency(zoneSelect.value); refresh();
+      setStatus(`นำข้อมูลในเครื่องขึ้นออนไลน์แล้ว · เพิ่มผลนับ ${added.length} งาน · รอบนับออนไลน์เดิมมีลำดับก่อน · ถ้ามีแบบร่างออนไลน์จะคงงานนั้นไว้ ข้อมูลเดิมในเครื่องยังไม่ถูกลบ`);
+    }
+  });
+  document.getElementById('tab-cycle-counts').addEventListener('click', () => { if (!dirty) loadOnline(); });
+  window.addEventListener('wms:account-changed', () => {
+    generation += 1; ready = false; busy = false; dirty = false; state = emptyState(); refresh();
+    onlineStatus.textContent = 'กำลังเชื่อมต่อข้อมูลออนไลน์'; loadOnline();
+  });
+  window.addEventListener('beforeunload', event => { if (dirty || busy) { event.preventDefault(); event.returnValue = ''; } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !root.hidden && !dirty) loadOnline(); });
+  setInterval(() => { if (!document.hidden && !root.hidden && !dirty) loadOnline(); }, 30000);
   window.PKCycleCounts = { refresh: renderSchedule };
-  frequencyInput.value = zoneFrequency(zoneSelect.value);
-  refresh();
+  refresh(); loadOnline();
 })();

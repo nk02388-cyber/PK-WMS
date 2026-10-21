@@ -2756,7 +2756,7 @@ header.top .header-logo { border-radius: 14px; }
     <section class="panel cycle-counts-panel" aria-labelledby="cycleCountsTitle">
       <h2 id="cycleCountsTitle">Cycle Counts · ตรวจนับสต็อกตามรอบ</h2>
       <p class="panel-sub">กำหนดความถี่รายโซน นับตามตำแหน่งพาเลต และตรวจส่วนต่างก่อนปรับยอดจริง</p>
-      <p class="cycle-counts-notice">แผนและผลตรวจนับบันทึกในเบราว์เซอร์เครื่องนี้เท่านั้น โปรดส่งออก CSV เพื่อเก็บหลักฐาน ชื่อผู้ตรวจนับเป็นชื่อที่กรอกเอง และผลตรวจนับไม่เปลี่ยนยอดพาเลตหรือสต็อกโดยอัตโนมัติ</p>
+      <p class="cycle-counts-notice">แผนและผลตรวจนับบันทึกออนไลน์ ใช้ร่วมกันระหว่างเครื่อง · เปิดงานนับร่วมกันได้ครั้งละ 1 งาน · กดบันทึกแบบร่างก่อนเปลี่ยนเครื่อง · ผลนับยังไม่ปรับยอดสต็อกโดยอัตโนมัติ</p>
       <div class="cycle-counts-controls">
         <label class="cycle-counts-zone-field" for="cycleCountZone">โซนที่ต้องการตรวจนับ<select id="cycleCountZone"></select></label>
         <label class="cycle-counts-frequency-field" for="cycleCountFrequency">นับทุก (วัน)<input id="cycleCountFrequency" type="number" min="0" max="3650" step="1" inputmode="numeric" value="0" aria-describedby="cycleCountFrequencyHelp"></label>
@@ -2765,12 +2765,14 @@ header.top .header-logo { border-radius: 14px; }
         <button id="cycleCountStart" type="button" class="cycle-counts-primary">เริ่มตรวจนับโซนนี้</button>
         <button id="cycleCountPrintLabels" type="button">พิมพ์ Label / QR ติดพาเลท</button>
       </div>
+      <div class="cycle-counts-controls"><button id="cycleCountReload" type="button">โหลดข้อมูลออนไลน์ล่าสุด</button><button id="cycleCountSaveDraft" type="button">บันทึกแบบร่างออนไลน์</button><button id="cycleCountImportLocal" type="button">นำข้อมูลเดิมในเครื่องขึ้นออนไลน์</button><button id="cycleCountBackupDraft" type="button">สำรองแบบร่างในฟอร์ม</button></div>
+      <p id="cycleCountOnlineStatus" role="status" aria-live="polite">กำลังเชื่อมต่อข้อมูลออนไลน์</p>
       <p id="cycleCountStatus" role="status" aria-live="polite"></p>
       <div class="cycle-counts-summary" id="cycleCountSummary"></div>
       <h3>กำหนดการตามโซน</h3>
       <div class="cycle-counts-table-wrap"><table><thead><tr><th>โซน</th><th>ตำแหน่ง</th><th>รอบนับ</th><th>นับล่าสุด</th><th>นับครั้งถัดไป</th><th>สถานะ</th></tr></thead><tbody id="cycleCountSchedule"></tbody></table></div>
       <section id="cycleCountDraft" class="cycle-counts-draft" hidden></section>
-      <div class="cycle-counts-history-head"><h3>ประวัติการตรวจนับในเครื่องนี้</h3><button id="cycleCountExport" type="button">ส่งออก CSV</button></div>
+      <div class="cycle-counts-history-head"><h3>ประวัติการตรวจนับออนไลน์</h3><button id="cycleCountExport" type="button">ส่งออก CSV</button></div>
       <div id="cycleCountHistory" class="cycle-counts-history"></div>
     </section>
   </div>
@@ -3270,7 +3272,7 @@ function updateStickyOffsets() {
   const tabsEl = document.getElementById('tabs');
   if (!header || !tabsEl) return;
   const headerH = header.getBoundingClientRect().height;
-  const tabsH = tabsEl.getBoundingClientRect().height;
+  const tabsH = getComputedStyle(tabsEl).position === 'sticky' ? tabsEl.getBoundingClientRect().height : 0;
   document.documentElement.style.setProperty('--sticky-header-h', headerH + 'px');
   const visual = window.visualViewport;
   const viewTop = visual?.offsetTop || 0, viewHeight = visual?.height || window.innerHeight;
@@ -10526,7 +10528,7 @@ window.addEventListener('pageshow', () => {
 <script src="keyword-picker.js?v=20261016-active-reset1"></script>
 <script src="pk-recipes.js?v=20261015-refresh1"></script>
 <script src="cycle-counts-core.js?v=20260926-1"></script>
-<script src="cycle-counts.js?v=20261010-kien1"></script>
+<script src="cycle-counts.js?v=20261021-online1"></script>
 <script src="scrap-inventory-core.js?v=20260926-1"></script>
 <script src="scrap-inventory.js?v=20260926-1"></script>
 <link rel="stylesheet" href="slot-copy.css?v=20261009-selfcopy1">
