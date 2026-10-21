@@ -157,13 +157,63 @@
   stopButton.addEventListener('click',stopCamera);
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopCamera(); });
   $('tabs').addEventListener('click',event => { if (event.target.closest('.tab-btn')?.dataset.tab !== 'floorplan') stopCamera(); });
-  function qrMarkup(payload) { const qr = qrcode(0,'M'); qr.addData(payload); qr.make(); return qr.createSvgTag(3,2); }
-  function printLabels(title,labels) {
+  function qrMarkup(payload, margin = 2) { const qr = qrcode(0,'M'); qr.addData(payload); qr.make(); return qr.createSvgTag(3,margin); }
+  function printLabels(title,labels, cycle = false) {
     const page = window.open('','_blank');
     if (!page) { printMessage('เบราว์เซอร์ปิดกั้นหน้าพิมพ์ กรุณาอนุญาตป๊อปอัป',true); return; }
-    page.document.write(`<!doctype html><html lang="th"><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>body{font:14px Arial,sans-serif}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.label{border:1px solid #333;padding:9px;text-align:center;break-inside:avoid}.label svg{width:100px;height:100px}.label b,.label small{display:block;margin:4px}</style><h2>${escapeHtml(title)}</h2><div class="grid">${labels}</div></html>`);
+    page.document.write(`<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>body{font:14px Arial,sans-serif}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.label{border:1px solid #333;padding:9px;text-align:center;break-inside:avoid}.label svg{width:100px;height:100px}.label b,.label small{display:block;margin:4px}
+      ${cycle ? '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;color:#000;background:#fff}.grid{display:block}.label{min-height:130mm;margin:0 0 8mm;padding:5mm;text-align:left}.label header{display:flex;align-items:center;justify-content:space-between;gap:5mm}.label header strong{font-size:32pt}.label svg{width:32mm;height:32mm;flex-shrink:0}.label table{width:100%;border-collapse:collapse;margin:4mm 0;font-size:11pt;overflow-wrap:anywhere}.label th,.label td{border:1px solid #333;padding:2mm;text-align:left}.label td:last-child{min-width:26mm}.label footer{line-height:2.3}.label small{font-size:9pt}.label:nth-child(2n){break-after:page}.label:last-child{break-after:auto}@media print{body>h2{display:none}}' : ''}
+      </style><h2>${escapeHtml(title)}</h2><div class="grid">${labels}</div></html>`);
     page.document.close(); page.focus(); page.print();
+    printMessage('เปิดหน้าพิมพ์แล้ว · ตรวจตัวอย่างก่อนยืนยันพิมพ์');
   }
+  const cycleZone = $('cycleLabelZone'), cycleSlots = $('cycleLabelSlots');
+  cycleZone.innerHTML = printZone.innerHTML;
+  function updateCycleSelection() {
+    const count = cycleSlots.querySelectorAll('input:checked').length;
+    $('cycleLabelSelection').textContent = `เลือก ${count} พาเลท`;
+    $('cycleLabelPrint').disabled = count === 0;
+  }
+  function renderCycleSlots() {
+    cycleSlots.innerHTML = locations.filter(loc => loc.zone === cycleZone.value).map(loc =>
+      `<label><input type="checkbox" value="${escapeHtml(loc.slot)}" checked><span>${escapeHtml(loc.slot)}</span></label>`).join('');
+    updateCycleSelection();
+  }
+  cycleZone.addEventListener('change', renderCycleSlots);
+  cycleSlots.addEventListener('change', updateCycleSelection);
+  for (const [id, checked] of [['cycleLabelSelectAll', true], ['cycleLabelClear', false]]) {
+    $(id).addEventListener('click', () => {
+      cycleSlots.querySelectorAll('input').forEach(input => { input.checked = checked; });
+      updateCycleSelection();
+    });
+  }
+  $('cycleCountPrintLabels').addEventListener('click', () => {
+    cycleZone.value = $('cycleCountZone').value;
+    renderCycleSlots();
+    activateTab($('tab-print-labels'));
+    cycleZone.focus();
+  });
+  renderCycleSlots();
+  $('cycleLabelPrint').addEventListener('click', () => {
+    if (!palletDataReady || !$('syncStatusBar')?.classList.contains('sync-connected')) {
+      printMessage('ข้อมูลพาเลทยังไม่เชื่อมต่อ กรุณารอหรือรีเฟรชก่อนพิมพ์', true); return;
+    }
+    if (typeof qrcode !== 'function') { printMessage('ยังสร้าง QR ไม่ได้ กรุณารีเฟรชแล้วลองใหม่', true); return; }
+    const zone = cycleZone.value;
+    const selected = new Set([...cycleSlots.querySelectorAll('input:checked')].map(input => input.value));
+    const slots = (ZONE_SLOTS[zone] || []).filter(slot => selected.has(slot.code));
+    if (!slots.length) { printMessage('กรุณาเลือกพาเลทก่อนพิมพ์', true); return; }
+    const snapshot = CycleCountCore.snapshotZone(zone, slots, SLOT_ITEMS[zone], PALLET_STATUS[zone], getRemainingQty);
+    const labels = slots.map(slot => {
+      const rows = snapshot.rows.filter(row => row.slot === slot.code);
+      const payload = PKBarcode.locationPayload(zone, slot.code);
+      return `<article class="label"><header><div><b>PK WMS · CYCLE COUNT</b><strong>${escapeHtml(slot.code)}</strong><p>โซน ${escapeHtml(zone)}</p></div>${qrMarkup(payload, 12)}</header>
+        <small>${escapeHtml(payload)} · สแกนผ่านเมนูผังคลังเพื่อเปิดตำแหน่ง</small>
+        <table><thead><tr><th>รหัส / ชื่อสินค้า</th><th>Lot</th><th>หน่วย</th><th>นับจริง</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${escapeHtml(row.code)}<br>${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot || '—')}</td><td>${escapeHtml(row.unit)}</td><td></td></tr>`).join('') : '<tr><td colspan="3">ไม่มีรายการสินค้าในระบบ · ตรวจพื้นที่จริง</td><td></td></tr>'}</tbody></table>
+        <footer>วันที่ตรวจนับ __________________ เวลา __________<br>ผู้ตรวจนับ __________________ ผู้ตรวจสอบ __________________</footer><small>ใช้จดผลนับจริงก่อนบันทึกในเมนู Cycle Counts · พิมพ์ ${escapeHtml(new Date().toLocaleString('th-TH'))}</small></article>`;
+    }).join('');
+    printLabels(`Label Cycle Count · โซน ${zone} · ${slots.length} พาเลท`, labels, true);
+  });
   $('barcodePrintLocations').addEventListener('click', () => {
     const zone = printZone.value, slots = locations.filter(loc => loc.zone === zone);
     if (!slots.length || typeof qrcode !== 'function') { printMessage('ยังสร้างป้าย QR ไม่ได้',true); return; }
