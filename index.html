@@ -2107,7 +2107,7 @@ header.top .header-logo { border-radius: 14px; }
     <button class="tab-btn" id="tab-reconcile" data-tab="reconcile" type="button" role="tab" aria-selected="false" aria-controls="pane-reconcile" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg><span>เปรียบเทียบสต็อกพาเลต</span></button>
     <button class="tab-btn" id="tab-cycle-counts" data-tab="cycle-counts" type="button" role="tab" aria-selected="false" aria-controls="pane-cycle-counts" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m7 8 1 1 2-2m-3 7 1 1 2-2m3-5h4m-4 6h4M7 18h10"/></svg><span>Cycle Counts · ตรวจนับตามรอบ</span><span class="tab-badge" id="tabBadgeCycleCounts">ตั้งรอบนับ</span></button>
     <button class="tab-btn" id="tab-scrap" data-tab="scrap" type="button" role="tab" aria-selected="false" aria-controls="pane-scrap" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg><span>Scrap Inventory · ตัดจำหน่าย</span></button>
-    <button class="tab-btn" id="tab-print-labels" data-tab="print-labels" type="button" role="tab" aria-selected="false" aria-controls="pane-print-labels" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 8V3h10v5M7 17H3V8h18v9h-4M7 14h10v7H7v-7M17 11h1"/></svg><span>พิมพ์ Label / QR · Cycle Count</span></button>
+    <button class="tab-btn" id="tab-print-labels" data-tab="print-labels" type="button" role="tab" aria-selected="false" aria-controls="pane-print-labels" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 8V3h10v5M7 17H3V8h18v9h-4M7 14h10v7H7v-7M17 11h1"/></svg><span>พิมพ์ Count Sheet / QR</span></button>
     <button class="tab-btn" id="tab-daily-receive" data-tab="daily-receive" type="button" role="tab" aria-selected="false" aria-controls="pane-daily-receive" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v4h4M12 10v7m-3-3 3 3 3-3"/></svg><span>รายการรับเข้าประจำวัน</span><span class="tab-badge" id="tabBadgeDailyReceive">วันนี้</span></button>
     <button class="tab-btn" id="tab-daily-issue" data-tab="daily-issue" type="button" role="tab" aria-selected="false" aria-controls="pane-daily-issue" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v4h4M12 17v-7m-3 3 3-3 3 3"/></svg><span>รายการเบิกประจำวัน</span><span class="tab-badge" id="tabBadgeDailyIssue">วันนี้</span></button>
     <button class="tab-btn" id="tab-receipt-plan" data-tab="receipt-plan" type="button" role="tab" aria-selected="false" aria-controls="pane-receipt-plan" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-14 4h3m4 0h3m-10 4h3"/></svg><span>แผนรับเข้าประจำวัน</span><span class="tab-badge" id="tabBadgeReceiptPlan">—</span></button>
@@ -2763,7 +2763,7 @@ header.top .header-logo { border-radius: 14px; }
         <small class="cycle-counts-frequency-help" id="cycleCountFrequencyHelp">0 = ไม่ตั้งรอบนับ</small>
         <button id="cycleCountSaveFrequency" type="button">บันทึกรอบนับ</button>
         <button id="cycleCountStart" type="button" class="cycle-counts-primary">เริ่มตรวจนับโซนนี้</button>
-        <button id="cycleCountPrintLabels" type="button">พิมพ์ Label / QR ติดพาเลท</button>
+        <button id="cycleCountPrintLabels" type="button">พิมพ์ใบ Count Sheet / QR</button>
       </div>
       <div class="cycle-counts-controls"><button id="cycleCountReload" type="button">โหลดข้อมูลออนไลน์ล่าสุด</button><button id="cycleCountSaveDraft" type="button">บันทึกแบบร่างออนไลน์</button><button id="cycleCountImportLocal" type="button">นำข้อมูลเดิมในเครื่องขึ้นออนไลน์</button><button id="cycleCountBackupDraft" type="button">สำรองแบบร่างในฟอร์ม</button></div>
       <p id="cycleCountOnlineStatus" role="status" aria-live="polite">กำลังเชื่อมต่อข้อมูลออนไลน์</p>
@@ -3015,14 +3015,14 @@ header.top .header-logo { border-radius: 14px; }
     <div class="panel">
       <h2>พิมพ์ป้ายตำแหน่งและสินค้า</h2>
       <section class="barcode-print-card" aria-labelledby="cycleLabelTitle">
-        <h3 id="cycleLabelTitle">Label / QR ติดหน้าพาเลท · Cycle Count</h3>
-        <p>เลือกโซนและตำแหน่งที่ต้องการ · A4 แนวตั้ง 2 ป้ายต่อหน้า · เว้นยอดในระบบเพื่อจดจำนวนที่นับจริง</p>
+        <h3 id="cycleLabelTitle">Count Sheet / QR · ใบตรวจนับสินค้า</h3>
+        <p>เลือกโซนและตำแหน่งที่ต้องการ · ตารางต่อเนื่อง A4 แนวนอน · เว้นยอดในระบบเพื่อจดจำนวนที่นับจริง</p>
         <label for="cycleLabelZone">เลือกโซน<select id="cycleLabelZone"></select></label>
         <div class="cycle-label-actions"><button type="button" id="cycleLabelSelectAll">เลือกทั้งหมด</button><button type="button" id="cycleLabelClear">ล้างการเลือก</button></div>
         <fieldset class="cycle-label-slots"><legend>ตำแหน่งพาเลทที่ต้องการพิมพ์</legend><div id="cycleLabelSlots"></div></fieldset>
         <p id="cycleLabelSelection" role="status" aria-live="polite"></p>
-        <button type="button" id="cycleLabelPrint">พิมพ์ Label Cycle Count พร้อม QR</button>
-        <p>QR ใช้สแกนเปิดตำแหน่งผ่านเมนูผังคลัง · ป้ายอ้างอิงตำแหน่ง ไม่ติดตามตัวพาเลทเมื่อย้าย · การพิมพ์ไม่เปลี่ยนยอดสต็อก</p>
+        <button type="button" id="cycleLabelPrint">พิมพ์ใบ Count Sheet พร้อม QR</button>
+        <p>QR ใช้สแกนเปิดตำแหน่งผ่านเมนูผังคลัง · กรอกผลลงใบตรวจนับแล้วบันทึกในเมนู Cycle Counts · การพิมพ์ไม่เปลี่ยนยอดสต็อก</p>
       </section>
       <div class="barcode-print-grid">
         <section class="barcode-print-card" aria-labelledby="barcodePrintLocationTitle">
@@ -10500,7 +10500,7 @@ window.addEventListener('pageshow', () => {
 <script src="ui-sound.js?v=20261015-samples1"></script>
 <script src="scan-sound.js?v=20260923-1"></script>
 <script src="barcode-operations.js?v=20260923-3"></script>
-<script src="barcode-ui.js?v=20261021-cycle-labels1"></script>
+<script src="barcode-ui.js?v=20261021-count-sheet1"></script>
 <script src="incoming-workflow.js?v=20261008-keywords1"></script>
 <script src="supplier-options-data.js?v=20260924-1"></script>
 <script src="supplier-options.js?v=20260924-1"></script>

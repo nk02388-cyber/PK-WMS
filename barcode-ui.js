@@ -162,7 +162,8 @@
     const page = window.open('','_blank');
     if (!page) { printMessage('เบราว์เซอร์ปิดกั้นหน้าพิมพ์ กรุณาอนุญาตป๊อปอัป',true); return; }
     page.document.write(`<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>body{font:14px Arial,sans-serif}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.label{border:1px solid #333;padding:9px;text-align:center;break-inside:avoid}.label svg{width:100px;height:100px}.label b,.label small{display:block;margin:4px}
-      ${cycle ? '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;color:#000;background:#fff}.grid{display:block}.label{min-height:130mm;margin:0 0 8mm;padding:5mm;text-align:left}.label header{display:flex;align-items:center;justify-content:space-between;gap:5mm}.label header strong{font-size:32pt}.label svg{width:32mm;height:32mm;flex-shrink:0}.label table{width:100%;border-collapse:collapse;margin:4mm 0;font-size:11pt;overflow-wrap:anywhere}.label th,.label td{border:1px solid #333;padding:2mm;text-align:left}.label td:last-child{min-width:26mm}.label footer{line-height:2.3}.label small{font-size:9pt}.label:nth-child(2n){break-after:page}.label:last-child{break-after:auto}@media print{body>h2{display:none}}' : ''}
+      ${cycle ? '@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{margin:0;color:#000;background:#fff;font-size:11pt}.grid{display:block}.count-sheet h1{font-size:20pt;margin:0 0 2mm}.sheet-meta{display:flex;justify-content:space-between;gap:5mm;margin:2mm 0;flex-wrap:wrap}.count-sheet table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10pt}.count-sheet thead{display:table-header-group}.count-sheet th,.count-sheet td{border:1px solid #333;padding:2mm;vertical-align:middle;overflow-wrap:anywhere}.count-sheet th{text-align:left}.count-sheet tr{break-inside:avoid}.count-sheet .sheet-position{text-align:center}.sheet-position strong{display:block;font-size:11pt}.count-sheet svg{display:block;width:18mm;height:18mm;margin:auto}.count-sheet footer{margin-top:3mm;line-height:1.6;break-inside:avoid}.sheet-help{font-size:9pt;margin:2mm 0}.count-sheet td{height:25mm}@media screen{.count-sheet{min-width:950px}}@media print{body>h2{display:none}}' : ''}
+
       </style><h2>${escapeHtml(title)}</h2><div class="grid">${labels}</div></html>`);
     page.document.close(); page.focus(); page.print();
     printMessage('เปิดหน้าพิมพ์แล้ว · ตรวจตัวอย่างก่อนยืนยันพิมพ์');
@@ -204,15 +205,19 @@
     const slots = (ZONE_SLOTS[zone] || []).filter(slot => selected.has(slot.code));
     if (!slots.length) { printMessage('กรุณาเลือกพาเลทก่อนพิมพ์', true); return; }
     const snapshot = CycleCountCore.snapshotZone(zone, slots, SLOT_ITEMS[zone], PALLET_STATUS[zone], getRemainingQty);
-    const labels = slots.map(slot => {
-      const rows = snapshot.rows.filter(row => row.slot === slot.code);
-      const payload = PKBarcode.locationPayload(zone, slot.code);
-      return `<article class="label"><header><div><b>PK WMS · CYCLE COUNT</b><strong>${escapeHtml(slot.code)}</strong><p>โซน ${escapeHtml(zone)}</p></div>${qrMarkup(payload, 12)}</header>
-        <small>${escapeHtml(payload)} · สแกนผ่านเมนูผังคลังเพื่อเปิดตำแหน่ง</small>
-        <table><thead><tr><th>รหัส / ชื่อสินค้า</th><th>Lot</th><th>หน่วย</th><th>นับจริง</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${escapeHtml(row.code)}<br>${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot || '—')}</td><td>${escapeHtml(row.unit)}</td><td></td></tr>`).join('') : '<tr><td colspan="3">ไม่มีรายการสินค้าในระบบ · ตรวจพื้นที่จริง</td><td></td></tr>'}</tbody></table>
-        <footer>วันที่ตรวจนับ __________________ เวลา __________<br>ผู้ตรวจนับ __________________ ผู้ตรวจสอบ __________________</footer><small>ใช้จดผลนับจริงก่อนบันทึกในเมนู Cycle Counts · พิมพ์ ${escapeHtml(new Date().toLocaleString('th-TH'))}</small></article>`;
+    let lineNumber = 0;
+    const rows = slots.flatMap(slot => {
+      const items = snapshot.rows.filter(row => row.slot === slot.code);
+      return (items.length ? items : [{ code: '', name: 'ไม่มีรายการสินค้าในระบบ · ตรวจพื้นที่จริง', lot: '', unit: '' }]).map(row =>
+        `<tr><td>${++lineNumber}</td><td class="sheet-position"><strong>${escapeHtml(slot.code)}</strong>${qrMarkup(PKBarcode.locationPayload(zone, slot.code), 12)}</td><td><strong>${escapeHtml(row.code)}</strong><br>${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot || '—')}</td><td>${escapeHtml(row.unit)}</td><td></td><td></td></tr>`);
     }).join('');
-    printLabels(`Label Cycle Count · โซน ${zone} · ${slots.length} พาเลท`, labels, true);
+    const sheet = `<article class="count-sheet"><h1>COUNT SHEET · ใบตรวจนับสินค้า</h1>
+      <div class="sheet-meta"><strong>PK WMS · โซน ${escapeHtml(zone)} · ${slots.length} ตำแหน่ง · ${lineNumber} รายการ</strong><span>เลขที่ใบตรวจนับ ____________________</span></div>
+      <div class="sheet-meta"><span>วันที่ตรวจนับ __________________ เวลาเริ่ม __________ เวลาสิ้นสุด __________</span><span>ผู้ตรวจนับ ____________________</span></div>
+      <p class="sheet-help">กรอกจำนวนที่นับจริงทุกแถว · พบว่าไม่มีสินค้าให้กรอก 0 · พบสินค้าอื่นให้ระบุในหมายเหตุ · QR สแกนเปิดตำแหน่งผ่านเมนูผังคลัง</p>
+      <table><colgroup><col style="width:4%"><col style="width:12%"><col style="width:31%"><col style="width:12%"><col style="width:8%"><col style="width:13%"><col style="width:20%"></colgroup><thead><tr><th colspan="7">COUNT SHEET · โซน ${escapeHtml(zone)} · วันที่ตรวจนับ ______________ · เลขที่ใบตรวจนับ ______________</th></tr><tr><th>ลำดับ</th><th>ตำแหน่ง / QR</th><th>รหัส / ชื่อสินค้า</th><th>Lot</th><th>หน่วย</th><th>จำนวนที่นับจริง</th><th>หมายเหตุ</th></tr></thead><tbody>${rows}</tbody></table>
+      <footer>ผู้ตรวจนับ ____________________ ผู้ตรวจสอบ ____________________ วันที่ ____________________<br><small>จดผลก่อนบันทึกในเมนู Cycle Counts · ไม่แสดงยอดในระบบ · พิมพ์ ${escapeHtml(new Date().toLocaleString('th-TH'))}</small></footer></article>`;
+    printLabels(`Count Sheet · โซน ${zone} · ${slots.length} ตำแหน่ง`, sheet, true);
   });
   $('barcodePrintLocations').addEventListener('click', () => {
     const zone = printZone.value, slots = locations.filter(loc => loc.zone === zone);
