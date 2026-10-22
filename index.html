@@ -7277,13 +7277,15 @@ function classifyStockItem(name, code) {
 
 function rowsFromMatrix(matrix, fileName, sheetName) {
   const rows = [];
-  const warehouseHint = (/\b(300-S|200|201|202|204|300|401|800|900)\b/i.exec(fileName + ' ' + sheetName) || [])[1] || '';
+  const warehouseHint = (/\b(300-S|200|201|202|203|204|300|401|800|900)\b/i.exec(fileName + ' ' + sheetName) || [])[1] || '';
   let warehouse = normalizeStockWarehouse(warehouseHint);
   let reportDate = '';
   for (const rawRow of matrix) {
     const row = rawRow.map(v => String(v == null ? '' : v).trim());
     const first = row[0] || '';
     if (!reportDate && /^ณ วันที่:/.test(first)) reportDate = first;
+    // BW is excluded; clear the previous warehouse until the next included header.
+    if (first === '203' && row[1] && !row[2]) { warehouse = ''; continue; }
     const rowWarehouse = normalizeStockWarehouse(first);
     if (rowWarehouse && row[1] && !row[2]) { warehouse = rowWarehouse; continue; }
     // Product codes are not always numeric. Examples in the warehouse exports include
