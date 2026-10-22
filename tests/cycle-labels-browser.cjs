@@ -25,7 +25,7 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
    await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width} overflow`);
   }
-  await page.locator('#cycleLabelClear').click();assert.ok(await page.locator('#cycleLabelPrint').isDisabled());
+  await page.locator('#cycleLabelClear').click();assert.ok(await page.locator('#cycleLabelPrint').isDisabled());assert.ok(await page.locator('#cyclePalletLabelPrint').isDisabled());
   for(const slot of ['O1-01','O1-02','O1-03'])await page.locator(`#cycleLabelSlots input[value="${slot}"]`).check();
   await page.locator('#cycleLabelPrint').click();assert.match(await page.locator('#barcodePrintStatus').textContent(),/ยังไม่เชื่อมต่อ/);
   await page.evaluate(()=>{palletDataReady=true;document.getElementById('syncStatusBar').classList.add('sync-connected');window.qrPayloads=[];const original=qrcode;window.qrcode=(...args)=>{const qr=original(...args),add=qr.addData;qr.addData=value=>{qrPayloads.push(value);add.call(qr,value);};return qr;};});
@@ -53,6 +53,20 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
    assert.equal((pdf.toString('latin1').match(/\/Type \/Page\b/g)||[]).length,1,'four count rows must fit on one A4 landscape page');
   }
   await popup.screenshot({path:path.join(out,`${width}-print.png`),fullPage:true});await popup.close();
+  const beforeLabels=await page.evaluate(()=>JSON.stringify(SLOT_ITEMS));
+  const labelPromise=context.waitForEvent('page');await page.locator('#cyclePalletLabelPrint').click();const labels=await labelPromise;await labels.waitForLoadState();
+  assert.equal(await labels.locator('.label').count(),3,'additional Cycle Count mode prints one label per selected location');
+  assert.equal(await labels.locator('.label svg').count(),3);
+  const pallet=await labels.locator('.label').first().innerText();assert.match(pallet,/O1-01/);assert.match(pallet,/SKU-1/);assert.match(pallet,/SKU-2/);assert.match(pallet,/Product Name:/);assert.match(pallet,/<script>danger<\/script>/);assert.doesNotMatch(pallet,/320|ZERO/);
+  assert.match(await labels.locator('.label').nth(1).innerText(),/ไม่มีรายการสินค้า/);
+  assert.equal(await labels.locator('script').count(),0);
+  assert.ok((await labels.locator('tbody tr td:last-child').allTextContents()).every(value=>value===''),'actual-count fields stay blank');
+  if(engine==='edge'){
+   const pdf=await labels.pdf({path:path.join(out,`${width}-cycle-pallet-labels.pdf`),preferCSSPageSize:true});
+   assert.equal((pdf.toString('latin1').match(/\/Type \/Page\b/g)||[]).length,2,'three pallet labels print on two A4 portrait pages');
+  }
+  await labels.screenshot({path:path.join(out,`${width}-cycle-pallet-labels.png`),fullPage:true});await labels.close();
+  assert.equal(await page.evaluate(()=>JSON.stringify(SLOT_ITEMS)),beforeLabels);
   await page.locator('#cycleLabelSelectAll').click();
   await page.evaluate(()=>{SLOT_ITEMS['O-1']['O1-01'][0].name='ขวดตัวอย่าง';window.qrPayloads=[];});
   const fullPromise=context.waitForEvent('page');await page.locator('#cycleLabelPrint').click();const full=await fullPromise;await full.waitForLoadState();
