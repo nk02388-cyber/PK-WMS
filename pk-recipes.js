@@ -90,6 +90,15 @@
     request.finally(()=>{if(inFlight===request)inFlight=null;});
     return request;
   }
+  async function fetchOriginalBaseline() {
+    if(!client.auth?.getSession)return client.rpc('get_pk_bom_baseline');
+    const {data:{session},error:sessionError}=await client.auth.getSession();
+    if(sessionError||!session?.access_token)throw new Error('กรุณาเข้าสู่ระบบใหม่');
+    const response=await fetch('/api/pk-bom-baseline',{headers:{Authorization:`Bearer ${session.access_token}`}});
+    if(response.status===404||response.status===503)return client.rpc('get_pk_bom_baseline');
+    if(!response.ok){const result=await response.json().catch(()=>({}));throw new Error(result.error||'โหลด BOM ไม่สำเร็จ');}
+    return {data:await response.json(),error:null};
+  }
   async function refreshNow({reuseBaseline=false}={}) {
     if(saving)return;
     const id=++generation;
@@ -97,7 +106,7 @@
     if(!client || !allowed()){ready=false;cachedBaseline=null;baselineLoadedAt=0;clearBaseline();newRecipe();return status('เข้าสู่ระบบด้วยบัญชีที่มีสิทธิ์ BOM เพื่อโหลดสูตร');}
     try {
       const useCache=reuseBaseline&&cachedBaseline&&Date.now()-baselineLoadedAt<BASELINE_REFRESH_MS;
-      const [original,saved]=await Promise.all([useCache?Promise.resolve({data:cachedBaseline}):client.rpc('get_pk_bom_baseline'),client.rpc('get_pk_recipes')]);
+      const [original,saved]=await Promise.all([useCache?Promise.resolve({data:cachedBaseline}):fetchOriginalBaseline(),client.rpc('get_pk_recipes')]);
       if(id!==generation || !allowed())return;
       if(original.error)throw original.error;if(saved.error)throw saved.error;
       const data=original.data;

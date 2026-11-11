@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c6b50">
+  <title>ใบเบิกบรรจุภัณฑ์ · PK WMS</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PK WMS · BIO-COSLAB</p>
+        <h1>ใบเบิกบรรจุภัณฑ์</h1>
+        <p class="subhead">รายการใบเบิกและสถานะงาน · โหมดอ่านอย่างเดียว</p>
+      </div>
+      <button id="refresh" type="button">↻ <span>โหลดข้อมูลล่าสุด</span></button>
+    </header>
+    <section class="notice" role="note">หน้านี้เปิดดูข้อมูลได้โดยไม่ต้องเข้าสู่ระบบ และไม่สามารถสร้าง แก้ไข หรือลบรายการได้</section>
+    <section class="filters" aria-label="ตัวกรองใบเบิก">
+      <label>ค้นหา<input id="search" type="search" placeholder="เลขที่ใบเบิก สินค้า พนักงาน หรือรหัสวัตถุดิบ"></label>
+      <label>สถานะ<select id="status"><option value="all">ทุกสถานะ</option><option value="queued">รอเบิก</option><option value="active">กำลังทำงาน</option><option value="paused">พักงาน</option><option value="done">เบิกครบ</option><option value="partial">เบิกไม่ครบ</option></select></label>
+      <label>วันที่เริ่ม<input id="from" type="date"></label>
+      <label>วันที่สิ้นสุด<input id="to" type="date"></label>
+    </section>
+    <section class="summary" aria-label="สรุปรายการ">
+      <article><strong id="total">—</strong><span>ใบเบิกที่แสดง</span></article>
+      <article><strong id="open">—</strong><span>กำลังดำเนินการ</span></article>
+      <article><strong id="done">—</strong><span>เสร็จแล้ว</span></article>
+      <p id="updated" aria-live="polite">กำลังโหลดข้อมูล…</p>
+    </section>
+    <section id="message" class="message" role="status" hidden></section>
+    <section id="tickets" class="ticket-list" aria-live="polite"></section>
+    <footer>ข้อมูลใบเบิกสำหรับตรวจสอบเท่านั้น · ไม่รองรับการจัดการ Admin</footer>
+  </main>
+  <script src="./config.js"></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>

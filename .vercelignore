@@ -1,5 +1,6 @@
 .git/
 .vercel/
+.codex/
 .github/
 work/
 node_modules/
@@ -7,6 +8,7 @@ tests/
 docs/
 tools/
 supabase/
+operations-public/
 .env*
 *.sql
 *.md

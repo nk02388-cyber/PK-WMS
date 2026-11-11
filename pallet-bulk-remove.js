@@ -123,7 +123,7 @@
       });
       palletWriteBusy=true;ownsWrite=true;
       await savePalletBatch(rows,[],{action:'remove',document_no:`ลบหลายพาเลท · ยืนยัน ${approval.id}`});
-      reset();refreshAfterRemoteChange(zone,null);status.textContent=`ลบข้อมูล ${rows.length} พาเลทแล้ว · ตำแหน่งว่างพร้อมใช้งาน`;
+      reset();refreshAfterRemoteChange(zone,null);status.textContent=`ลบข้อมูล ${rows.length.toLocaleString('en-US')} พาเลทแล้ว · ตำแหน่งว่างพร้อมใช้งาน`;
       setSyncStatus('connected','บันทึกการลบหลายพาเลทแล้ว');
     } catch(error) {status.textContent=error.message;setSyncStatus('error',error.message);}
     finally {if(ownsWrite)palletWriteBusy=false;busy=false;zoomModal.inert=false;render();}

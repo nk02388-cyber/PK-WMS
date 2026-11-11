@@ -92,8 +92,8 @@
         <td><span class="cycle-status cycle-status-${schedule.kind}">${schedule.label}</span></td>
       </tr>`;
     }).join('');
-    badge.textContent = due ? `${due} ถึงกำหนด` : configured ? 'ตามกำหนด' : 'ตั้งรอบนับ';
-    summaryBox.innerHTML = `<div><strong>${zones.length}</strong><span>โซนที่มีตำแหน่งพาเลต</span></div><div><strong>${configured}</strong><span>ตั้งรอบนับแล้ว</span></div><div><strong>${due}</strong><span>ถึงกำหนด / เกินกำหนด</span></div><div><strong>${state.history.length}</strong><span>ผลนับออนไลน์</span></div>`;
+    badge.textContent = due ? `${number(due)} ถึงกำหนด` : configured ? 'ตามกำหนด' : 'ตั้งรอบนับ';
+    summaryBox.innerHTML = `<div><strong>${number(zones.length)}</strong><span>โซนที่มีตำแหน่งพาเลต</span></div><div><strong>${number(configured)}</strong><span>ตั้งรอบนับแล้ว</span></div><div><strong>${number(due)}</strong><span>ถึงกำหนด / เกินกำหนด</span></div><div><strong>${number(state.history.length)}</strong><span>ผลนับออนไลน์</span></div>`;
   }
   function difference(row) {
     if (row.counted === '' || row.counted == null || row.expected == null) return '—';
@@ -105,17 +105,17 @@
     draftBox.hidden = !draft;
     if (!draft) { draftBox.innerHTML = ''; return; }
     const tally = CycleCountCore.countSummary(draft.rows);
-    draftBox.innerHTML = `<div class="cycle-counts-draft-head"><div><h3>กำลังตรวจนับโซน ${esc(draft.zone)}</h3><p>บันทึกยอดตั้งต้นเมื่อ ${esc(WmsDates.dateTime(draft.startedAt))} · ${draft.rows.length} รายการ</p></div><button id="cycleCountCancel" type="button">ยกเลิกงานนับ</button></div>
+    draftBox.innerHTML = `<div class="cycle-counts-draft-head"><div><h3>กำลังตรวจนับโซน ${esc(draft.zone)}</h3><p>บันทึกยอดตั้งต้นเมื่อ ${esc(WmsDates.dateTime(draft.startedAt))} · ${number(draft.rows.length)} รายการ</p></div><button id="cycleCountCancel" type="button">ยกเลิกงานนับ</button></div>
       <div class="cycle-counts-draft-meta"><label>ผู้ตรวจนับ *<input id="cycleCountBy" maxlength="80" autocomplete="name" value="${esc(draft.countedBy || '')}"></label><label>หมายเหตุ<input id="cycleCountNote" maxlength="500" value="${esc(draft.note || '')}" placeholder="เลขเอกสารหรือข้อสังเกต (ถ้ามี)"></label></div>
       ${draft.rows.length ? `<div class="cycle-counts-table-wrap cycle-counts-entry-table"><table><thead><tr><th>ตำแหน่ง</th><th>สินค้า / Lot</th><th>ยอดในระบบ</th><th>นับได้ *</th><th>ส่วนต่าง</th></tr></thead><tbody>${draft.rows.map((row, index) => `<tr><td>${esc(row.slot)}</td><td><strong>${esc(row.code || 'ไม่ระบุรหัส')}</strong><span>${esc(row.name)}</span>${row.lot ? `<small>Lot ${esc(row.lot)}</small>` : ''}</td><td>${row.expected == null ? 'ไม่ทราบ' : `${number(row.expected)} ${esc(row.unit)}`}</td><td><input type="number" min="0" ${row.type === 'occupied' ? 'max="1" step="1"' : 'step="any"'} inputmode="decimal" data-row="${index}" aria-label="จำนวนที่นับได้ ${esc(row.slot)} ${esc(row.code || row.name)}" value="${esc(row.counted)}"></td><td class="cycle-difference" data-difference="${index}">${esc(difference(row))}</td></tr>`).join('')}</tbody></table></div>` : `<label class="cycle-counts-empty-confirm"><input id="cycleCountConfirmEmpty" type="checkbox" ${draft.confirmEmpty ? 'checked' : ''}> ตรวจแล้วว่าโซนนี้ไม่มีสินค้าและไม่มีพาเลตใช้งาน</label>`}
-      <div class="cycle-counts-draft-foot"><span id="cycleCountProgress">กรอกแล้ว ${tally.counted}/${draft.rows.length} · ส่วนต่าง ${tally.different} · ไม่ทราบยอดตั้งต้น ${tally.unknown}</span><button id="cycleCountComplete" type="button" class="cycle-counts-primary">บันทึกผลตรวจนับ</button></div>`;
+      <div class="cycle-counts-draft-foot"><span id="cycleCountProgress">กรอกแล้ว ${number(tally.counted)}/${number(draft.rows.length)} · ส่วนต่าง ${number(tally.different)} · ไม่ทราบยอดตั้งต้น ${number(tally.unknown)}</span><button id="cycleCountComplete" type="button" class="cycle-counts-primary">บันทึกผลตรวจนับ</button></div>`;
   }
   function renderHistory() {
     document.getElementById('cycleCountExport').disabled = !state.history.length;
     if (!state.history.length) { historyBox.textContent = 'ยังไม่มีผลตรวจนับออนไลน์'; return; }
     historyBox.innerHTML = state.history.slice(0, 20).map(record => {
       const tally = CycleCountCore.countSummary(record.rows);
-      return `<details><summary><strong>โซน ${esc(record.zone)}</strong> · ${esc(WmsDates.dateTime(record.completedAt))} · ${esc(record.countedBy)} · ส่วนต่าง ${tally.different} รายการ</summary><p>${record.rows.length} รายการ · ไม่ทราบยอดตั้งต้น ${tally.unknown} รายการ${record.note ? ` · ${esc(record.note)}` : ''}</p><div class="cycle-counts-table-wrap"><table><thead><tr><th>ตำแหน่ง</th><th>สินค้า</th><th>ยอดในระบบ</th><th>นับได้</th><th>ส่วนต่าง</th></tr></thead><tbody>${record.rows.map(row => `<tr><td>${esc(row.slot)}</td><td>${esc(row.code || row.name)}</td><td>${row.expected == null ? 'ไม่ทราบ' : number(row.expected)} ${esc(row.unit)}</td><td>${number(row.counted)} ${esc(row.unit)}</td><td>${esc(difference(row))}</td></tr>`).join('')}</tbody></table></div></details>`;
+      return `<details><summary><strong>โซน ${esc(record.zone)}</strong> · ${esc(WmsDates.dateTime(record.completedAt))} · ${esc(record.countedBy)} · ส่วนต่าง ${number(tally.different)} รายการ</summary><p>${number(record.rows.length)} รายการ · ไม่ทราบยอดตั้งต้น ${number(tally.unknown)} รายการ${record.note ? ` · ${esc(record.note)}` : ''}</p><div class="cycle-counts-table-wrap"><table><thead><tr><th>ตำแหน่ง</th><th>สินค้า</th><th>ยอดในระบบ</th><th>นับได้</th><th>ส่วนต่าง</th></tr></thead><tbody>${record.rows.map(row => `<tr><td>${esc(row.slot)}</td><td>${esc(row.code || row.name)}</td><td>${row.expected == null ? 'ไม่ทราบ' : number(row.expected)} ${esc(row.unit)}</td><td>${number(row.counted)} ${esc(row.unit)}</td><td>${esc(difference(row))}</td></tr>`).join('')}</tbody></table></div></details>`;
     }).join('');
   }
   function refresh() { renderSchedule(); renderDraft(); renderHistory(); controls(); }
@@ -163,7 +163,7 @@
       if (differenceCell) differenceCell.textContent = difference(row);
     } else return;
     const tally = CycleCountCore.countSummary(state.draft.rows);
-    draftBox.querySelector('#cycleCountProgress').textContent = `กรอกแล้ว ${tally.counted}/${state.draft.rows.length} · ส่วนต่าง ${tally.different} · ไม่ทราบยอดตั้งต้น ${tally.unknown}`;
+    draftBox.querySelector('#cycleCountProgress').textContent = `กรอกแล้ว ${number(tally.counted)}/${number(state.draft.rows.length)} · ส่วนต่าง ${number(tally.different)} · ไม่ทราบยอดตั้งต้น ${number(tally.unknown)}`;
     markDirty();
   });
   draftBox.addEventListener('change', event => {
@@ -184,7 +184,7 @@
       delete completed.confirmEmpty;
       if (await persist({ ...state, draft: null, history: [completed, ...state.history] })) {
         refresh();
-        setStatus(`บันทึกผลตรวจนับโซน ${completed.zone} แล้ว · ผลต่าง ${CycleCountCore.countSummary(completed.rows).different} รายการ · ระบบยังไม่ได้ปรับยอดพาเลตหรือสต็อก`);
+        setStatus(`บันทึกผลตรวจนับโซน ${completed.zone} แล้ว · ผลต่าง ${number(CycleCountCore.countSummary(completed.rows).different)} รายการ · ระบบยังไม่ได้ปรับยอดพาเลตหรือสต็อก`);
       }
     }
   });
@@ -215,7 +215,7 @@
       history: [...state.history, ...added].sort((a,b) => b.completedAt.localeCompare(a.completedAt)), draft: state.draft || local.draft };
     if (await persist(next)) {
       frequencyInput.value = zoneFrequency(zoneSelect.value); refresh();
-      setStatus(`นำข้อมูลในเครื่องขึ้นออนไลน์แล้ว · เพิ่มผลนับ ${added.length} งาน · รอบนับออนไลน์เดิมมีลำดับก่อน · ถ้ามีแบบร่างออนไลน์จะคงงานนั้นไว้ ข้อมูลเดิมในเครื่องยังไม่ถูกลบ`);
+      setStatus(`นำข้อมูลในเครื่องขึ้นออนไลน์แล้ว · เพิ่มผลนับ ${number(added.length)} งาน · รอบนับออนไลน์เดิมมีลำดับก่อน · ถ้ามีแบบร่างออนไลน์จะคงงานนั้นไว้ ข้อมูลเดิมในเครื่องยังไม่ถูกลบ`);
     }
   });
   document.getElementById('tab-cycle-counts').addEventListener('click', () => { if (!dirty) loadOnline(); });

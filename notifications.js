@@ -97,7 +97,7 @@
       const toast = document.createElement('div');
       toast.className = 'notification-toast';
       toast.dataset.tone = fresh.some(action => action.tone === 'critical') ? 'critical' : 'warning';
-      const title = fresh.length === 1 ? fresh[0].title : `มีการแจ้งเตือน ${fresh.length} รายการ`;
+      const title = fresh.length === 1 ? fresh[0].title : `มีการแจ้งเตือน ${fresh.length.toLocaleString('en-US')} รายการ`;
       const detail = fresh.length === 1 ? fresh[0].detail : `${fresh[0].title} · ดูทั้งหมดที่กระดิ่ง`;
       toast.innerHTML = `<strong>${escape(title)}</strong><small>${escape(detail)}</small>`;
       if (toastStack.children.length >= 2) toastStack.firstElementChild.remove();
@@ -130,7 +130,7 @@
     clearButton.disabled = !currentActions.length;
     badge.hidden = !currentActions.length;
     badge.textContent = currentActions.length > 9 ? '9+' : String(currentActions.length);
-    toggle.setAttribute('aria-label',currentActions.length ? `เปิดการแจ้งเตือน ${currentActions.length} ประเภท` : 'เปิดการแจ้งเตือน');
+    toggle.setAttribute('aria-label',currentActions.length ? `เปิดการแจ้งเตือน ${currentActions.length.toLocaleString('en-US')} ประเภท` : 'เปิดการแจ้งเตือน');
     list.innerHTML = currentActions.length ? currentActions.map(action => `<button type="button" class="notification-item" data-action="${escape(action.kind)}" data-tone="${action.tone}"><strong>${escape(action.title)}</strong><small>${escape(action.detail)}</small></button>`).join('') : `<p class="notification-empty">${actions.length ? 'ล้างการแจ้งเตือนวันนี้แล้ว · รายการใหม่จะแสดงเมื่อข้อมูลเปลี่ยน' : 'ไม่มีรายการที่ต้องดำเนินการ'}</p>`;
     if (pending.count == null && !pending.error) list.insertAdjacentHTML('beforeend','<p class="notification-empty">กำลังตรวจรายการรอจัดเก็บ…</p>');
     scheduleToast();

@@ -2007,6 +2007,10 @@ header.top .header-logo { border-radius: 14px; }
 <link rel="stylesheet" href="keyword-picker.css?v=20261008-1">
 <link rel="stylesheet" href="dashboard-layout.css?v=20261016-hallmark1">
 <link rel="stylesheet" href="wms-workbench.css?v=20261016-paneclip1">
+<script>
+  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body class="viz-root department-choosing">
 <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
@@ -2111,7 +2115,7 @@ header.top .header-logo { border-radius: 14px; }
     <button class="tab-btn" id="tab-daily-receive" data-tab="daily-receive" type="button" role="tab" aria-selected="false" aria-controls="pane-daily-receive" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v4h4M12 10v7m-3-3 3 3 3-3"/></svg><span>รายการรับเข้าประจำวัน</span><span class="tab-badge" id="tabBadgeDailyReceive">วันนี้</span></button>
     <button class="tab-btn" id="tab-daily-issue" data-tab="daily-issue" type="button" role="tab" aria-selected="false" aria-controls="pane-daily-issue" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v4h4M12 17v-7m-3 3 3-3 3 3"/></svg><span>รายการเบิกประจำวัน</span><span class="tab-badge" id="tabBadgeDailyIssue">วันนี้</span></button>
     <button class="tab-btn" id="tab-receipt-plan" data-tab="receipt-plan" type="button" role="tab" aria-selected="false" aria-controls="pane-receipt-plan" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-14 4h3m4 0h3m-10 4h3"/></svg><span>แผนรับเข้าประจำวัน</span><span class="tab-badge" id="tabBadgeReceiptPlan">—</span></button>
-<button class="tab-btn" id="tab-warehouse-operations" data-tab="warehouse-operations" data-admin-only="true" type="button" role="tab" aria-selected="false" aria-controls="pane-warehouse-operations" tabindex="-1" hidden><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 12h6m-6 4h4"/></svg><span>ใบเบิกบรรจุภัณฑ์</span></button>
+<button class="tab-btn" id="tab-warehouse-operations" data-tab="warehouse-operations" type="button" role="tab" aria-selected="false" aria-controls="pane-warehouse-operations" tabindex="-1" hidden><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 12h6m-6 4h4"/></svg><span>ใบเบิกบรรจุภัณฑ์</span></button>
     <button class="tab-btn" id="tab-audit" data-tab="audit" type="button" role="tab" aria-selected="false" aria-controls="pane-audit" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 10a9 9 0 1 1 1 7M3 4v6h6M12 7v5l3 2"/></svg><span>ประวัติการแก้ไขพาเลต</span></button>
 <button class="tab-btn" id="tab-settings" data-tab="settings" data-admin-only="true" type="button" role="tab" aria-selected="false" aria-controls="pane-settings" tabindex="-1" hidden><svg class="tab-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 3-.6 2.4-2 .9-2.2-.7-2 3.4 1.6 1.7v2.6l-1.6 1.7 2 3.4 2.2-.7 2 .9L9 21h6l.6-2.4 2-.9 2.2.7 2-3.4-1.6-1.7v-2.6l1.6-1.7-2-3.4-2.2.7-2-.9L15 3H9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg><span>ตั้งค่า</span></button>
   </nav>
@@ -3226,9 +3230,7 @@ const fmt0 = n => (Math.round(n) || 0).toLocaleString('en-US');
 const fmt2 = n => ((n || 0)).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
 const fmt3 = n => (n || 0).toLocaleString('en-US', {maximumFractionDigits:3});
 const fmtCompact = n => {
-  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + 'M';
-  if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(1) + 'K';
-  return fmt0(n);
+  return Number(n || 0).toLocaleString('en-US', {maximumFractionDigits:2});
 };
 
 document.getElementById('reportDate').textContent = 'ข้อมูล ณ วันที่ ' + WmsDates.date(STOCK.report_date);
@@ -3237,7 +3239,6 @@ document.getElementById('reportDate').textContent = 'ข้อมูล ณ ว�
 const tabButtons = document.querySelectorAll('.tab-btn');
 async function activateTab(b, moveFocus = false) {
   if (b.hidden || (window.getWmsCanAccess && !window.getWmsCanAccess(b.dataset.tab))) return;
-  if (b.dataset.tab === 'warehouse-operations' && !(await window.requestWarehouseOperationsPin?.())) return;
   if (b.hidden || (window.getWmsCanAccess && !window.getWmsCanAccess(b.dataset.tab))) return;
   tabButtons.forEach(x => {
     const selected = x === b;
@@ -3652,10 +3653,10 @@ function renderZoneSelector(entries, buildings) {
   }));
   const visibleCount = groups.reduce((total, group) => total + group.entries.length, 0);
   return `<section class="floor-zone-selector" aria-label="เลือกโซน">
-    <div class="floor-zone-selector-title">เลือกโซน · ${visibleCount} โซน</div>
+    <div class="floor-zone-selector-title">เลือกโซน · ${visibleCount.toLocaleString('en-US')} โซน</div>
     <div class="floor-zone-groups">${groups.filter(group => group.entries.length).map(group => `
       <section class="floor-zone-group" data-building="${group.key}" aria-label="${group.label}">
-      <h3>${group.label}<span>${group.entries.length} โซน</span></h3>
+      <h3>${group.label}<span>${group.entries.length.toLocaleString('en-US')} โซน</span></h3>
       <div class="floor-zone-buttons">${group.entries.map(([zoneCode, whCode]) =>
       `<button type="button" class="floor-zone-fallback" data-zone="${escapeHtml(zoneCode)}" data-wh="${escapeHtml(whCode || '')}" aria-label="เลือกโซน ${escapeHtml(zoneCode)}" aria-pressed="false">${escapeHtml(zoneCode)}</button>`
       ).join('')}</div></section>`).join('')}</div>
@@ -4211,6 +4212,8 @@ let palletDataReady = false;
 let palletWriteBusy = false;
 const palletVersions = new Map();
 const receiveVersions = new Map();
+const conflictedPalletWrites = new Set();
+const conflictedReceiveDateWrites = new Set();
 const palletRemoteRows = new Map();
 let supabaseClient = null;
 let stockSupabaseClient = null;
@@ -4262,6 +4265,12 @@ function palletAuditMetadata(action = 'adjust', documentNo = '') {
 async function savePalletBatch(slots, dates = [], audit = {}) {
   if (!supabaseClient) throw new Error('ยังไม่ได้เชื่อมต่อระบบบันทึกพาเลต');
   if (!palletDataReady) throw new Error('ยังโหลดข้อมูลพาเลตไม่ครบ กรุณารีเฟรชก่อนแก้ไข');
+  if (slots.some(row => conflictedPalletWrites.has(JSON.stringify([row.zone,row.slot_code]))
+      || (palletVersions.get(JSON.stringify([row.zone,row.slot_code])) || 0) !== row.expected_version)
+    || dates.some(row => conflictedReceiveDateWrites.has(row.item_code)
+      || (receiveVersions.get(row.item_code) || 0) !== row.expected_version)) {
+    throw new Error('ข้อมูลตำแหน่งเปลี่ยนแล้ว · คัดลอกค่าที่กรอกไว้ แล้วรีเฟรชหน้าเพื่อตรวจข้อมูลล่าสุดก่อนบันทึก');
+  }
   const metadata = slots.length ? palletAuditMetadata(audit.action, audit.document_no || '') : null;
   const auditedSlots = slots.map(slot => ({...slot, _audit:metadata}));
   const rpcName = audit.action === 'import' ? 'import_pallet_changes' : 'save_pallet_changes';
@@ -4269,7 +4278,11 @@ async function savePalletBatch(slots, dates = [], audit = {}) {
   if (audit.action === 'import') params.p_pin = audit.pin;
   const { data, error } = await supabaseClient.rpc(rpcName, params);
   if (error) {
-    if (error.code === '40001') throw new Error('มีคนแก้ข้อมูลนี้แล้ว · ยังไม่ได้บันทึก กรุณาคัดลอกค่าที่กรอกไว้ แล้วรีเฟรชเพื่อตรวจข้อมูลล่าสุด');
+    if (error.code === '40001') {
+      slots.forEach(row => conflictedPalletWrites.add(JSON.stringify([row.zone,row.slot_code])));
+      dates.forEach(row => conflictedReceiveDateWrites.add(row.item_code));
+      throw new Error('มีคนแก้ข้อมูลนี้แล้ว · ยังไม่ได้บันทึก คัดลอกค่าที่กรอกไว้แล้วรีเฟรชหน้า ก่อนลองอีกครั้ง');
+    }
     if (error.code === '42501') throw new Error('ระบบยังไม่อนุญาตให้บันทึก กรุณาติดต่อผู้ดูแล');
     throw new Error('ยังยืนยันการบันทึกไม่ได้ กรุณาตรวจอินเทอร์เน็ตและรีเฟรชก่อนลองใหม่: ' + error.message);
   }
@@ -4870,7 +4883,7 @@ function updateZoomCount() {
   const slots = ZONE_SLOTS[zoneCode] || [];
   if (!slots.length) { zoomCountEl.textContent = 'โซนนี้ยังไม่มีตำแหน่งพาเลต'; return; }
   const occCount = slots.filter(s => isOccupied(zoneCode, s.code)).length;
-  zoomCountEl.textContent = `${occCount}/${slots.length} ตำแหน่งใช้งาน ·`;
+  zoomCountEl.textContent = `${fmt0(occCount)}/${fmt0(slots.length)} ตำแหน่งใช้งาน ·`;
 }
 
 function renderZoomSlots(zoneCode) {
@@ -5128,10 +5141,10 @@ function renderSearchSuggestions(query) {
     <button type="button" class="floorplan-search-suggestion" id="floorplanSearchOption${index}" role="option" data-code="${escapeHtml(item.code)}" aria-selected="false">
       <span class="fs-code">${highlightSearchMatch(item.code, raw)}</span>
       <span class="fs-name">${highlightSearchMatch(item.name || 'ไม่ระบุชื่อสินค้า', raw)}</span>
-      <span class="fs-count">${item.entries.length} ตำแหน่ง</span>
+      <span class="fs-count">${fmt0(item.entries.length)} ตำแหน่ง</span>
     </button>
   `).join('') + (results.length > searchSuggestionItems.length
-    ? `<div class="floorplan-search-more">อีก ${results.length - searchSuggestionItems.length} รายการ · พิมพ์เพิ่มเพื่อจำกัดผลลัพธ์</div>` : '')
+    ? `<div class="floorplan-search-more">อีก ${fmt0(results.length - searchSuggestionItems.length)} รายการ · พิมพ์เพิ่มเพื่อจำกัดผลลัพธ์</div>` : '')
     : '<div class="floorplan-search-empty">ไม่พบชื่อหรือรหัสสินค้าที่ตรงกัน</div>';
   floorplanSearchSuggestions.hidden = false;
   floorplanSearchInput.setAttribute('aria-expanded', 'true');
@@ -5183,7 +5196,7 @@ function renderSearchMatches(matches, queryLabel, autoJump = true) {
       <span class="fs-fifo-name">${escapeHtml(m.name || 'ไม่ระบุชื่อสินค้า')}${m.lotNo ? `<span class="fs-fifo-lot">Lot: ${escapeHtml(m.lotNo)}</span>` : ''}</span>
     </button>`
   ).join('');
-  floorplanSearchMsg.innerHTML = `พบ ${matches.length} รายการ · FIFO: รับก่อนแสดงก่อน · เลือกตำแหน่งเพื่อดูรายละเอียด<div class="fs-fifo-list">${links}</div>`;
+  floorplanSearchMsg.innerHTML = `พบ ${matches.length.toLocaleString('en-US')} รายการ · FIFO: รับก่อนแสดงก่อน · เลือกตำแหน่งเพื่อดูรายละเอียด<div class="fs-fifo-list">${links}</div>`;
 }
 
 function performFloorplanSearch() {
@@ -5209,7 +5222,7 @@ function performFloorplanSearch() {
   } else {
     floorplanSearchMsg.className = 'floorplan-search-msg fs-multi';
     floorplanSearchMsg.hidden = false;
-    floorplanSearchMsg.textContent = `พบ ${results.length} รหัสสินค้า · เลือกรายการที่ต้องการจากคำแนะนำ`;
+    floorplanSearchMsg.textContent = `พบ ${fmt0(results.length)} รหัสสินค้า · เลือกรายการที่ต้องการจากคำแนะนำ`;
   }
 }
 
@@ -5663,7 +5676,7 @@ function reconciliationCutoff() {
   if (stockSnapshotState !== 'latest') cutoffStatus = 'ยังโหลดสต็อกจาก API ไม่สำเร็จ';
   else if (!Number.isFinite(savedTime)) cutoffStatus = 'ไม่มีเวลาบันทึกสต็อก · ยังเทียบเวลาไม่ได้';
   else if (!palletTimes.length) cutoffStatus = 'ไม่มีเวลาแก้พาเลต · ยังเทียบเวลาไม่ได้';
-  else if (palletTimes.some(time => time > savedTime)) cutoffStatus = `พาเลตแก้หลังบันทึกสต็อก ${palletTimes.filter(time => time > savedTime).length} ตำแหน่ง · ยอดอาจมาจากคนละเวลา`;
+  else if (palletTimes.some(time => time > savedTime)) cutoffStatus = `พาเลตแก้หลังบันทึกสต็อก ${palletTimes.filter(time => time > savedTime).length.toLocaleString('en-US')} ตำแหน่ง · ยอดอาจมาจากคนละเวลา`;
   return {stockSavedAt,palletLastUpdated,cutoffStatus};
 }
 function renderStockReconciliation() {
@@ -5677,7 +5690,7 @@ function renderStockReconciliation() {
   const search=document.getElementById('stockReconcileSearch').value;
   const shown=sortStockReconciliation(filterStockReconciliation(stockReconciliationRows,document.getElementById('stockReconcileFilter').value,search),stockReconciliationSort);
   const counts={}; stockReconciliationRows.forEach(row=>counts[row.status]=(counts[row.status]||0)+1);
-  status.textContent=`คำนวณแล้ว ${stockReconciliationRows.length.toLocaleString()} รหัส/หน่วย · แสดง ${shown.length.toLocaleString()} รายการ${search.trim()?` · ค้นหา “${search.trim()}”`:''}`;
+  status.textContent=`คำนวณแล้ว ${fmt0(stockReconciliationRows.length)} รหัส/หน่วย · แสดง ${fmt0(shown.length)} รายการ${search.trim()?` · ค้นหา “${search.trim()}”`:''}`;
   document.getElementById('stockReconcileSummary').innerHTML=`<div class="fg-bom-head"><b>ยอดตรงกัน ${counts['ตรงกัน']||0}</b><span>ยอดไม่ตรง ${counts['ยอดไม่ตรง']||0} · ไม่มีในพาเลต ${counts['ไม่มีในพาเลต']||0} · ไม่มีในสต็อกที่อัปเดต ${counts['ไม่มีในสต็อกที่อัปเดต']||0} · ต้องตรวจสอบ ${counts['ต้องตรวจสอบ']||0}</span></div>`;
   const amount=value=>value==null?'ไม่ทราบ':escapeHtml(formatBomQuantity(value));
   document.getElementById('stockReconcileResult').innerHTML=!shown.length?'<p>ไม่มีรายการที่ตรงกับตัวกรอง</p>':`<div class="table-scroll" tabindex="0" role="region" aria-label="ผลเปรียบเทียบสต็อก"><table><thead><tr><th>รหัส / ชื่อสินค้า</th><th>หน่วย</th><th class="num">ในพาเลต</th><th class="num">สต็อกที่อัปเดต</th><th class="num" aria-sort="${stockReconciliationSort==='desc'?'descending':stockReconciliationSort==='asc'?'ascending':'none'}"><button type="button" class="reconcile-sort-button" id="stockReconcileSort" aria-label="เรียงส่วนต่าง${stockReconciliationSort==='desc'?'จากน้อยไปมาก':'จากมากไปน้อย'}">ส่วนต่าง ${stockReconciliationSort==='desc'?'↓':stockReconciliationSort==='asc'?'↑':'↕'}</button></th><th>สถานะ</th><th>ตำแหน่ง / คลัง</th></tr></thead><tbody>${shown.map(row=>`<tr><td>${escapeHtml(row.code)}<span class="code" style="display:block;white-space:normal">${escapeHtml(row.name)}</span></td><td>${escapeHtml(row.unit||'ไม่ระบุ')}</td><td class="num">${amount(row.pallet)}</td><td class="num">${amount(row.stock)}</td><td class="num">${amount(row.difference)}</td><td><span class="badge ${row.status==='ตรงกัน'?'good':row.status==='ยอดไม่ตรง'?'critical':'warn'}">${escapeHtml(row.status)}</span></td><td><span class="code" style="white-space:normal">พาเลต: ${escapeHtml(row.slots.join(', ')||'—')}<br>คลัง: ${escapeHtml(row.warehouses.join(', ')||'—')}</span></td></tr>`).join('')}</tbody></table></div>`;
@@ -5703,7 +5716,7 @@ document.getElementById('stockReconcileExport').addEventListener('click',async()
     const book=XLSX.utils.book_new();
     tables.forEach(table=>{const sheet=XLSX.utils.aoa_to_sheet(table.rows);sheet['!cols']=table.rows[0].map((_,i)=>({wch:i===1?48:22}));if(table.name==='ผลเปรียบเทียบ')sheet['!autofilter']={ref:sheet['!ref']};XLSX.utils.book_append_sheet(book,sheet,table.name);});
     XLSX.writeFile(book,`Stock-Reconcile-${new Date().toISOString().slice(0,10)}.xlsx`);
-    document.getElementById('stockReconcileStatus').textContent=`ส่งออกผลเปรียบเทียบตามตัวกรองแล้ว ${exportedRows.length.toLocaleString()} รายการ`;
+    document.getElementById('stockReconcileStatus').textContent=`ส่งออกผลเปรียบเทียบตามตัวกรองแล้ว ${fmt0(exportedRows.length)} รายการ`;
   } catch(error) { document.getElementById('stockReconcileStatus').textContent='ส่งออกไม่สำเร็จ · '+error.message; }
 });
 
@@ -5816,7 +5829,7 @@ function renderSlotEdit() {
     return balance != null && String(balance).trim() !== '' && Number.isFinite(Number(balance)) && Number(balance) === 0;
   });
   const activeCount = depleted.filter(value => !value).length;
-  if (fseItemCount) fseItemCount.textContent = `${activeCount} รายการ`;
+  if (fseItemCount) fseItemCount.textContent = `${activeCount.toLocaleString('en-US')} รายการ`;
   const rows = items.map((it, i) => {
         const metaLine = it.note ? `<span class="fse-item-meta">หมายเหตุ: ${escapeHtml(it.note)}</span>` : '';
 
@@ -5834,7 +5847,7 @@ function renderSlotEdit() {
         // still occupies its CSS grid column so the row's other cells stay aligned.
         const remaining = getRemainingQty(it);
         const remainingCell = remaining != null
-          ? `<span class="fse-item-remaining-cell${remaining <= 0 ? ' low' : ''}">${escapeHtml(String(remaining))}</span>`
+          ? `<span class="fse-item-remaining-cell${remaining <= 0 ? ' low' : ''}">${escapeHtml(Number(remaining).toLocaleString('en-US',{maximumFractionDigits:20}))}</span>`
           : `<span class="fse-item-remaining-cell unknown"></span>`;
         const unitCell = it.unit
           ? `<span class="fse-item-unit-cell">${escapeHtml(it.unit)}</span>`
@@ -5889,7 +5902,7 @@ function renderSlotEdit() {
   const historyCount = items.length - activeCount;
   if (historyCount) {
     const historyOpen = depleted[editItemIndex] || depleted[withdrawOpenIndex] || depleted[returnOpenIndex] || (movementEdit && depleted[movementEdit.itemIndex]);
-    fseItemsList.innerHTML += `<details class="fse-depleted-history" ${historyOpen ? 'open' : ''}><summary style="cursor:pointer;padding:12px 0;">ประวัติรายการหมดสต็อก ${historyCount} รายการ · ดู Log / รับคืน</summary>${FSE_ITEMS_HEADER}${rows.filter((_, i) => depleted[i]).join('')}</details>`;
+    fseItemsList.innerHTML += `<details class="fse-depleted-history" ${historyOpen ? 'open' : ''}><summary style="cursor:pointer;padding:12px 0;">ประวัติรายการหมดสต็อก ${historyCount.toLocaleString('en-US')} รายการ · ดู Log / รับคืน</summary>${FSE_ITEMS_HEADER}${rows.filter((_, i) => depleted[i]).join('')}</details>`;
   }
   updateAddBtnState();
   updateWithdrawBtnState();
@@ -6189,7 +6202,7 @@ function renderAddProductSuggestions(query) {
       <span class="fs-name">${highlightSearchMatch(item.name || 'ไม่ระบุชื่อสินค้า',raw)}</span>
       <span class="fs-count">${escapeHtml(item.source)}${item.unit ? ' · ' + escapeHtml(item.unit) : ''}${item.searchName && item.searchName !== item.name ? ' · ชื่อค้นหา: ' + highlightSearchMatch(item.searchName,raw) : ''}</span>
     </button>`).join('') + (results.length > addSuggestionItems.length
-      ? `<div class="floorplan-search-more">อีก ${results.length - addSuggestionItems.length} รายการ · พิมพ์เพิ่มเพื่อจำกัดผลลัพธ์</div>` : '')
+      ? `<div class="floorplan-search-more">อีก ${fmt0(results.length - addSuggestionItems.length)} รายการ · พิมพ์เพิ่มเพื่อจำกัดผลลัพธ์</div>` : '')
     : '<div class="floorplan-search-empty">ไม่พบในสต็อกที่อัปเดต · กรอกรหัสและชื่อสินค้าใหม่ได้</div>';
   fseAddSuggestions.hidden = false;
   fseAddCode.setAttribute('aria-expanded','true');
@@ -6894,7 +6907,7 @@ async function exportFloorplanExcel() {
       XLSX.utils.book_append_sheet(book,sheet,table.name);
     }
     XLSX.writeFile(book,`Pallet-Floor2-${new Date().toISOString().slice(0,10)}.xlsx`);
-    status.textContent=`ส่งออกแล้ว · ${tables[1].rows.length-1} ตำแหน่ง · ${tables[2].rows.length-1} รายการสินค้า`;
+    status.textContent=`ส่งออกแล้ว · ${fmt0(tables[1].rows.length-1)} ตำแหน่ง · ${fmt0(tables[2].rows.length-1)} รายการสินค้า`;
   } catch(error) { status.textContent='ส่งออกไม่สำเร็จ · '+error.message; }
   finally { button.disabled=false; }
 }
@@ -6989,7 +7002,7 @@ document.getElementById('floorplanZoomImportInput').addEventListener('change', a
     const importCodes = [...new Set(importItems.map(it=>it.code).filter(Boolean))];
     const importUnits = [...new Set(importItems.map(it=>it.unit || ''))];
     const quantitySummary = importUnits.length===1 ? ` · ${importItems.reduce((sum,it)=>sum+Number(it.qty || 0),0).toLocaleString('th-TH')} ${importUnits[0]}` : '';
-    const importSummary = `${parsed.add_to_empty_slots!==undefined ? 'เพิ่มเฉพาะตำแหน่งว่าง' : 'แทนที่ข้อมูลทุกโซน'} ${slots.length} ตำแหน่ง · ${importCodes.length} รหัส${quantitySummary}`;
+    const importSummary = `${parsed.add_to_empty_slots!==undefined ? 'เพิ่มเฉพาะตำแหน่งว่าง' : 'แทนที่ข้อมูลทุกโซน'} ${fmt0(slots.length)} ตำแหน่ง · ${fmt0(importCodes.length)} รหัส${quantitySummary}`;
     const pin = await confirmPalletTransfer(`Import\n${importSummary}\nรหัส: ${importCodes.slice(0,9).join(', ')}${importCodes.length>9 ? ', …' : ''}`);
     if (pin === null) return;
     setSyncStatus('connecting','กำลังตรวจเวอร์ชันและบันทึกไฟล์นำเข้า…');
@@ -9095,7 +9108,7 @@ function renderFgSuggestions() {
       <span class="fs-name">${highlightSearchMatch(item.fg_name || 'ไม่ระบุชื่อสินค้า', query)}</span>
       <span class="fs-count">FG</span>
     </button>`).join('') + (results.length > 8
-      ? `<div class="floorplan-search-more">อีก ${results.length - 8} รายการ · พิมพ์เพิ่มเพื่อจำกัดผลลัพธ์</div>` : '')
+      ? `<div class="floorplan-search-more">อีก ${fmt0(results.length - 8)} รายการ · พิมพ์เพิ่มเพื่อจำกัดผลลัพธ์</div>` : '')
     : '<div class="floorplan-search-empty">ไม่พบชื่อหรือรหัส FG ที่ตรงกัน</div>';
   fgBomSuggestions.hidden = false;
   fgBomSearch.setAttribute('aria-expanded', 'true');
@@ -9131,7 +9144,7 @@ function performFgSearch() {
   }
   renderFgSuggestions();
   fgBomSearchMsg.textContent = results.length
-    ? `พบ ${results.length} รายการ · เลือกสินค้าที่ต้องการดู BOM`
+    ? `พบ ${fmt0(results.length)} รายการ · เลือกสินค้าที่ต้องการดู BOM`
     : 'ไม่พบชื่อหรือรหัส FG ที่ตรงกัน';
   fgBomSearchMsg.className = 'floorplan-search-msg ' + (results.length ? 'fs-multi' : 'fs-error');
   fgBomSearchMsg.hidden = false;
@@ -9293,8 +9306,8 @@ function renderBomPlan(updateSelection = true) {
   const visibleRows = filterBomPlanRows(plan.rows, document.getElementById('bomPlanFilter').value);
   const amount = (value,unit) => value == null ? 'ยังประเมินไม่ได้' : `${escapeHtml(formatBomQuantity(value))} ${escapeHtml(unit)}`;
   result.innerHTML = `<div class="fg-bom-head"><b>${plan.ready ? 'บรรจุภัณฑ์เพียงพอสำหรับแผนนี้' : 'แผนนี้ยังไม่พร้อมด้านบรรจุภัณฑ์'}</b>
-    <span>${bomPlan.size} FG · ${plan.rows.length} รหัสบรรจุภัณฑ์ · ขาด ${plan.shortages} รหัส · ต้องตรวจสอบ ${plan.unknown + plan.errors.length} รายการ</span></div>
-    <p>แสดง ${visibleRows.length} จาก ${plan.rows.length} รหัส · การกรองไม่เปลี่ยนผลคำนวณแผน</p>
+    <span>${fmt0(bomPlan.size)} FG · ${fmt0(plan.rows.length)} รหัสบรรจุภัณฑ์ · ขาด ${fmt0(plan.shortages)} รหัส · ต้องตรวจสอบ ${fmt0(plan.unknown + plan.errors.length)} รายการ</span></div>
+    <p>แสดง ${fmt0(visibleRows.length)} จาก ${fmt0(plan.rows.length)} รหัส · การกรองไม่เปลี่ยนผลคำนวณแผน</p>
     ${!visibleRows.length ? '<p>ไม่มีรายการที่ตรงกับตัวกรอง</p>' : ''}
     ${plan.errors.length ? `<p>${plan.errors.map(escapeHtml).join('<br>')}</p>` : ''}
     <div class="table-scroll" tabindex="0" role="region" aria-label="ยอดใช้บรรจุภัณฑ์รวมในแผน"><table>
@@ -9465,7 +9478,7 @@ function recalculateBomFromStock() {
       line.conversion_note = [...notes].join(' · ');
       line.stock_source_note = error ? rows
         .filter(row => !excludedWarehouses.has(String(row.wh).trim()))
-        .map(row => `คลัง ${row.wh}: ${bomNumber(row.qty) == null ? 'ไม่ทราบจำนวน' : row.qty} ${row.unit || 'ไม่ระบุหน่วย'}`)
+        .map(row => `คลัง ${row.wh}: ${bomNumber(row.qty) == null ? 'ไม่ทราบจำนวน' : Number(row.qty).toLocaleString('en-US', {maximumFractionDigits:3})} ${row.unit || 'ไม่ระบุหน่วย'}`)
         .join(' · ') : '';
       line.producible = !error ? Math.max(0, Math.floor(line.stock_avail / qtyPerUnit)) : null;
       if (line.producible == null) incomplete = true;
@@ -9614,7 +9627,7 @@ function renderFgBom(rawCode) {
     <div class="bom-simulation">
       <p><b>สูตรมาตรฐาน:</b> ${detail.producible == null ? 'ยังประเมินไม่ได้' : `รองรับ ${fmt0(detail.producible)} หน่วย FG ตามสูตร`}</p>
       <p>การทดลองไม่รวมรายการมีผลเฉพาะผลทดลองและสต็อกหลังใช้ในตารางนี้ · สรุปภาพรวมและแผนหลาย FG ใช้สูตรมาตรฐาน · โหลดหน้าใหม่จะคืนค่าการทดลองทั้งหมด</p>
-      ${isSimulation ? `<p><b>รายการที่ทดลองไม่รวม (${excludedLines.length}):</b> ${excludedLines.map(line => escapeHtml(line.pk_code) + ' · ' + escapeHtml(line.pk_name || '')).join(' / ')}</p><button type="button" class="excl-toggle-btn" data-reset-simulation>คืนค่าสูตรมาตรฐาน</button>` : ''}
+      ${isSimulation ? `<p><b>รายการที่ทดลองไม่รวม (${fmt0(excludedLines.length)}):</b> ${excludedLines.map(line => escapeHtml(line.pk_code) + ' · ' + escapeHtml(line.pk_name || '')).join(' / ')}</p><button type="button" class="excl-toggle-btn" data-reset-simulation>คืนค่าสูตรมาตรฐาน</button>` : ''}
     </div>
     <div class="table-scroll fg-bom-table-wrap" style="max-height:none;" tabindex="0" role="region" aria-label="ตารางส่วนประกอบ BOM">
       <table class="fg-bom-table">
@@ -10533,8 +10546,7 @@ window.addEventListener('pageshow', () => {
 <script src="receipt-plan.js?v=20261021-dates1"></script>
 <script src="welcome-greeting.js?v=20260926-2" defer></script>
 <script src="account-status.js?v=20261015-departmentrollback1"></script>
-<link rel="stylesheet" href="warehouse-operations-pin.css?v=20261008-2">
-<script src="warehouse-operations.js?v=20261002-pin2"></script>
+<script src="warehouse-operations.js?v=20261029-pkwms-auth1"></script>
 <link rel="stylesheet" href="pk-recipes.css?v=20261002-1">
 <script src="pk-recipes-core.js?v=20261002-1"></script>
 <script src="keyword-picker.js?v=20261016-active-reset1"></script>

@@ -4,7 +4,7 @@ const extract=name=>html.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))[0];
 const history=require('../product-history.js');
 test('zero balances leave active rows but retain history, original indices and return access',()=>{
  const items=[{code:'ZERO',name:'Empty lot',qty:10,remainingQty:0,withdrawals:[{date:'2026-10-05',qty:10,unit:'ใบ'}]},
-  {code:'ACTIVE',qty:8,remainingQty:8},{code:'UNKNOWN'}, {code:'STRING-ZERO',qty:4,remainingQty:'0'}, {code:'BLANK',remainingQty:' '}];
+  {code:'ACTIVE',qty:2253,remainingQty:2253},{code:'UNKNOWN'}, {code:'STRING-ZERO',qty:4,remainingQty:'0'}, {code:'BLANK',remainingQty:' '}];
  const before=JSON.stringify(items);
  const ctx=vm.createContext({editingSlot:{zone:'T-1',slot:'T1-01'},slotItemsFor:()=>items,
   fseSlotTitle:{},fseItemCount:{},fseItemsList:{},FSE_ITEMS_HEADER:'',
@@ -17,6 +17,7 @@ test('zero balances leave active rows but retain history, original indices and r
  assert.equal(ctx.fseItemCount.textContent,'3 รายการ');
  assert.doesNotMatch(active,/LOG-ZERO|LOG-STRING-ZERO/);
  assert.match(active,/LOG-ACTIVE/);assert.match(active,/data-idx="1"/);
+ assert.match(active,/fse-item-remaining-cell[^>]*>2,253<\/span>/);
  assert.match(active,/LOG-UNKNOWN/);assert.match(active,/LOG-BLANK/);
  assert.match(archived,/LOG-ZERO/);assert.match(archived,/LOG-STRING-ZERO/);
  assert.doesNotMatch(archived,/class="fse-depleted-history" open/);

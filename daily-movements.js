@@ -68,7 +68,7 @@
     const query = normalizeSearchText(panel.querySelector('.daily-query').value);
     const visible = query ? allRows.filter(row =>
       query.split(' ').every(term => normalizeSearchText([row.code,row.name,row.lotNo,row.zone,row.slot,row.by,row.reference].join(' ')).includes(term))) : allRows;
-    panel.querySelector('.daily-status').textContent = `${palletDataReady ? 'ข้อมูลพาเลตล่าสุดจากระบบ' : 'กำลังโหลดข้อมูลพาเลต · ผลชั่วคราว'} · ${formatMovementDate(selectedDate)} · ${allRows.length} รายการ${query ? ` · แสดง ${visible.length} รายการ` : ''}`;
+    panel.querySelector('.daily-status').textContent = `${palletDataReady ? 'ข้อมูลพาเลตล่าสุดจากระบบ' : 'กำลังโหลดข้อมูลพาเลต · ผลชั่วคราว'} · ${formatMovementDate(selectedDate)} · ${number(allRows.length)} รายการ${query ? ` · แสดง ${number(visible.length)} รายการ` : ''}`;
     panel.querySelector('.daily-kpis').innerHTML = [
       ['รายการ',summary.transactions],['รหัสสินค้า',summary.codes],['ตำแหน่งพาเลต',summary.slots],['โซน',summary.zones]
     ].map(([label,value]) => `<div class="daily-kpi"><span>${label}</span><strong>${number(value)}</strong></div>`).join('');
@@ -85,7 +85,7 @@
       <tbody>${visible.map(row => `<tr><td>${escape(row.type)}</td><td>${escape(row.zone)} / ${escape(row.slot)}</td><td>${escape(row.code)}</td><td>${escape(row.name)}</td><td>${escape(row.lotNo || '—')}</td><td class="num">${number(row.qty)}</td><td>${escape(row.unit || '—')}</td><td>${escape(row.by || '—')}</td><td>${escape(row.reference || '—')}</td><td>${row.recordedAt ? escape(WmsDates.dateTime(row.recordedAt)) : '—'}</td></tr>`).join('')}</tbody></table></div>`
       : `<div class="daily-empty">${query ? 'ไม่พบรายการที่ตรงกับคำค้นในวันที่เลือก' : 'ไม่มีรายการในวันที่เลือก'}</div>`;
     const badge = document.getElementById(kind === 'receive' ? 'tabBadgeDailyReceive' : 'tabBadgeDailyIssue');
-    badge.textContent = selectedDate === localToday() ? `${summary.transactions} วันนี้` : `${summary.transactions} รายการ`;
+    badge.textContent = selectedDate === localToday() ? `${number(summary.transactions)} วันนี้` : `${number(summary.transactions)} รายการ`;
   }
 
   for (const panel of panels) {

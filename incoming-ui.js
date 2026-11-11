@@ -12,6 +12,7 @@
     slotSelect.value=selectedSlot;
   }
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const number = value => Number(value || 0).toLocaleString('en-US', {maximumFractionDigits:3});
   const status = (id,text,error=false) => { $(id).textContent=text; $(id).dataset.error=String(error); };
   const today = new Date();
   $('incomingReceivedOn').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
@@ -158,7 +159,7 @@
     const first=tags[0];
     $('incomingTagReady').hidden=false;
     $('incomingTagReady').dataset.ready='true';
-    $('incomingTagReady').innerHTML=`<b>บันทึกรับเข้าสำเร็จ · สร้างป้าย ${tags.length} ใบ</b><br>${esc(first.receiving_no)} · ${esc(first.product_code)} · ${esc(first.product_name)}<br>ป้าย ${esc(labelSequence(first))} ถึง ${esc(labelSequence(tags.at(-1)))} · รวม ${esc(tags.reduce((sum,tag)=>sum+Number(tag.quantity),0))} ${esc(first.unit)}`;
+    $('incomingTagReady').innerHTML=`<b>บันทึกรับเข้าสำเร็จ · สร้างป้าย ${number(tags.length)} ใบ</b><br>${esc(first.receiving_no)} · ${esc(first.product_code)} · ${esc(first.product_name)}<br>ป้าย ${esc(labelSequence(first))} ถึง ${esc(labelSequence(tags.at(-1)))} · รวม ${number(tags.reduce((sum,tag)=>sum+Number(tag.quantity),0))} ${esc(first.unit)}`;
     $('incomingPrintTag').hidden=false;
     $('incomingGoPutaway').hidden=false;
   }
@@ -172,9 +173,9 @@
       $('incomingList').replaceChildren(); window.PKNotifications?.refresh(); return;
     }
     const rows=data||[];
-    $('tabBadgeIncoming').textContent=`${rows.filter(row=>row.status==='pending').length} รอจัดเก็บ`;
-    status('incomingListStatus',`แสดง ${rows.length} ป้ายล่าสุด · รอจัดเก็บ ${rows.filter(row=>row.status==='pending').length} ป้าย`);
-    $('incomingList').innerHTML=rows.length?rows.map(row=>`<article class="incoming-record"><div class="incoming-record-head"><strong>${esc(row.receiving_no)} · ป้าย ${esc(labelSequence(row))}</strong><span class="incoming-record-status" data-stored="${row.status==='stored'}">${row.status==='stored'?'จัดเก็บแล้ว':'รอจัดเก็บ'}</span></div><div class="incoming-record-name">${esc(row.product_code)} · ${esc(row.product_name)}</div><div class="incoming-record-meta"><span>${esc(row.quantity)} ${esc(row.unit)}</span><span>${row.status==='stored'?`ตำแหน่ง ${esc(row.zone)}/${esc(row.slot_code)}`:'ยังไม่มีตำแหน่ง'}</span></div><div class="incoming-record-actions">${row.status==='pending'?`<button type="button" data-select-tag="${esc(row.id)}">เลือกจัดเก็บ</button>`:''}<button type="button" data-print-tag="${esc(row.id)}">พิมพ์ป้ายนี้</button>${row.batch_id?`<button type="button" data-print-batch="${esc(row.batch_id)}">พิมพ์ทั้งชุด</button>`:''}</div></article>`).join(''):'ยังไม่มีป้ายรับเข้า';
+    $('tabBadgeIncoming').textContent=`${number(rows.filter(row=>row.status==='pending').length)} รอจัดเก็บ`;
+    status('incomingListStatus',`แสดง ${number(rows.length)} ป้ายล่าสุด · รอจัดเก็บ ${number(rows.filter(row=>row.status==='pending').length)} ป้าย`);
+    $('incomingList').innerHTML=rows.length?rows.map(row=>`<article class="incoming-record"><div class="incoming-record-head"><strong>${esc(row.receiving_no)} · ป้าย ${esc(labelSequence(row))}</strong><span class="incoming-record-status" data-stored="${row.status==='stored'}">${row.status==='stored'?'จัดเก็บแล้ว':'รอจัดเก็บ'}</span></div><div class="incoming-record-name">${esc(row.product_code)} · ${esc(row.product_name)}</div><div class="incoming-record-meta"><span>${number(row.quantity)} ${esc(row.unit)}</span><span>${row.status==='stored'?`ตำแหน่ง ${esc(row.zone)}/${esc(row.slot_code)}`:'ยังไม่มีตำแหน่ง'}</span></div><div class="incoming-record-actions">${row.status==='pending'?`<button type="button" data-select-tag="${esc(row.id)}">เลือกจัดเก็บ</button>`:''}<button type="button" data-print-tag="${esc(row.id)}">พิมพ์ป้ายนี้</button>${row.batch_id?`<button type="button" data-print-batch="${esc(row.batch_id)}">พิมพ์ทั้งชุด</button>`:''}</div></article>`).join(''):'ยังไม่มีป้ายรับเข้า';
     $('incomingList')._rows=rows;
     window.PKNotifications?.refresh();
   }
@@ -182,7 +183,7 @@
     const ready=selectedTag?.status==='pending'&&selectedLocation;
     $('incomingPutawaySummary').dataset.ready=String(!!ready);
     $('incomingPutawaySummary').innerHTML=selectedTag
-      ? `<b>${selectedTag.status==='pending'?'✓ พบป้ายพาเลต':'ป้ายนี้จัดเก็บแล้ว'} · ${esc(selectedTag.receiving_no)} / ${esc(labelSequence(selectedTag))}</b><br>${esc(selectedTag.product_code)} · ${esc(selectedTag.product_name)} · ${esc(selectedTag.quantity)} ${esc(selectedTag.unit)}<br><b>${selectedLocation?'✓ พบตำแหน่ง':'○ รอระบุตำแหน่ง'}</b>${selectedLocation?` · ${esc(selectedLocation.zone)}/${esc(selectedLocation.slot)}`:''}`
+      ? `<b>${selectedTag.status==='pending'?'✓ พบป้ายพาเลต':'ป้ายนี้จัดเก็บแล้ว'} · ${esc(selectedTag.receiving_no)} / ${esc(labelSequence(selectedTag))}</b><br>${esc(selectedTag.product_code)} · ${esc(selectedTag.product_name)} · ${number(selectedTag.quantity)} ${esc(selectedTag.unit)}<br><b>${selectedLocation?'✓ พบตำแหน่ง':'○ รอระบุตำแหน่ง'}</b>${selectedLocation?` · ${esc(selectedLocation.zone)}/${esc(selectedLocation.slot)}`:''}`
       : `<b>○ รอสแกนป้ายพาเลต</b><br>${selectedLocation?`✓ พบตำแหน่ง ${esc(selectedLocation.zone)}/${esc(selectedLocation.slot)}`:'○ รอระบุตำแหน่ง'}`;
     $('incomingPutaway').disabled=!(selectedTag?.status==='pending'&&selectedLocation&&$('incomingStorer').value.trim()&&!saving);
   }
@@ -254,7 +255,7 @@
       if(!Array.isArray(data)||data.length!==palletCount||data.some(tag=>!tag.id)) throw new Error('ผลการบันทึกไม่ครบ กรุณารีเฟรชตรวจทะเบียนก่อนลองใหม่');
       renderTags(data);
       pendingCreateRequestId=null;
-      status('incomingReceiveStatus',`บันทึก FM-ST-011 แล้ว · สร้างป้าย FM-ST-019 ${data.length} ป้าย · รอจัดเก็บ`);
+      status('incomingReceiveStatus',`บันทึก FM-ST-011 แล้ว · สร้างป้าย FM-ST-019 ${number(data.length)} ป้าย · รอจัดเก็บ`);
       $('incomingProductCode').value='';$('incomingProductName').value='';$('incomingLot').value='';$('incomingQuantity').value='';
       supplierInput.value='';supplierProductCode='';supplierOptions.hidden=true;supplierOptions.replaceChildren();
       $('incomingPalletCount').value='1';updateAllocation(true);
@@ -274,7 +275,7 @@
       if(!data?.slot||!data?.tag) throw new Error('ผลการบันทึกไม่ครบ กรุณารีเฟรชตรวจสอบก่อนลองใหม่');
       applyRemoteSlotRow(data.slot,{silent:true,force:true});
       refreshAfterRemoteChange(data.slot.zone,data.slot.slot_code);
-      status('incomingPutawayStatus',`จัดเก็บ ${data.tag.product_code} ที่ ${data.tag.zone}/${data.tag.slot_code} แล้ว · ${data.tag.quantity} ${data.tag.unit}`);
+    status('incomingPutawayStatus',`จัดเก็บ ${data.tag.product_code} ที่ ${data.tag.zone}/${data.tag.slot_code} แล้ว · ${number(data.tag.quantity)} ${data.tag.unit}`);
       selectedTag=null;selectedLocation=null;$('incomingTagScan').value='';$('incomingLocationScan').value='';
       zoneSelect.value='';populateSlotChoices('');
       updatePutaway();
@@ -293,10 +294,10 @@
     const labelFor=tag=>{
       const payload=tag.retrospective?PKBarcode.locationPayload(tag.zone,tag.slot_code):PKIncoming.tagPayload(tag.id);
       const qr=qrcode(0,'M');qr.addData(payload);qr.make();
-      return `<article class="tag"><header><b>FM-ST-019 ใบกำกับสินค้าและวัตถุดิบ</b><strong>${esc(labelSequence(tag))}</strong></header>${tag.retrospective?`<p><b>ป้ายจากยอดคงเหลือ · ${esc(tag.zone)}/${esc(tag.slot_code)}</b></p>`:''}<p>Receiving No.: <b>${esc(tag.receiving_no)}</b></p><p>Supplier: ${esc(tag.supplier_name)}</p><p>Product Code: <b>${esc(tag.product_code)}</b></p><p class="product-name">Product Name: ${esc(tag.product_name)}</p><p>Lot: ${esc(tag.lot_no||'—')}</p>${tag.retrospective?'':`<p>จำนวนรวม: ${esc(tag.batch_total_quantity||tag.quantity)} ${esc(tag.unit)} · ${esc(tag.batch_total||1)} พาเลต</p>`}<p>${tag.retrospective?'จำนวนคงเหลือในพาเลต':'จำนวนในพาเลต'}: <b>${esc(tag.quantity)} ${esc(tag.unit)}</b></p><p>วันที่รับ: ${esc(WmsDates.date(tag.received_on))} · ผลิต: ${esc(WmsDates.date(tag.manufactured_on))} · หมดอายุ: ${esc(WmsDates.date(tag.expires_on))}</p><div class="qr">${qr.createSvgTag(3,12)}<small>${esc(payload)}${tag.retrospective?' · QR ตำแหน่ง · ไม่ใช่รายการรับเข้าใหม่':''}</small></div></article>`;
+      return `<article class="tag"><header><b>FM-ST-019 ใบกำกับสินค้าและวัตถุดิบ</b><strong>${esc(labelSequence(tag))}</strong></header>${tag.retrospective?`<p><b>ป้ายจากยอดคงเหลือ · ${esc(tag.zone)}/${esc(tag.slot_code)}</b></p>`:''}<p>Receiving No.: <b>${esc(tag.receiving_no)}</b></p><p>Supplier: ${esc(tag.supplier_name)}</p><p>Product Code: <b>${esc(tag.product_code)}</b></p><p class="product-name">Product Name: ${esc(tag.product_name)}</p><p>Lot: ${esc(tag.lot_no||'—')}</p>${tag.retrospective?'':`<p>จำนวนรวม: ${number(tag.batch_total_quantity||tag.quantity)} ${esc(tag.unit)} · ${number(tag.batch_total||1)} พาเลต</p>`}<p>${tag.retrospective?'จำนวนคงเหลือในพาเลต':'จำนวนในพาเลต'}: <b>${number(tag.quantity)} ${esc(tag.unit)}</b></p><p>วันที่รับ: ${esc(WmsDates.date(tag.received_on))} · ผลิต: ${esc(WmsDates.date(tag.manufactured_on))} · หมดอายุ: ${esc(WmsDates.date(tag.expires_on))}</p><div class="qr">${qr.createSvgTag(3,12)}<small>${esc(payload)}${tag.retrospective?' · QR ตำแหน่ง · ไม่ใช่รายการรับเข้าใหม่':''}</small></div></article>`;
     };
     const sheets=PKIncoming.labelSheets(tags).map(copies=>`<section class="sheet">${labelFor(copies[0]).repeat(copies.length)}</section>`);
-    page.document.write(`<!doctype html><html lang="th"><meta charset="utf-8"><title>FM-ST-019 ใบกำกับสินค้าและวัตถุดิบ · ${esc(tags[0].receiving_no)} · ${tags.length} พาเลต</title><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font:8.5pt Arial,sans-serif;margin:0;color:#111}.sheet{width:277mm;height:190mm;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4mm;break-after:page;page-break-after:always}.sheet:last-child{break-after:auto;page-break-after:auto}.tag{border:1.5px solid #111;padding:2.5mm;min-width:0;overflow:hidden;overflow-wrap:anywhere}.tag header{display:flex;justify-content:space-between;align-items:start;gap:3mm;border-bottom:1px solid #555;padding-bottom:1.5mm;font-size:9pt}.tag header strong{font-size:15pt;white-space:nowrap}.tag p{margin:1.2mm 0}.product-name{font-weight:700}.qr{text-align:center;margin-top:1.5mm}.qr svg{width:28mm;height:28mm}.qr small{display:block;font-size:6.5pt;overflow-wrap:anywhere}</style>${sheets.join('')}</html>`);
+    page.document.write(`<!doctype html><html lang="th"><meta charset="utf-8"><title>FM-ST-019 ใบกำกับสินค้าและวัตถุดิบ · ${esc(tags[0].receiving_no)} · ${number(tags.length)} พาเลต</title><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font:8.5pt Arial,sans-serif;margin:0;color:#111}.sheet{width:277mm;height:190mm;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4mm;break-after:page;page-break-after:always}.sheet:last-child{break-after:auto;page-break-after:auto}.tag{border:1.5px solid #111;padding:2.5mm;min-width:0;overflow:hidden;overflow-wrap:anywhere}.tag header{display:flex;justify-content:space-between;align-items:start;gap:3mm;border-bottom:1px solid #555;padding-bottom:1.5mm;font-size:9pt}.tag header strong{font-size:15pt;white-space:nowrap}.tag p{margin:1.2mm 0}.product-name{font-weight:700}.qr{text-align:center;margin-top:1.5mm}.qr svg{width:28mm;height:28mm}.qr small{display:block;font-size:6.5pt;overflow-wrap:anywhere}</style>${sheets.join('')}</html>`);
     page.document.close();page.focus();page.print();return true;
   }
   window.PKIncomingPrint = printTags;

@@ -41,7 +41,13 @@ const root=path.resolve(__dirname,'..');
   await remove.click();assert.equal(await page.evaluate(()=>qaCalls.length),0,'cancel never writes');
   await page.evaluate(()=>{qaConfirmation='ok';qaConflict=true;});await remove.click();
   await page.locator('#palletBulkStatus').filter({hasText:'มีคนแก้ข้อมูลนี้แล้ว'}).waitFor();assert.equal(await page.evaluate(()=>SLOT_ITEMS['R-1']['R1-01'].length),1);
-  await page.evaluate(()=>qaConflict=false);await remove.click();
+  const staleCalls=await page.evaluate(()=>qaCalls.length);await page.evaluate(()=>qaConflict=false);await remove.click();await page.locator('#palletBulkStatus').filter({hasText:'ข้อมูลตำแหน่งเปลี่ยนแล้ว'}).waitFor();assert.equal(await page.evaluate(()=>qaCalls.length),staleCalls,'conflicted retry must not write without reloading');
+  await page.reload();await page.evaluate(()=>{
+   palletDataReady=true;SLOT_ITEMS['R-1']={};PALLET_STATUS['R-1']={};
+   for(const slot of ['R1-01','R1-02','R1-03']){SLOT_ITEMS['R-1'][slot]=[{code:'QA-'+slot,name:'ทดสอบ',qty:10,remainingQty:10,unit:'ใบ'}];PALLET_STATUS['R-1'][slot]='occupied';palletVersions.set(JSON.stringify(['R-1',slot]),1);}
+   window.qaCalls=[];window.qaConfirmation='ok';window.qaConflict=false;supabaseClient.rpc=async(name,args)=>{qaCalls.push({name,args});if(qaConflict)return {error:{code:'40001'}};return {data:{slots:args.p_slots.map(r=>({...r,version:r.expected_version+1})),dates:[]}};};activateTab(document.getElementById('tab-floorplan'));openZoomModal('R-1');
+   window.PKActionConfirmation.request=async()=>{if(qaConfirmation==='pending')return new Promise(resolve=>window.qaApprove=resolve);return qaConfirmation==='cancel'?null:{id:'QA-confirmation',reason:'ทดสอบ',username:'QA'};};
+  });await toggle.click();for(const slot of ['R1-01','R1-02'])await page.locator(`.zoom-slot[data-slot="${slot}"]`).press('Space');await remove.click();
   await page.locator('#palletBulkStatus').filter({hasText:'ลบข้อมูล 2 พาเลทแล้ว'}).waitFor();
   const result=await page.evaluate(()=>({calls:qaCalls,one:SLOT_ITEMS['R-1']['R1-01'],two:SLOT_ITEMS['R-1']['R1-02'],three:SLOT_ITEMS['R-1']['R1-03'],slots:ZONE_SLOTS['R-1'].length}));
   assert.deepEqual(result.one,[]);assert.deepEqual(result.two,[]);assert.equal(result.three.length,1);assert.ok(result.slots>3);
@@ -76,7 +82,9 @@ const root=path.resolve(__dirname,'..');
   await page.evaluate(()=>qaConfirmation='cancel');await submit.click();assert.equal(await page.evaluate(()=>qaCalls.length),callsBeforeMove);
   await page.evaluate(()=>{qaConfirmation='ok';qaConflict=true;});await submit.click();
   await page.locator('#palletBulkStatus').filter({hasText:'มีคนแก้ข้อมูลนี้แล้ว'}).waitFor();assert.equal(await page.evaluate(()=>SLOT_ITEMS['R-1']['R1-03'].length),1);assert.equal(await page.evaluate(()=>SLOT_ITEMS.U['U-01']?.length||0),0);
-  await page.evaluate(()=>{qaConflict=false;palletVersions.set(JSON.stringify(['U','U-01']),6);});
+  const conflictedMoveCalls=await page.evaluate(()=>qaCalls.length);await page.evaluate(()=>qaConflict=false);await submit.click();await page.locator('#palletBulkStatus').filter({hasText:'ข้อมูลตำแหน่งเปลี่ยนแล้ว'}).waitFor();assert.equal(await page.evaluate(()=>qaCalls.length),conflictedMoveCalls,'conflicted move retry must not write without reloading');
+  // Simulate reloading the current versions after the server reports a conflict.
+  await page.evaluate(()=>{conflictedPalletWrites.clear();for(const slot of ['R1-03','R1-04'])palletVersions.set(JSON.stringify(['R-1',slot]),6);for(const slot of ['U-01','U-02'])palletVersions.set(JSON.stringify(['U',slot]),6);});
   const beforeStaleMove=await page.evaluate(()=>qaCalls.length);await submit.click();await page.locator('#palletBulkStatus').filter({hasText:'ต้นทางหรือปลายทางมีข้อมูลใหม่'}).waitFor();assert.equal(await page.evaluate(()=>qaCalls.length),beforeStaleMove);
   await configureMove();
   await page.evaluate(()=>qaConfirmation='pending');await submit.click();

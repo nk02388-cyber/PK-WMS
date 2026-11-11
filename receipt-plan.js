@@ -85,8 +85,8 @@
     const rows = snapshot.rows.filter(row => !selected || row.date === selected);
     status.classList.remove('error');
     const stamp = loadedAt ? WmsDates.dateTime(loadedAt) : '—';
-    status.textContent = `นำเข้าจากเว็บต้นทาง ${snapshot.rows.length} รายการ · ${snapshot.source_note || ''} · นำเข้า PK WMS ${WmsDates.dateTime(snapshot.imported_at)} · ตรวจข้อมูลใน PK WMS ล่าสุด ${stamp}`;
-    badge.textContent = selected === localToday() ? `${rows.length} วันนี้` : `${rows.length} รายการ`;
+    status.textContent = `นำเข้าจากเว็บต้นทาง ${snapshot.rows.length.toLocaleString('en-US')} รายการ · ${snapshot.source_note || ''} · นำเข้า PK WMS ${WmsDates.dateTime(snapshot.imported_at)} · ตรวจข้อมูลใน PK WMS ล่าสุด ${stamp}`;
+    badge.textContent = selected === localToday() ? `${rows.length.toLocaleString('en-US')} วันนี้` : `${rows.length.toLocaleString('en-US')} รายการ`;
     const key = query.value.trim().toLocaleLowerCase('th');
     const visible = key ? rows.filter(row => {const hay=[row.rr,row.company,row.period,row.po,row.code,row.item,row.unit].map(value=>text(value)).join(' ').normalize('NFKC').toLocaleLowerCase('th');return key.normalize('NFKC').split(/\s+/).every(term=>hay.includes(term));}) : rows;
     const distinctCodes = new Set(rows.map(row => row.code)).size;

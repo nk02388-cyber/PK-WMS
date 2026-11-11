@@ -218,7 +218,7 @@
     const issues=row.issues || {}, reasons=[];
     if(issues.snapshotDate)reasons.push('วันที่อ้างอิงสต็อกไม่ครบหรืออ่านไม่ได้');
     if(issues.movementDate)reasons.push(`ประวัติไม่มีวันที่หรือวันที่ไม่ถูกต้อง ${issues.movementDate} รายการ`);
-    if(issues.quantity)reasons.push(`ประวัติไม่มีจำนวนหรือจำนวนไม่ถูกต้อง ${issues.quantity} รายการ`);
+    if(issues.quantity)reasons.push(`ประวัติไม่มีจำนวนหรือจำนวนไม่ถูกต้อง ${issues.quantity.toLocaleString('en-US')} รายการ`);
     if(issues.movementType)reasons.push(`ประเภทรายการที่ยังไม่รองรับ ${issues.movementType} รายการ`);
     if(row.stockQty == null)reasons.push('ไม่พบยอดสต็อกที่ยืนยันได้สำหรับหน่วยนี้');
     return reasons;
