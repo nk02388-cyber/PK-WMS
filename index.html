@@ -5625,7 +5625,7 @@ function buildStockReconciliation(stockItems, palletRows) {
     let status='ตรงกัน',difference=null;
     if (!row.unit || !row.stockKnown || !row.palletKnown) status='ต้องตรวจสอบ';
     else { difference=Number((row.pallet-row.stock).toFixed(8));
-      if (!hasPallet) status='ไม่มีในพาเลต'; else if (!hasStock) status='ไม่มีในสต็อกที่อัปเดต'; else if (Math.abs(difference)>1e-8) status='ยอดไม่ตรง'; }
+      if (Math.abs(difference)<=1e-8) status='ตรงกัน'; else if (!hasPallet) status='ไม่มีในพาเลต'; else if (!hasStock) status='ไม่มีในสต็อกที่อัปเดต'; else status='ยอดไม่ตรง'; }
     return {...row,name:[...row.names][0]||'',stock:row.stockKnown?row.stock:null,pallet:row.palletKnown?row.pallet:null,difference,status,
       warehouses:[...row.warehouses].sort(),slots:[...row.slots].sort()};
   }).sort((a,b)=>a.code.localeCompare(b.code)||a.unit.localeCompare(b.unit));

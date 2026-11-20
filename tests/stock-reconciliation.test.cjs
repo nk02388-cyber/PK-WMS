@@ -17,10 +17,10 @@ assert.equal(by('E',pcs).status,'ไม่มีในสต็อกที่�
 assert.equal(rows.some(r=>r.code==='EXCLUDED-ONLY'),false);
 assert.equal(by('B',kg).status,'ไม่มีในพาเลต');assert.equal(by('B',pcs).status,'ไม่มีในสต็อกที่อัปเดต');
 assert.equal(by('C',pcs).status,'ต้องตรวจสอบ');assert.equal(by('C',pcs).difference,null);
-assert.equal(by('D',pcs).status,'ไม่มีในพาเลต');assert.equal(by('E',pcs).status,'ไม่มีในสต็อกที่อัปเดต');
-assert.equal(ctx.filterStockReconciliation(rows,'different').length,rows.length);
+assert.equal(by('D',pcs).difference,0);assert.equal(by('D',pcs).status,'ตรงกัน');assert.equal(by('E',pcs).status,'ไม่มีในสต็อกที่อัปเดต');
+assert.equal(ctx.filterStockReconciliation(rows,'different').length,rows.length-1);
 assert.equal(ctx.filterStockReconciliation(rows,'mismatch').length,1);
-assert.equal(ctx.filterStockReconciliation(rows,'missing_pallet').length,2);
+assert.equal(ctx.filterStockReconciliation(rows,'missing_pallet').length,1);
 assert.deepEqual(Array.from(ctx.filterStockReconciliation(rows,'all','updated')).map(r=>r.code),['A']);
 assert.deepEqual(Array.from(ctx.filterStockReconciliation(rows,'all','F-01 updated')).map(r=>r.code),['A']);
 assert.deepEqual(Array.from(ctx.filterStockReconciliation(rows,'mismatch','202')).map(r=>r.code),['A']);
