@@ -1,6 +1,5 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium,webkit}=require('C:/Users/ADMIN/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const XLSX=require('../vendor/xlsx-0.20.3.min.js');
 const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edge',out=path.join(root,'work/cycle-labels',engine);
 (async()=>{
  const browser=await(engine==='webkit'?webkit.launch({headless:true}):chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}));
@@ -11,13 +10,14 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
   await context.addInitScript(()=>{window.print=()=>{};});
   await context.route('**/*',route=>{
    const u=new URL(route.request().url());if(u.hostname!=='localhost')return route.abort();const file=path.join(root,u.pathname==='/'?'index.html':u.pathname);if(!fs.existsSync(file))return route.abort();let body=fs.readFileSync(file);
-   if(file.endsWith('index.html'))body=body.toString().replace(/const (SUPABASE_URL|STOCK_SUPABASE_URL) = '[^']*';/g,"const $1 = '';").replace(/<script src="account-status.js[^>]*><\/script>/,`<script>document.body.classList.remove('auth-pending','department-choosing');document.body.classList.add('auth-ready');window.getWmsCanAccess=()=>true;window.getWmsIsAdmin=()=>true;supabaseClient={rpc:async()=>({data:[]})};</script>`);
+   if(file.endsWith('index.html'))body=body.toString().replace(/const (SUPABASE_URL|STOCK_SUPABASE_URL) = '[^']*';/g,"const $1 = '';").replace(/<script src="barcode-ui.js([^\"]*)"><\/script>/,`<script>window.getWmsCanAccess=()=>true;window.getWmsIsAdmin=()=>true;window.customerRpcCalls=[];const mockQuery=()=>{const q={select(){return q},eq(){return q},in(){return q},order(){return q},limit(){return q},range(){return q},single:async()=>({data:null,error:null}),then(resolve,reject){return Promise.resolve({data:[],error:null}).then(resolve,reject)}};return q};supabaseClient={auth:{getSession:async()=>({data:{session:{user:{id:'qa-user'}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:()=>mockQuery(),rpc:async name=>{customerRpcCalls.push(name);return {data:[{customer_name:'กลุ่ม A',product_codes:['SKU-1','SKU-3']},{customer_name:'กลุ่ม B',product_codes:['SKU-2']}],error:null}}};</script><script src="barcode-ui.js$1"></script>`).replace(/<script src="account-status.js[^>]*><\/script>/,`<script>document.body.classList.remove('auth-pending','department-choosing');document.body.classList.add('auth-ready');</script>`);
    return route.fulfill({body,contentType:file.endsWith('.html')?'text/html':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'image/jpeg'});
   });
   await page.goto('http://localhost/');await page.emulateMedia({reducedMotion:'reduce'});
   await page.evaluate(()=>{
    activateTab(document.getElementById('tab-cycle-counts'));document.getElementById('cycleCountZone').value='O-1';
    SLOT_ITEMS['O-1']={'O1-01':[{code:'SKU-1',name:'สินค้า <script>danger</script>',lotNo:'LOT-A',unit:'แกลลอน',qty:320},{code:'SKU-2',name:'สินค้าอีกชนิด',lotNo:'LOT-B',unit:'ใบ',qty:40},{code:'ZERO',qty:0}], 'O1-03':[{code:'SKU-3',name:'ขวด',qty:5,unit:'ขวด'}]};
+   SLOT_ITEMS.A={'A-01':[{code:'SKU-3',name:'ขวดทุกโซน',lotNo:'LOT-C',unit:'ขวด',qty:8}]};
   });
   await page.locator('#cycleCountPrintLabels').click();
   assert.equal(await page.locator('#cycleLabelZone').inputValue(),'O-1');
@@ -68,18 +68,11 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
   }
   await labels.screenshot({path:path.join(out,`${width}-cycle-pallet-labels.png`),fullPage:true});await labels.close();
   assert.equal(await page.evaluate(()=>JSON.stringify(SLOT_ITEMS)),beforeLabels);
-  const customerBook=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(customerBook,XLSX.utils.aoa_to_sheet([
-   ['ลูกค้า','รหัสสินค้า','ชื่อสินค้า','หน่วย'],
-   ['กลุ่ม A','SKU-1','สินค้า A','แกลลอน'],
-   ['กลุ่ม B','SKU-2','สินค้า B','ใบ'],
-   ['กลุ่ม A','SKU-3','สินค้า A3','ขวด']
-  ]),'ลูกค้า x กรุ๊ป x SKU');
-  const customerWorkbook=Buffer.from(XLSX.write(customerBook,{type:'buffer',bookType:'xlsx'}));
-  await page.locator('#cycleCustomerFile').setInputFiles({name:'customer-sku-fixture.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:customerWorkbook});
-  await page.waitForFunction(()=>!document.getElementById('cycleLabelCustomerStatus').textContent.startsWith('ยังไม่ได้โหลด'));
+  await page.waitForFunction(()=>/^(โหลดแล้ว|โหลดกลุ่มลูกค้าไม่สำเร็จ|เข้าสู่ระบบ)/.test(document.getElementById('cycleLabelCustomerStatus').textContent));
+  assert.match(await page.locator('#cycleLabelCustomerStatus').innerText(),/^โหลดแล้ว/,`customer RPC status: ${await page.locator('#cycleLabelCustomerStatus').innerText()}`);
   assert.equal(await page.locator('#cycleLabelZone').inputValue(),'O-1','customer selection is independent of the selected zone');
-  assert.equal(await page.locator('#cycleLabelCustomerGroups label').count(),2,`Excel customer groups are loaded: ${await page.locator('#cycleLabelCustomerStatus').innerText()}`);
+  assert.equal(await page.locator('#cycleLabelCustomerGroups label').count(),2,`customer groups load from the authorized database RPC: ${await page.locator('#cycleLabelCustomerStatus').innerText()}`);
+  assert.ok((await page.evaluate(()=>customerRpcCalls)).includes('get_cycle_customer_skus'));
   await page.locator('#cycleLabelCustomerGroups label').filter({hasText:'กลุ่ม A'}).locator('input').check();
   assert.match(await page.locator('#cycleLabelCustomerStatus').innerText(),/เลือก 1 กลุ่ม · 2 รหัสสินค้า/);
   const filteredSheetPromise=context.waitForEvent('page');await page.locator('#cycleLabelPrint').click();const filteredSheet=await filteredSheetPromise;await filteredSheet.waitForLoadState();
@@ -90,7 +83,13 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
   assert.equal(await filteredLabels.locator('.label').count(),2,'pallet labels omit positions without an SKU for the selected customer');
   assert.match(await filteredLabels.locator('.label').first().innerText(),/SKU-1/);assert.doesNotMatch(await filteredLabels.locator('.label').first().innerText(),/SKU-2/);
   assert.match(await filteredLabels.locator('.label').nth(1).innerText(),/SKU-3/);assert.equal(await filteredLabels.locator('.label svg').count(),2);await filteredLabels.close();
-  await page.locator('#cycleCustomerClear').click();assert.equal(await page.locator('#cycleLabelZone').inputValue(),'O-1');assert.equal(await page.locator('#cycleLabelCustomerGroups input:checked').count(),0);
+  await page.locator('#cycleLabelZone').selectOption('U');
+  const allCustomerSheetPromise=context.waitForEvent('page');await page.locator('#cycleCustomerPrintSheet').click();const allCustomerSheet=await allCustomerSheetPromise;await allCustomerSheet.waitForLoadState();
+  assert.equal(await allCustomerSheet.locator('tbody tr').count(),3,'customer Count Sheet covers matching SKUs across zones without using the zone selector');
+  assert.match(await allCustomerSheet.locator('.sheet-meta').first().innerText(),/ทุกโซน/);assert.match(await allCustomerSheet.locator('tbody').innerText(),/A-01/);assert.match(await allCustomerSheet.locator('tbody').innerText(),/O1-01/);assert.doesNotMatch(await allCustomerSheet.locator('tbody').innerText(),/SKU-2/);await allCustomerSheet.close();
+  const allCustomerLabelsPromise=context.waitForEvent('page');await page.locator('#cycleCustomerPrintLabels').click();const allCustomerLabels=await allCustomerLabelsPromise;await allCustomerLabels.waitForLoadState();
+  assert.equal(await allCustomerLabels.locator('.label').count(),3,'customer pallet labels include matching pallets from each zone');assert.match(await allCustomerLabels.locator('.label').first().innerText(),/A-01|O1-01/);assert.doesNotMatch(await allCustomerLabels.locator('.label').allTextContents().then(x=>x.join('\n')),/SKU-2/);await allCustomerLabels.close();
+  await page.locator('#cycleCustomerClear').click();assert.equal(await page.locator('#cycleLabelZone').inputValue(),'U','clearing customer selection does not change the zone selector');assert.equal(await page.locator('#cycleLabelCustomerGroups input:checked').count(),0);await page.locator('#cycleLabelZone').selectOption('O-1');
   await page.locator('#cycleLabelSelectAll').click();
   await page.evaluate(()=>{SLOT_ITEMS['O-1']['O1-01'][0].name='ขวดตัวอย่าง';window.qrPayloads=[];});
   const fullPromise=context.waitForEvent('page');await page.locator('#cycleLabelPrint').click();const full=await fullPromise;await full.waitForLoadState();

@@ -171,65 +171,106 @@
     printMessage('เปิดหน้าพิมพ์แล้ว · ตรวจตัวอย่างก่อนยืนยันพิมพ์');
   }
   const cycleZone = $('cycleLabelZone'), cycleSlots = $('cycleLabelSlots');
-  const customerFile = $('cycleCustomerFile'), customerGroups = $('cycleLabelCustomerGroups');
+  const customerGroups = $('cycleLabelCustomerGroups');
   const customerStatus = $('cycleLabelCustomerStatus');
-  let customerSkuMap = new Map(), selectedCustomers = new Set();
+  let customerSkuMap = new Map(), selectedCustomers = new Set(), customerLoadGeneration = 0;
+  let customerLoadState = 'loading', customerStatusMessage = 'กำลังโหลดกลุ่มลูกค้าจากฐานข้อมูลกลาง…', customerLoadedUserId = '';
   const normalizeSku = value => String(value ?? '').trim().toLocaleUpperCase('en-US');
+  function updateCustomerActions() {
+    const canPrint = customerLoadState === 'ready' && [...selectedCustomers].some(customer => customerSkuMap.has(customer));
+    $('cycleCustomerPrintSheet').disabled = !canPrint;
+    $('cycleCustomerPrintLabels').disabled = !canPrint;
+  }
   function renderCustomerGroups() {
     const customers = [...customerSkuMap.keys()].sort((a,b) => a.localeCompare(b,'th'));
     customerGroups.innerHTML = customers.map(customer =>
       `<label><input type="checkbox" value="${escapeHtml(customer)}" ${selectedCustomers.has(customer)?'checked':''}><span>${escapeHtml(customer)} · ${number(customerSkuMap.get(customer).size)} รหัส</span></label>`).join('');
     $('cycleCustomerSelectAll').disabled = customers.length === 0;
     $('cycleCustomerClear').disabled = customers.length === 0;
+    updateCustomerActions();
     updateCustomerStatus();
   }
   function updateCustomerStatus() {
     const selected = [...selectedCustomers].filter(customer => customerSkuMap.has(customer));
-    if (!customerSkuMap.size) customerStatus.textContent = 'ยังไม่ได้โหลดข้อมูลลูกค้า · ตัวเลือกนี้ไม่เปลี่ยนการเลือกโซน';
-    else if (!selected.length) customerStatus.textContent = `โหลดแล้ว ${number(customerSkuMap.size)} กลุ่ม · ยังไม่เลือกกลุ่ม จึงแสดงสินค้าทั้งโซน`;
+    if (customerLoadState !== 'ready') customerStatus.textContent = customerStatusMessage;
+    else if (!customerSkuMap.size) customerStatus.textContent = 'ไม่พบข้อมูลกลุ่มลูกค้าในฐานข้อมูลกลาง';
+    else if (!selected.length) customerStatus.textContent = `โหลดแล้ว ${number(customerSkuMap.size)} กลุ่มจากฐานข้อมูลกลาง · เลือกกลุ่มเพื่อพิมพ์สินค้าทุกโซน`;
     else {
       const skuCount = new Set(selected.flatMap(customer => [...customerSkuMap.get(customer)])).size;
-      customerStatus.textContent = `เลือก ${number(selected.length)} กลุ่ม · ${number(skuCount)} รหัสสินค้า · ใช้กรองสินค้าในโซนที่เลือก`;
+      customerStatus.textContent = `เลือก ${number(selected.length)} กลุ่ม · ${number(skuCount)} รหัสสินค้า · พร้อมพิมพ์ทุกโซนโดยไม่ต้องเลือกโซน`;
     }
   }
-  $('cycleCustomerImport').addEventListener('click', () => customerFile.click());
-  customerFile.addEventListener('change', async () => {
-    const file = customerFile.files?.[0];
-    if (!file) return;
+  async function loadCustomerGroups() {
+    const generation = ++customerLoadGeneration;
+    customerLoadState = 'loading';
+    customerStatusMessage = 'กำลังโหลดกลุ่มลูกค้าจากฐานข้อมูลกลาง…';
+    customerStatus.dataset.error = 'false';
+    updateCustomerActions();
+    updateCustomerStatus();
     try {
-      if (!window.PKDependencies?.excel) throw new Error('ตัวอ่าน Excel ยังไม่พร้อม กรุณารีเฟรชแล้วลองใหม่');
-      await PKDependencies.excel();
-      const workbook = XLSX.read(await file.arrayBuffer(), {type:'array'});
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      if (!firstSheet) throw new Error('ไม่พบชีตข้อมูลในไฟล์');
-      const rows = XLSX.utils.sheet_to_json(firstSheet, {header:1, raw:false, defval:''});
-      const headers = (rows[0] || []).map(value => String(value).trim());
-      const customerIndex = headers.indexOf('ลูกค้า'), skuIndex = headers.indexOf('รหัสสินค้า');
-      if (customerIndex < 0 || skuIndex < 0) throw new Error('ต้องมีหัวคอลัมน์ “ลูกค้า” และ “รหัสสินค้า”');
-      const nextMap = new Map();
-      for (const row of rows.slice(1)) {
-        const customer = String(row[customerIndex] ?? '').trim(), sku = normalizeSku(row[skuIndex]);
-        if (!customer || !sku) continue;
-        if (!nextMap.has(customer)) nextMap.set(customer, new Set());
-        nextMap.get(customer).add(sku);
+      if (!supabaseClient?.auth?.getSession || !supabaseClient?.rpc) throw new Error('ไม่พบการเชื่อมต่อฐานข้อมูล PK WMS');
+      const {data:sessionData,error:sessionError} = await supabaseClient.auth.getSession();
+      if (sessionError) throw sessionError;
+      const session = sessionData?.session;
+      if (!session?.user?.id) {
+        customerLoadedUserId = '';
+        customerSkuMap = new Map();
+        selectedCustomers.clear();
+        customerLoadState = 'auth';
+        customerStatusMessage = 'เข้าสู่ระบบ PK WMS เพื่อโหลดกลุ่มลูกค้า';
+        renderCustomerGroups();
+        return;
       }
-      if (!nextMap.size) throw new Error('ไม่พบแถวที่มีทั้งชื่อลูกค้าและรหัสสินค้า');
+      const {data,error} = await supabaseClient.rpc('get_cycle_customer_skus');
+      if (error) throw error;
+      if (generation !== customerLoadGeneration) return;
+      if (!Array.isArray(data)) throw new Error('รูปแบบข้อมูลกลุ่มลูกค้าไม่ถูกต้อง');
+      const nextMap = new Map();
+      for (const group of data) {
+        const customer = String(group?.customer_name ?? '').trim();
+        const codes = Array.isArray(group?.product_codes) ? group.product_codes.map(normalizeSku).filter(Boolean) : [];
+        if (customer && codes.length) nextMap.set(customer, new Set(codes));
+      }
       customerSkuMap = nextMap;
-      selectedCustomers = new Set();
+      selectedCustomers.clear();
+      customerLoadedUserId = session.user.id;
+      customerLoadState = 'ready';
+      customerStatusMessage = '';
       renderCustomerGroups();
-      customerStatus.textContent = `โหลด ${number(nextMap.size)} กลุ่มจาก ${file.name} แล้ว · ข้อมูลอยู่ในเบราว์เซอร์นี้และไม่ถูกอัปโหลด`;
       customerStatus.dataset.error = 'false';
-    } catch (error) {
-      customerStatus.textContent = `อ่านไฟล์ไม่ได้ · ${error?.message || error}`;
+    } catch (_) {
+      if (generation !== customerLoadGeneration) return;
+      customerLoadState = 'error';
+      customerStatusMessage = 'โหลดกลุ่มลูกค้าไม่สำเร็จ · ตรวจการเชื่อมต่อหรือสิทธิ์เมนู แล้วลองใหม่';
+      customerSkuMap = new Map();
+      selectedCustomers.clear();
+      customerLoadedUserId = '';
       customerStatus.dataset.error = 'true';
-    } finally {
-      customerFile.value = '';
+      renderCustomerGroups();
     }
-  });
+  }
+  if (supabaseClient?.auth?.onAuthStateChange) {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        customerLoadGeneration++;
+        customerSkuMap = new Map();
+        selectedCustomers.clear();
+        customerLoadedUserId = '';
+        customerLoadState = 'auth';
+        customerStatusMessage = 'เข้าสู่ระบบ PK WMS เพื่อโหลดกลุ่มลูกค้า';
+        renderCustomerGroups();
+      } else if (['INITIAL_SESSION','SIGNED_IN','USER_UPDATED'].includes(event)
+        && session.user?.id !== customerLoadedUserId) {
+        setTimeout(() => { void loadCustomerGroups(); }, 0);
+      }
+    });
+  }
+  void loadCustomerGroups();
   customerGroups.addEventListener('change', event => {
     const input = event.target.closest('input[type="checkbox"]');
     if (!input) return;
     if (input.checked) selectedCustomers.add(input.value); else selectedCustomers.delete(input.value);
+    updateCustomerActions();
     updateCustomerStatus();
   });
   $('cycleCustomerSelectAll').addEventListener('click', () => {
@@ -312,6 +353,54 @@
   }
   $('cycleLabelPrint').addEventListener('click', () => printCycleCount('sheet'));
   $('cyclePalletLabelPrint').addEventListener('click', () => printCycleCount('pallet'));
+  function customerRecordsAcrossZones(activeCustomers) {
+    const customerSkus = new Set(activeCustomers.flatMap(customer => [...customerSkuMap.get(customer)]));
+    const records = [];
+    for (const [zone, slots] of Object.entries(ZONE_SLOTS)) {
+      const snapshot = CycleCountCore.snapshotZone(zone, slots, SLOT_ITEMS[zone], PALLET_STATUS[zone], getRemainingQty);
+      for (const row of snapshot.rows) {
+        if (row.type === 'item' && customerSkus.has(normalizeSku(row.code))) records.push({zone,row});
+      }
+    }
+    return records;
+  }
+  function printCustomerCycleCount(mode) {
+    if (!palletDataReady || !$('syncStatusBar')?.classList.contains('sync-connected')) {
+      printMessage('ข้อมูลพาเลทยังไม่เชื่อมต่อ กรุณารอหรือรีเฟรชก่อนพิมพ์', true); return;
+    }
+    if (typeof qrcode !== 'function') { printMessage('ยังสร้าง QR ไม่ได้ กรุณารีเฟรชแล้วลองใหม่', true); return; }
+    const activeCustomers = [...selectedCustomers].filter(customer => customerSkuMap.has(customer));
+    if (!activeCustomers.length) { printMessage('กรุณาเลือกกลุ่มลูกค้าก่อนพิมพ์', true); return; }
+    const records = customerRecordsAcrossZones(activeCustomers);
+    if (!records.length) { printMessage('ไม่พบสินค้าในกลุ่มลูกค้าที่เลือกในทุกโซน', true); return; }
+    const customerPrintLabel = activeCustomers.length <= 3 ? activeCustomers.join(', ') : `${number(activeCustomers.length)} กลุ่ม`;
+    if (mode === 'pallet') {
+      const pallets = new Map();
+      for (const entry of records) {
+        const key = `${entry.zone}\u0000${entry.row.slot}`;
+        if (!pallets.has(key)) pallets.set(key,{zone:entry.zone,slot:entry.row.slot,rows:[]});
+        pallets.get(key).rows.push(entry.row);
+      }
+      const labels = [...pallets.values()].map(({zone,slot,rows}) =>
+        `<article class="label"><header><div><b>PK WMS · CYCLE COUNT</b><strong>${escapeHtml(slot)}</strong><p>โซน ${escapeHtml(zone)}</p></div>${qrMarkup(PKBarcode.locationPayload(zone,slot),12)}</header>
+          <small>QR ตำแหน่ง · กลุ่มลูกค้า ${escapeHtml(customerPrintLabel)}</small><table><thead><tr><th>Product Code / Product Name</th><th>Lot</th><th>หน่วย</th><th>นับจริง</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${escapeHtml(row.code)}<br>Product Name: ${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot||'—')}</td><td>${escapeHtml(row.unit)}</td><td></td></tr>`).join('')}</tbody></table>
+          <footer>วันที่ตรวจนับ __________________ เวลา __________<br>ผู้ตรวจนับ __________________ ผู้ตรวจสอบ __________________</footer><small>จดผลก่อนบันทึกใน Cycle Counts · พิมพ์ ${escapeHtml(WmsDates.dateTime(new Date()))}</small></article>`).join('');
+      printLabels(`Label Cycle Count · กลุ่มลูกค้า ${customerPrintLabel} · ทุกโซน · ${number(pallets.size)} พาเลท`,labels,'pallet');
+      return;
+    }
+    const zones = new Set(records.map(entry => entry.zone));
+    const rows = records.map(({zone,row},index) =>
+      `<tr><td>${index+1}</td><td class="sheet-position"><small>${escapeHtml(zone)}</small><strong>${escapeHtml(row.slot)}</strong>${qrMarkup(PKBarcode.locationPayload(zone,row.slot),12)}</td><td><strong>${escapeHtml(row.code)}</strong><br>${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot||'—')}</td><td>${escapeHtml(row.unit)}</td><td></td><td></td></tr>`).join('');
+    const sheet = `<article class="count-sheet"><h1>COUNT SHEET · ใบตรวจนับสินค้า</h1>
+      <div class="sheet-meta"><strong>PK WMS · ทุกโซน · ${number(zones.size)} โซน · ${number(records.length)} รายการ · กลุ่มลูกค้า ${escapeHtml(customerPrintLabel)}</strong><span>เลขที่ใบตรวจนับ ____________________</span></div>
+      <div class="sheet-meta"><span>วันที่ตรวจนับ __________________ เวลาเริ่ม __________ เวลาสิ้นสุด __________</span><span>ผู้ตรวจนับ ____________________</span></div>
+      <p class="sheet-help">กรอกจำนวนที่นับจริงทุกแถว · พบว่าไม่มีสินค้าให้กรอก 0 · พบสินค้าอื่นให้ระบุในหมายเหตุ · QR สแกนเปิดตำแหน่งผ่านเมนูผังคลัง</p>
+      <table><colgroup><col style="width:5%"><col style="width:12%"><col style="width:31%"><col style="width:12%"><col style="width:8%"><col style="width:13%"><col style="width:19%"></colgroup><thead><tr><th colspan="7">COUNT SHEET · ทุกโซน · กลุ่มลูกค้า ${escapeHtml(customerPrintLabel)} · วันที่ตรวจนับ ______________ · เลขที่ใบตรวจนับ ______________</th></tr><tr><th>ลำดับ</th><th>ตำแหน่ง / QR</th><th>รหัส / ชื่อสินค้า</th><th>Lot</th><th>หน่วย</th><th>จำนวนที่นับจริง</th><th>หมายเหตุ</th></tr></thead><tbody>${rows}</tbody></table>
+      <footer>ผู้ตรวจนับ ____________________ ผู้ตรวจสอบ ____________________ วันที่ ____________________<br><small>จดผลก่อนบันทึกในเมนู Cycle Counts · ไม่แสดงยอดในระบบ · พิมพ์ ${escapeHtml(WmsDates.dateTime(new Date()))}</small></footer></article>`;
+    printLabels(`Count Sheet · กลุ่มลูกค้า ${customerPrintLabel} · ทุกโซน · ${number(records.length)} รายการ`,sheet,'sheet');
+  }
+  $('cycleCustomerPrintSheet').addEventListener('click', () => printCustomerCycleCount('sheet'));
+  $('cycleCustomerPrintLabels').addEventListener('click', () => printCustomerCycleCount('pallet'));
   const retroZone = $('retroLabelZone'), retroList = $('retroLabelItems');
   retroZone.innerHTML = printZone.innerHTML;
   let retroSnapshot = [];
