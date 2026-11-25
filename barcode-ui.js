@@ -171,6 +171,75 @@
     printMessage('เปิดหน้าพิมพ์แล้ว · ตรวจตัวอย่างก่อนยืนยันพิมพ์');
   }
   const cycleZone = $('cycleLabelZone'), cycleSlots = $('cycleLabelSlots');
+  const customerFile = $('cycleCustomerFile'), customerGroups = $('cycleLabelCustomerGroups');
+  const customerStatus = $('cycleLabelCustomerStatus');
+  let customerSkuMap = new Map(), selectedCustomers = new Set();
+  const normalizeSku = value => String(value ?? '').trim().toLocaleUpperCase('en-US');
+  function renderCustomerGroups() {
+    const customers = [...customerSkuMap.keys()].sort((a,b) => a.localeCompare(b,'th'));
+    customerGroups.innerHTML = customers.map(customer =>
+      `<label><input type="checkbox" value="${escapeHtml(customer)}" ${selectedCustomers.has(customer)?'checked':''}><span>${escapeHtml(customer)} · ${number(customerSkuMap.get(customer).size)} รหัส</span></label>`).join('');
+    $('cycleCustomerSelectAll').disabled = customers.length === 0;
+    $('cycleCustomerClear').disabled = customers.length === 0;
+    updateCustomerStatus();
+  }
+  function updateCustomerStatus() {
+    const selected = [...selectedCustomers].filter(customer => customerSkuMap.has(customer));
+    if (!customerSkuMap.size) customerStatus.textContent = 'ยังไม่ได้โหลดข้อมูลลูกค้า · ตัวเลือกนี้ไม่เปลี่ยนการเลือกโซน';
+    else if (!selected.length) customerStatus.textContent = `โหลดแล้ว ${number(customerSkuMap.size)} กลุ่ม · ยังไม่เลือกกลุ่ม จึงแสดงสินค้าทั้งโซน`;
+    else {
+      const skuCount = new Set(selected.flatMap(customer => [...customerSkuMap.get(customer)])).size;
+      customerStatus.textContent = `เลือก ${number(selected.length)} กลุ่ม · ${number(skuCount)} รหัสสินค้า · ใช้กรองสินค้าในโซนที่เลือก`;
+    }
+  }
+  $('cycleCustomerImport').addEventListener('click', () => customerFile.click());
+  customerFile.addEventListener('change', async () => {
+    const file = customerFile.files?.[0];
+    if (!file) return;
+    try {
+      if (!window.PKDependencies?.excel) throw new Error('ตัวอ่าน Excel ยังไม่พร้อม กรุณารีเฟรชแล้วลองใหม่');
+      await PKDependencies.excel();
+      const workbook = XLSX.read(await file.arrayBuffer(), {type:'array'});
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (!firstSheet) throw new Error('ไม่พบชีตข้อมูลในไฟล์');
+      const rows = XLSX.utils.sheet_to_json(firstSheet, {header:1, raw:false, defval:''});
+      const headers = (rows[0] || []).map(value => String(value).trim());
+      const customerIndex = headers.indexOf('ลูกค้า'), skuIndex = headers.indexOf('รหัสสินค้า');
+      if (customerIndex < 0 || skuIndex < 0) throw new Error('ต้องมีหัวคอลัมน์ “ลูกค้า” และ “รหัสสินค้า”');
+      const nextMap = new Map();
+      for (const row of rows.slice(1)) {
+        const customer = String(row[customerIndex] ?? '').trim(), sku = normalizeSku(row[skuIndex]);
+        if (!customer || !sku) continue;
+        if (!nextMap.has(customer)) nextMap.set(customer, new Set());
+        nextMap.get(customer).add(sku);
+      }
+      if (!nextMap.size) throw new Error('ไม่พบแถวที่มีทั้งชื่อลูกค้าและรหัสสินค้า');
+      customerSkuMap = nextMap;
+      selectedCustomers = new Set();
+      renderCustomerGroups();
+      customerStatus.textContent = `โหลด ${number(nextMap.size)} กลุ่มจาก ${file.name} แล้ว · ข้อมูลอยู่ในเบราว์เซอร์นี้และไม่ถูกอัปโหลด`;
+      customerStatus.dataset.error = 'false';
+    } catch (error) {
+      customerStatus.textContent = `อ่านไฟล์ไม่ได้ · ${error?.message || error}`;
+      customerStatus.dataset.error = 'true';
+    } finally {
+      customerFile.value = '';
+    }
+  });
+  customerGroups.addEventListener('change', event => {
+    const input = event.target.closest('input[type="checkbox"]');
+    if (!input) return;
+    if (input.checked) selectedCustomers.add(input.value); else selectedCustomers.delete(input.value);
+    updateCustomerStatus();
+  });
+  $('cycleCustomerSelectAll').addEventListener('click', () => {
+    selectedCustomers = new Set(customerSkuMap.keys());
+    renderCustomerGroups();
+  });
+  $('cycleCustomerClear').addEventListener('click', () => {
+    selectedCustomers.clear();
+    renderCustomerGroups();
+  });
   cycleZone.innerHTML = printZone.innerHTML;
   function updateCycleSelection() {
     const count = cycleSlots.querySelectorAll('input:checked').length;
@@ -205,32 +274,41 @@
     if (typeof qrcode !== 'function') { printMessage('ยังสร้าง QR ไม่ได้ กรุณารีเฟรชแล้วลองใหม่', true); return; }
     const zone = cycleZone.value;
     const selected = new Set([...cycleSlots.querySelectorAll('input:checked')].map(input => input.value));
-    const slots = (ZONE_SLOTS[zone] || []).filter(slot => selected.has(slot.code));
+    let slots = (ZONE_SLOTS[zone] || []).filter(slot => selected.has(slot.code));
     if (!slots.length) { printMessage('กรุณาเลือกพาเลทก่อนพิมพ์', true); return; }
     const snapshot = CycleCountCore.snapshotZone(zone, slots, SLOT_ITEMS[zone], PALLET_STATUS[zone], getRemainingQty);
+    const activeCustomers = [...selectedCustomers].filter(customer => customerSkuMap.has(customer));
+    const customerSkus = new Set(activeCustomers.flatMap(customer => [...customerSkuMap.get(customer)]));
+    if (activeCustomers.length) {
+      const matchingSlots = new Set(snapshot.rows.filter(row => customerSkus.has(normalizeSku(row.code))).map(row => row.slot));
+      slots = slots.filter(slot => matchingSlots.has(slot.code));
+      if (!slots.length) { printMessage('ไม่พบสินค้าในกลุ่มลูกค้าที่เลือกในพาเลทของโซนนี้', true); return; }
+    }
+    const customerPrintLabel = activeCustomers.length <= 3 ? activeCustomers.join(', ') : `${number(activeCustomers.length)} กลุ่ม`;
+    const customerPrintNote = activeCustomers.length ? ` · ${customerPrintLabel}` : '';
     if (mode === 'pallet') {
       const labels = slots.map(slot => {
-        const rows = snapshot.rows.filter(row => row.slot === slot.code);
+        const rows = snapshot.rows.filter(row => row.slot === slot.code && (!activeCustomers.length || customerSkus.has(normalizeSku(row.code))));
         return `<article class="label"><header><div><b>PK WMS · CYCLE COUNT</b><strong>${escapeHtml(slot.code)}</strong><p>โซน ${escapeHtml(zone)}</p></div>${qrMarkup(PKBarcode.locationPayload(zone,slot.code),12)}</header>
-          <small>QR ตำแหน่ง · สแกนผ่านเมนูผังคลัง</small><table><thead><tr><th>Product Code / Product Name</th><th>Lot</th><th>หน่วย</th><th>นับจริง</th></tr></thead><tbody>${rows.length ? rows.map(row=>`<tr><td>${escapeHtml(row.code)}<br>Product Name: ${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot||'—')}</td><td>${escapeHtml(row.unit)}</td><td></td></tr>`).join('') : '<tr><td colspan="3">ไม่มีรายการสินค้าในระบบ · ตรวจพื้นที่จริง</td><td></td></tr>'}</tbody></table>
+          <small>QR ตำแหน่ง · สแกนผ่านเมนูผังคลัง${activeCustomers.length?` · คัดจาก ${number(activeCustomers.length)} กลุ่มลูกค้า`:''}</small><table><thead><tr><th>Product Code / Product Name</th><th>Lot</th><th>หน่วย</th><th>นับจริง</th></tr></thead><tbody>${rows.length ? rows.map(row=>`<tr><td>${escapeHtml(row.code)}<br>Product Name: ${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot||'—')}</td><td>${escapeHtml(row.unit)}</td><td></td></tr>`).join('') : '<tr><td colspan="3">ไม่มีรายการสินค้าในระบบ · ตรวจพื้นที่จริง</td><td></td></tr>'}</tbody></table>
           <footer>วันที่ตรวจนับ __________________ เวลา __________<br>ผู้ตรวจนับ __________________ ผู้ตรวจสอบ __________________</footer><small>จดผลก่อนบันทึกใน Cycle Counts · พิมพ์ ${escapeHtml(WmsDates.dateTime(new Date()))}</small></article>`;
       }).join('');
-      printLabels(`Label Cycle Count · โซน ${zone} · ${number(slots.length)} พาเลท`,labels,'pallet');
+      printLabels(`Label Cycle Count · โซน ${zone} · ${number(slots.length)} พาเลท${customerPrintNote}`,labels,'pallet');
       return;
     }
     let lineNumber = 0;
     const rows = slots.flatMap(slot => {
-      const items = snapshot.rows.filter(row => row.slot === slot.code);
+      const items = snapshot.rows.filter(row => row.slot === slot.code && (!activeCustomers.length || customerSkus.has(normalizeSku(row.code))));
       return (items.length ? items : [{ code: '', name: 'ไม่มีรายการสินค้าในระบบ · ตรวจพื้นที่จริง', lot: '', unit: '' }]).map(row =>
         `<tr><td>${++lineNumber}</td><td class="sheet-position"><strong>${escapeHtml(slot.code)}</strong>${qrMarkup(PKBarcode.locationPayload(zone, slot.code), 12)}</td><td><strong>${escapeHtml(row.code)}</strong><br>${escapeHtml(row.name)}</td><td>${escapeHtml(row.lot || '—')}</td><td>${escapeHtml(row.unit)}</td><td></td><td></td></tr>`);
     }).join('');
     const sheet = `<article class="count-sheet"><h1>COUNT SHEET · ใบตรวจนับสินค้า</h1>
-      <div class="sheet-meta"><strong>PK WMS · โซน ${escapeHtml(zone)} · ${number(slots.length)} ตำแหน่ง · ${number(lineNumber)} รายการ</strong><span>เลขที่ใบตรวจนับ ____________________</span></div>
+      <div class="sheet-meta"><strong>PK WMS · โซน ${escapeHtml(zone)} · ${number(slots.length)} ตำแหน่ง · ${number(lineNumber)} รายการ${activeCustomers.length?` · กลุ่มลูกค้า ${escapeHtml(customerPrintLabel)}`:''}</strong><span>เลขที่ใบตรวจนับ ____________________</span></div>
       <div class="sheet-meta"><span>วันที่ตรวจนับ __________________ เวลาเริ่ม __________ เวลาสิ้นสุด __________</span><span>ผู้ตรวจนับ ____________________</span></div>
       <p class="sheet-help">กรอกจำนวนที่นับจริงทุกแถว · พบว่าไม่มีสินค้าให้กรอก 0 · พบสินค้าอื่นให้ระบุในหมายเหตุ · QR สแกนเปิดตำแหน่งผ่านเมนูผังคลัง</p>
       <table><colgroup><col style="width:5%"><col style="width:12%"><col style="width:31%"><col style="width:12%"><col style="width:8%"><col style="width:13%"><col style="width:19%"></colgroup><thead><tr><th colspan="7">COUNT SHEET · โซน ${escapeHtml(zone)} · วันที่ตรวจนับ ______________ · เลขที่ใบตรวจนับ ______________</th></tr><tr><th>ลำดับ</th><th>ตำแหน่ง / QR</th><th>รหัส / ชื่อสินค้า</th><th>Lot</th><th>หน่วย</th><th>จำนวนที่นับจริง</th><th>หมายเหตุ</th></tr></thead><tbody>${rows}</tbody></table>
       <footer>ผู้ตรวจนับ ____________________ ผู้ตรวจสอบ ____________________ วันที่ ____________________<br><small>จดผลก่อนบันทึกในเมนู Cycle Counts · ไม่แสดงยอดในระบบ · พิมพ์ ${escapeHtml(WmsDates.dateTime(new Date()))}</small></footer></article>`;
-    printLabels(`Count Sheet · โซน ${zone} · ${number(slots.length)} ตำแหน่ง`, sheet, 'sheet');
+    printLabels(`Count Sheet · โซน ${zone} · ${number(slots.length)} ตำแหน่ง${customerPrintNote}`, sheet, 'sheet');
   }
   $('cycleLabelPrint').addEventListener('click', () => printCycleCount('sheet'));
   $('cyclePalletLabelPrint').addEventListener('click', () => printCycleCount('pallet'));
