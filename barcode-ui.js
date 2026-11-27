@@ -171,11 +171,16 @@
     printMessage('เปิดหน้าพิมพ์แล้ว · ตรวจตัวอย่างก่อนยืนยันพิมพ์');
   }
   const cycleZone = $('cycleLabelZone'), cycleSlots = $('cycleLabelSlots');
-  const customerGroups = $('cycleLabelCustomerGroups');
+  const customerFile = $('cycleCustomerFile'), customerGroups = $('cycleLabelCustomerGroups');
   const customerStatus = $('cycleLabelCustomerStatus');
-  let customerSkuMap = new Map(), customerProductMap = new Map(), selectedCustomers = new Set(), customerLoadGeneration = 0;
-  let customerLoadState = 'loading', customerStatusMessage = 'กำลังโหลดกลุ่มลูกค้าจากฐานข้อมูลกลาง…', customerLoadedUserId = '';
+  let customerSkuMap = new Map(), customerProductMap = new Map(), selectedCustomers = new Set();
+  let customerLoadState = 'empty';
   const normalizeSku = value => String(value ?? '').trim().toLocaleUpperCase('en-US');
+  const normalizedHeader = value => String(value ?? '').trim().toLocaleLowerCase('en-US').replace(/[\s_./()-]+/g, '');
+  const isSkuHeader = value => ['รหัสสินค้า','productcode','sku'].includes(normalizedHeader(value));
+  const isCustomerHeader = value => ['ลูกค้า','ชื่อลูกค้า','customer','customername'].includes(normalizedHeader(value));
+  const isNameHeader = value => ['ชื่อสินค้า','รายการ','productname','itemname'].includes(normalizedHeader(value));
+  const isUnitHeader = value => /^(หน่วยนับ|หน่วย|unit|uom)$/.test(normalizedHeader(value));
   function updateCustomerActions() {
     const canPrint = customerLoadState === 'ready' && [...selectedCustomers].some(customer => customerSkuMap.has(customer));
     $('cycleCustomerPrintSheet').disabled = !canPrint;
@@ -190,94 +195,106 @@
     updateCustomerActions();
     updateCustomerStatus();
   }
-  function updateCustomerStatus() {
-    const selected = [...selectedCustomers].filter(customer => customerSkuMap.has(customer));
-    if (customerLoadState !== 'ready') customerStatus.textContent = customerStatusMessage;
-    else if (!customerSkuMap.size) customerStatus.textContent = 'ไม่พบข้อมูลกลุ่มลูกค้าในฐานข้อมูลกลาง';
-    else if (!selected.length) customerStatus.textContent = `โหลดแล้ว ${number(customerSkuMap.size)} กลุ่มจากฐานข้อมูลกลาง · เลือกกลุ่มเพื่อพิมพ์สินค้าทุกโซน`;
+  function updateCustomerStatus(message = '') {
+    if (message) customerStatus.textContent = message;
+    else if (customerLoadState === 'loading') customerStatus.textContent = 'กำลังอ่านไฟล์ Excel…';
+    else if (customerLoadState !== 'ready') customerStatus.textContent = 'ยังไม่ได้อัปโหลด Excel · เลือกไฟล์รายชื่อลูกค้าเพื่อพิมพ์';
     else {
-      const skuCount = new Set(selected.flatMap(customer => [...customerSkuMap.get(customer)])).size;
-      customerStatus.textContent = `เลือก ${number(selected.length)} กลุ่ม · ${number(skuCount)} รหัสสินค้า · พร้อมพิมพ์ทุกโซนโดยไม่ต้องเลือกโซน`;
+      const selected = [...selectedCustomers].filter(customer => customerSkuMap.has(customer));
+      if (!selected.length) customerStatus.textContent = 'โหลดข้อมูลลูกค้าแล้ว · เลือกกลุ่มเพื่อพิมพ์สินค้าทุกโซน';
+      else {
+        const skuCount = new Set(selected.flatMap(customer => [...customerSkuMap.get(customer)])).size;
+        customerStatus.textContent = `เลือก ${number(selected.length)} กลุ่ม · ${number(skuCount)} รหัสสินค้า · พร้อมพิมพ์ทุกโซนโดยไม่ต้องเลือกโซน`;
+      }
     }
+    customerStatus.dataset.error = customerLoadState === 'error' ? 'true' : 'false';
   }
-  async function loadCustomerGroups() {
-    const generation = ++customerLoadGeneration;
+  function parseCustomerWorkbook(workbook) {
+    if (!Array.isArray(workbook?.SheetNames) || !workbook.SheetNames.length) throw new Error('ไม่พบชีตข้อมูลในไฟล์');
+    const sheets = workbook.SheetNames.map(name => ({
+      name,
+      rows: XLSX.utils.sheet_to_json(workbook.Sheets[name], {header:1, raw:false, defval:''})
+    }));
+    const summary = sheets.find(sheet => sheet.rows.some(row => {
+      const headers = row.map(normalizedHeader);
+      return headers.includes(normalizedHeader('ชื่อลูกค้า')) && headers.includes(normalizedHeader('ชื่อ Sheet'));
+    }));
+    const customerBySheet = new Map();
+    if (summary) {
+      const headerIndex = summary.rows.findIndex(row => {
+        const headers = row.map(normalizedHeader);
+        return headers.includes(normalizedHeader('ชื่อลูกค้า')) && headers.includes(normalizedHeader('ชื่อ Sheet'));
+      });
+      const headers = summary.rows[headerIndex].map(normalizedHeader);
+      const customerIndex = headers.indexOf(normalizedHeader('ชื่อลูกค้า'));
+      const sheetIndex = headers.indexOf(normalizedHeader('ชื่อ Sheet'));
+      for (const row of summary.rows.slice(headerIndex + 1)) {
+        const customer = String(row[customerIndex] ?? '').trim();
+        const sheetName = String(row[sheetIndex] ?? '').trim();
+        if (customer && sheetName) customerBySheet.set(sheetName, customer);
+      }
+    }
+    const nextSkuMap = new Map(), nextProductMap = new Map();
+    const addProduct = (customerValue, codeValue, nameValue, unitValue) => {
+      const customer = String(customerValue ?? '').trim(), code = normalizeSku(codeValue);
+      if (!customer || !code) return;
+      if (!nextSkuMap.has(customer)) nextSkuMap.set(customer, new Set());
+      nextSkuMap.get(customer).add(code);
+      if (!nextProductMap.has(code)) nextProductMap.set(code, {
+        name: String(nameValue ?? '').trim(), unit: String(unitValue ?? '').trim()
+      });
+    };
+    let productRows = 0;
+    for (const sheet of sheets) {
+      if (sheet === summary) continue;
+      const headerIndex = sheet.rows.findIndex(row => row.some(isSkuHeader));
+      if (headerIndex < 0) continue;
+      const headers = sheet.rows[headerIndex].map(value => String(value ?? '').trim());
+      const skuIndex = headers.findIndex(isSkuHeader);
+      const customerIndex = headers.findIndex(isCustomerHeader);
+      const nameIndex = headers.findIndex(isNameHeader);
+      const unitIndex = headers.findIndex(isUnitHeader);
+      let sheetRows = 0;
+      for (const row of sheet.rows.slice(headerIndex + 1)) {
+        const code = row[skuIndex];
+        if (!normalizeSku(code)) continue;
+        if (customerIndex >= 0) addProduct(row[customerIndex], code, nameIndex >= 0 ? row[nameIndex] : '', unitIndex >= 0 ? row[unitIndex] : '');
+        else addProduct(customerBySheet.get(sheet.name) || sheet.name, code, nameIndex >= 0 ? row[nameIndex] : '', unitIndex >= 0 ? row[unitIndex] : '');
+        sheetRows++;
+      }
+      productRows += sheetRows;
+    }
+    if (!nextSkuMap.size || !productRows) throw new Error('ไม่พบหัวคอลัมน์ “รหัสสินค้า” และรายการสินค้าในชีต');
+    return {skuMap:nextSkuMap, productMap:nextProductMap, productRows};
+  }
+  $('cycleCustomerImport').addEventListener('click', () => customerFile.click());
+  customerFile.addEventListener('change', async () => {
+    const file = customerFile.files?.[0];
+    if (!file) return;
     customerLoadState = 'loading';
-    customerStatusMessage = 'กำลังโหลดกลุ่มลูกค้าจากฐานข้อมูลกลาง…';
     customerStatus.dataset.error = 'false';
     updateCustomerActions();
     updateCustomerStatus();
     try {
-      if (!supabaseClient?.auth?.getSession || !supabaseClient?.rpc) throw new Error('ไม่พบการเชื่อมต่อฐานข้อมูล PK WMS');
-      const {data:sessionData,error:sessionError} = await supabaseClient.auth.getSession();
-      if (sessionError) throw sessionError;
-      const session = sessionData?.session;
-      if (!session?.user?.id) {
-        customerLoadedUserId = '';
-        customerSkuMap = new Map();
-        customerProductMap = new Map();
-        selectedCustomers.clear();
-        customerLoadState = 'auth';
-        customerStatusMessage = 'เข้าสู่ระบบ PK WMS เพื่อโหลดกลุ่มลูกค้า';
-        renderCustomerGroups();
-        return;
-      }
-      const {data,error} = await supabaseClient.rpc('get_cycle_customer_skus');
-      if (error) throw error;
-      if (generation !== customerLoadGeneration) return;
-      if (!Array.isArray(data)) throw new Error('รูปแบบข้อมูลกลุ่มลูกค้าไม่ถูกต้อง');
-      const nextMap = new Map();
-      const nextProductMap = new Map();
-      for (const group of data) {
-        const customer = String(group?.customer_name ?? '').trim();
-        const codes = Array.isArray(group?.product_codes) ? group.product_codes.map(normalizeSku).filter(Boolean) : [];
-        if (customer && codes.length) nextMap.set(customer, new Set(codes));
-        for (const product of Array.isArray(group?.product_details) ? group.product_details : []) {
-          const code = normalizeSku(product?.product_code);
-          if (code) nextProductMap.set(code, {
-            name: String(product?.product_name ?? '').trim(),
-            unit: String(product?.unit ?? '').trim()
-          });
-        }
-      }
-      customerSkuMap = nextMap;
-      customerProductMap = nextProductMap;
-      selectedCustomers.clear();
-      customerLoadedUserId = session.user.id;
+      if (!window.PKDependencies?.excel) throw new Error('ตัวอ่าน Excel ยังไม่พร้อม กรุณารีเฟรชแล้วลองใหม่');
+      await PKDependencies.excel();
+      const workbook = XLSX.read(await file.arrayBuffer(), {type:'array'});
+      const parsed = parseCustomerWorkbook(workbook);
+      customerSkuMap = parsed.skuMap;
+      customerProductMap = parsed.productMap;
+      selectedCustomers = new Set();
       customerLoadState = 'ready';
-      customerStatusMessage = '';
       renderCustomerGroups();
-      customerStatus.dataset.error = 'false';
-    } catch (_) {
-      if (generation !== customerLoadGeneration) return;
-      customerLoadState = 'error';
-      customerStatusMessage = 'โหลดกลุ่มลูกค้าไม่สำเร็จ · ตรวจการเชื่อมต่อหรือสิทธิ์เมนู แล้วลองใหม่';
-      customerSkuMap = new Map();
-      customerProductMap = new Map();
-      selectedCustomers.clear();
-      customerLoadedUserId = '';
+      updateCustomerStatus(`โหลด ${number(customerSkuMap.size)} กลุ่ม · ${number(parsed.productRows)} รายการ จาก ${file.name} แล้ว · ข้อมูลอยู่ในเบราว์เซอร์นี้ ไม่ถูกอัปโหลด`);
+    } catch (error) {
+      customerLoadState = customerSkuMap.size ? 'ready' : 'error';
+      customerStatus.textContent = `อ่านไฟล์ไม่ได้ · ${error?.message || error}`;
       customerStatus.dataset.error = 'true';
-      renderCustomerGroups();
+      updateCustomerActions();
+    } finally {
+      customerFile.value = '';
     }
-  }
-  if (supabaseClient?.auth?.onAuthStateChange) {
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        customerLoadGeneration++;
-        customerSkuMap = new Map();
-        customerProductMap = new Map();
-        selectedCustomers.clear();
-        customerLoadedUserId = '';
-        customerLoadState = 'auth';
-        customerStatusMessage = 'เข้าสู่ระบบ PK WMS เพื่อโหลดกลุ่มลูกค้า';
-        renderCustomerGroups();
-      } else if (['INITIAL_SESSION','SIGNED_IN','USER_UPDATED'].includes(event)
-        && session.user?.id !== customerLoadedUserId) {
-        setTimeout(() => { void loadCustomerGroups(); }, 0);
-      }
-    });
-  }
-  void loadCustomerGroups();
+  });
   customerGroups.addEventListener('change', event => {
     const input = event.target.closest('input[type="checkbox"]');
     if (!input) return;
