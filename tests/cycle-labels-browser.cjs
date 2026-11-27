@@ -61,6 +61,9 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
   const labelPromise=context.waitForEvent('page');await page.locator('#cyclePalletLabelPrint').click();const labels=await labelPromise;await labels.waitForLoadState();
   assert.equal(await labels.locator('.label').count(),3,'additional Cycle Count mode prints one label per selected location');
   assert.equal(await labels.locator('.label svg').count(),3);
+  assert.ok((await labels.locator('.label').first().locator('thead th:not(:first-child)').evaluateAll(cells=>cells.map(cell=>getComputedStyle(cell).whiteSpace))).every(value=>value==='nowrap'),'Lot, unit and count headings must stay on one line');
+  assert.deepEqual(await labels.locator('.label').first().locator('col').evaluateAll(cols=>cols.map(col=>col.style.width)),['52%','16%','16%','16%'],'pallet-label columns keep enough room for each heading');
+  assert.ok((await labels.locator('.label').first().locator('tbody td:nth-child(n+2)').evaluateAll(cells=>cells.map(cell=>getComputedStyle(cell).whiteSpace))).every(value=>value==='nowrap'),'Lot and unit values must not split across lines');
   const pallet=await labels.locator('.label').first().innerText();assert.match(pallet,/O1-01/);assert.match(pallet,/SKU-1/);assert.match(pallet,/SKU-2/);assert.match(pallet,/Product Name:/);assert.match(pallet,/<script>danger<\/script>/);assert.doesNotMatch(pallet,/320|ZERO/);
   assert.match(await labels.locator('.label').nth(1).innerText(),/ไม่มีรายการสินค้า/);
   assert.equal(await labels.locator('script').count(),0);
