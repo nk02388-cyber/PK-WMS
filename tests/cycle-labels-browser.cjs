@@ -63,10 +63,12 @@ const root=path.resolve(__dirname,'..'),engine=process.env.PK_COPY_BROWSER||'edg
   assert.equal(await labels.locator('.label svg').count(),3);
   assert.equal(await labels.locator('.label').first().locator('.blank-entry-row').count(),1,'each label has a blank row for handwritten extra items');
   assert.ok((await labels.locator('.label').first().locator('.blank-entry-row td').allTextContents()).every(value=>value.trim()===''),'the manual-entry row contains no preset product data');
-  assert.ok((await labels.locator('.label').first().locator('thead th:not(:first-child)').evaluateAll(cells=>cells.map(cell=>getComputedStyle(cell).whiteSpace))).every(value=>value==='nowrap'),'Lot, unit and count headings must stay on one line');
-  assert.deepEqual(await labels.locator('.label').first().locator('col').evaluateAll(cols=>cols.map(col=>col.style.width)),['56%','15%','15%','14%'],'the product-description column is widened for handwriting');
-  assert.ok((await labels.locator('.label').first().locator('tbody td:nth-child(n+2)').evaluateAll(cells=>cells.map(cell=>getComputedStyle(cell).whiteSpace))).every(value=>value==='nowrap'),'Lot and unit values must not split across lines');
-  const pallet=await labels.locator('.label').first().innerText();assert.match(pallet,/O1-01/);assert.match(pallet,/SKU-1/);assert.match(pallet,/SKU-2/);assert.match(pallet,/Product Name:/);assert.match(pallet,/<script>danger<\/script>/);assert.doesNotMatch(pallet,/320|ZERO/);
+  assert.ok((await labels.locator('.label').first().locator('thead th:nth-child(n+3)').evaluateAll(cells=>cells.map(cell=>getComputedStyle(cell).whiteSpace))).every(value=>value==='nowrap'),'Lot, unit and count headings must stay on one line');
+  assert.deepEqual(await labels.locator('.label').first().locator('thead tr:last-child th').allTextContents(),['Code','Name','Lot','หน่วย','นับจริง'],'Code and Name are separate vertical columns');
+  assert.deepEqual(await labels.locator('.label').first().locator('col').evaluateAll(cols=>cols.map(col=>col.style.width)),['22%','34%','16%','14%','14%'],'Code and Name each have their own column');
+  assert.ok((await labels.locator('.label').first().locator('tbody td:nth-child(n+3)').evaluateAll(cells=>cells.map(cell=>getComputedStyle(cell).whiteSpace))).every(value=>value==='nowrap'),'Lot and unit values must not split across lines');
+  assert.equal(await labels.locator('.label').first().locator('.blank-entry-row td').count(),5,'blank row aligns under each separate column');
+  const pallet=await labels.locator('.label').first().innerText();assert.match(pallet,/O1-01/);assert.match(pallet,/SKU-1/);assert.match(pallet,/สินค้า <script>danger<\/script>/);assert.match(pallet,/SKU-2/);assert.doesNotMatch(pallet,/Product Name:|320|ZERO/);
   assert.match(await labels.locator('.label').nth(1).innerText(),/ไม่มีรายการสินค้า/);
   assert.equal(await labels.locator('script').count(),0);
   assert.ok((await labels.locator('tbody tr td:last-child').allTextContents()).every(value=>value===''),'actual-count fields stay blank');
